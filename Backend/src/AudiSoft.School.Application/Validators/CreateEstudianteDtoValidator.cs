@@ -1,0 +1,25 @@
+using AudiSoft.School.Application.DTOs;
+using FluentValidation;
+
+namespace AudiSoft.School.Application.Validators;
+
+/// <summary>
+/// Validador para CreateEstudianteDto.
+/// </summary>
+public class CreateEstudianteDtoValidator : AbstractValidator<CreateEstudianteDto>
+{
+    public CreateEstudianteDtoValidator()
+    {
+        RuleFor(x => x.Nombre)
+            .NotEmpty()
+                .WithMessage("El nombre del estudiante es requerido")
+            .NotNull()
+                .WithMessage("El nombre del estudiante no puede ser nulo")
+            .MinimumLength(3)
+                .WithMessage("El nombre debe tener al menos 3 caracteres")
+            .MaximumLength(255)
+                .WithMessage("El nombre no puede exceder 255 caracteres")
+            .Matches(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$")
+                .WithMessage("El nombre solo puede contener letras y espacios");
+    }
+}

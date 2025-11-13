@@ -1,0 +1,177 @@
+using AudiSoft.School.Application.DTOs;
+using AudiSoft.School.Application.Interfaces;
+using AudiSoft.School.Application.Validators;
+using AudiSoft.School.Domain.Entities;
+using AudiSoft.School.Domain.Exceptions;
+using AutoMapper;
+using FluentValidation;
+
+namespace AudiSoft.School.Application.Services;
+
+/// <summary>
+/// Servicio de aplicación para Notas.
+/// Orquesta la lógica de negocio relacionada con notas, incluyendo validaciones de referencias.
+/// </summary>
+public class NotaService
+{
+    private readonly INotaRepository _repository;
+    private readonly IEstudianteRepository _estudianteRepository;
+    private readonly IProfesorRepository _profesorRepository;
+    private readonly IMapper _mapper;
+    private readonly IValidator<CreateNotaDto> _validator;
+
+    public NotaService(
+        INotaRepository repository,
+        IEstudianteRepository estudianteRepository,
+        IProfesorRepository profesorRepository,
+        IMapper mapper,
+        IValidator<CreateNotaDto> validator)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _estudianteRepository = estudianteRepository ?? throw new ArgumentNullException(nameof(estudianteRepository));
+        _profesorRepository = profesorRepository ?? throw new ArgumentNullException(nameof(profesorRepository));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+    }
+
+    /// <summary>
+    /// Obtiene una nota por su ID.
+    /// </summary>
+    /// <param name="id">ID de la nota</param>
+    /// <returns>DTO de la nota o null si no existe</returns>
+    public async Task<NotaDto?> GetByIdAsync(int id)
+    {
+        var nota = await _repository.GetByIdAsync(id);
+        return nota == null ? null : _mapper.Map<NotaDto>(nota);
+    }
+
+    /// <summary>
+    /// Obtiene todas las notas.
+    /// </summary>
+    /// <returns>Lista de DTOs de notas</returns>
+    public async Task<List<NotaDto>> GetAllAsync()
+    {
+        var notas = await _repository.GetAllAsync();
+        return _mapper.Map<List<NotaDto>>(notas);
+    }
+
+    /// <summary>
+    /// Obtiene todas las notas de un profesor específico.
+    /// </summary>
+    /// <param name="idProfesor">ID del profesor</param>
+    /// <returns>Lista de DTOs de notas del profesor</returns>
+    public async Task<List<NotaDto>> GetByProfesorAsync(int idProfesor)
+    {
+        var notas = await _repository.GetByProfesorAsync(idProfesor);
+        return _mapper.Map<List<NotaDto>>(notas);
+    }
+
+    /// <summary>
+    /// Obtiene todas las notas de un estudiante específico.
+    /// </summary>
+    /// <param name="idEstudiante">ID del estudiante</param>
+    /// <returns>Lista de DTOs de notas del estudiante</returns>
+    public async Task<List<NotaDto>> GetByEstudianteAsync(int idEstudiante)
+    {
+        var notas = await _repository.GetByEstudianteAsync(idEstudiante);
+        return _mapper.Map<List<NotaDto>>(notas);
+    }
+
+    /// <summary>
+    /// Crea una nueva nota validando que existan el profesor y estudiante.
+    /// </summary>
+    /// <param name="dto">DTO con datos de la nota</param>
+    /// <returns>DTO de la nota creada</returns>
+    /// <exception cref="ValidationException">Si los datos no son válidos</exception>
+    /// <exception cref="EntityNotFoundException">Si el profesor o estudiante no existen</exception>
+    public async Task<NotaDto> CreateAsync(CreateNotaDto dto)
+    {
+        // Validar entrada
+        var validationResult = await _validator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+            throw new InvalidEntityStateException($"Validación fallida: {errors}");
+        }
+
+        // Validar que el Profesor existe
+        var profesor = await _profesorRepository.GetByIdAsync(dto.IdProfesor);
+        if (profesor == null)
+            throw new EntityNotFoundException(nameof(Profesor), dto.IdProfesor);
+
+        // Validar que el Estudiante existe
+        var estudiante = await _estudianteRepository.GetByIdAsync(dto.IdEstudiante);
+        if (estudiante == null)
+            throw new EntityNotFoundException(nameof(Estudiante), dto.IdEstudiante);
+
+        var nota = new Nota
+        {
+            Nombre = dto.Nombre,
+            Valor = dto.Valor,
+            IdProfesor = dto.IdProfesor,
+            IdEstudiante = dto.IdEstudiante
+        };
+
+        var created = await _repository.AddAsync(nota);
+        return _mapper.Map<NotaDto>(created);
+    }
+
+    /// <summary>
+    /// Actualiza una nota existente validando que existan el profesor y estudiante.
+    /// </summary>
+    /// <param name="id">ID de la nota</param>
+    /// <param name="dto">DTO con datos actualizados</param>
+    /// <returns>DTO de la nota actualizada</returns>
+    /// <exception cref="EntityNotFoundException">Si la nota, profesor o estudiante no existen</exception>
+    /// <exception cref="ValidationException">Si los datos no son válidos</exception>
+    public async Task<NotaDto> UpdateAsync(int id, CreateNotaDto dto)
+    {
+        // Validar entrada
+        var validationResult = await _validator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+            throw new InvalidEntityStateException($"Validación fallida: {errors}");
+        }
+
+        var nota = await _repository.GetByIdAsync(id);
+        if (nota == null)
+            throw new EntityNotFoundException(nameof(Nota), id);
+
+        // Validar que el Profesor existe
+        var profesor = await _profesorRepository.GetByIdAsync(dto.IdProfesor);
+        if (profesor == null)
+            throw new EntityNotFoundException(nameof(Profesor), dto.IdProfesor);
+
+        // Validar que el Estudiante existe
+        var estudiante = await _estudianteRepository.GetByIdAsync(dto.IdEstudiante);
+        if (estudiante == null)
+            throw new EntityNotFoundException(nameof(Estudiante), dto.IdEstudiante);
+
+        nota.Nombre = dto.Nombre;
+        nota.Valor = dto.Valor;
+        nota.IdProfesor = dto.IdProfesor;
+        nota.IdEstudiante = dto.IdEstudiante;
+        nota.UpdatedAt = DateTime.UtcNow;
+
+        var updated = await _repository.UpdateAsync(nota);
+        return _mapper.Map<NotaDto>(updated);
+    }
+
+    /// <summary>
+    /// Elimina (marca como eliminado) una nota.
+    /// </summary>
+    /// <param name="id">ID de la nota</param>
+    /// <exception cref="EntityNotFoundException">Si la nota no existe</exception>
+    public async Task DeleteAsync(int id)
+    {
+        var nota = await _repository.GetByIdAsync(id);
+        if (nota == null)
+            throw new EntityNotFoundException(nameof(Nota), id);
+
+        // Soft delete
+        nota.IsDeleted = true;
+        nota.DeletedAt = DateTime.UtcNow;
+        await _repository.UpdateAsync(nota);
+    }
+}

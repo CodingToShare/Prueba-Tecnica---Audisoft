@@ -4,3 +4,5 @@ Backend/test_api.ps1
 .vs/
 bin/
 *.user
+**/bin/
+**/obj/
