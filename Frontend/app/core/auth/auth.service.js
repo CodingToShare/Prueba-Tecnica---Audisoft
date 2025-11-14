@@ -73,31 +73,46 @@
         }
 
         /**
-         * Authenticate user with email and password
-         * @param {Object} credentials - User credentials
-         * @param {string} credentials.email - User email
-         * @param {string} credentials.password - User password
+         * Authenticate user with credentials
+         * @param {Object|string} credentials - User credentials object or username
+         * @param {string} [credentials.userName] - Username (preferred)
+         * @param {string} [credentials.username] - Username (alias)
+         * @param {string} [credentials.email] - Email (alias)
+         * @param {string} credentials.password - Password
+         * @param {boolean} [credentials.rememberMe=true] - Persist session
          * @returns {Promise} Promise that resolves with user data
          */
         function login(credentials) {
             var deferred = $q.defer();
 
-            if (!credentials || !credentials.email || !credentials.password) {
+            // Normalize parameters: allow string username + password signature
+            if (typeof credentials === 'string') {
+                credentials = { userName: credentials };
+            }
+
+            var userName = credentials && (credentials.userName || credentials.username || credentials.email);
+            var password = credentials && credentials.password;
+            var rememberMe = credentials && (credentials.rememberMe === undefined ? true : !!credentials.rememberMe);
+
+            if (!userName || !password) {
                 deferred.reject({
-                    message: 'Email y contraseña son requeridos',
+                    message: 'Usuario y contraseña son requeridos',
                     type: 'validation'
                 });
                 return deferred.promise;
             }
 
-            $log.debug('AuthService: Attempting login for', credentials.email);
+            $log.debug('AuthService: Attempting login for', userName);
 
-            apiService.post('auth/login', credentials)
+            var payload = { userName: userName, password: password, rememberMe: rememberMe };
+
+            apiService.post('Auth/login', payload)
                 .then(function(response) {
                     var authData = response.data;
                     
-                    if (authData.token && authData.user) {
-                        setToken(authData.token);
+                    // Expected shape: { accessToken, refreshToken?, user }
+                    if (authData && authData.accessToken && authData.user) {
+                        setToken(authData.accessToken);
                         setCurrentUser(authData.user);
                         
                         if (authData.refreshToken) {
@@ -106,7 +121,7 @@
                         
                         saveAuthState();
                         
-                        $log.info('AuthService: Login successful for user', authData.user.email);
+                        $log.info('AuthService: Login successful for user', authData.user.userName || authData.user.email || '');
                         deferred.resolve(authData.user);
                     } else {
                         $log.error('AuthService: Invalid authentication response structure');
@@ -121,7 +136,7 @@
                     
                     var errorMessage = 'Error de autenticación';
                     if (error.status === 401) {
-                        errorMessage = 'Email o contraseña incorrectos';
+                        errorMessage = 'Usuario o contraseña incorrectos';
                     } else if (error.status === 0) {
                         errorMessage = 'No se puede conectar al servidor';
                     } else if (error.data && error.data.message) {
@@ -194,12 +209,12 @@
 
             $log.debug('AuthService: Refreshing access token');
 
-            apiService.post('auth/refresh', { refreshToken: refreshToken })
+            apiService.post('Auth/refresh', { refreshToken: refreshToken })
                 .then(function(response) {
                     var authData = response.data;
                     
-                    if (authData.token) {
-                        setToken(authData.token);
+                    if (authData && (authData.accessToken || authData.token)) {
+                        setToken(authData.accessToken || authData.token);
                         
                         if (authData.refreshToken) {
                             setRefreshToken(authData.refreshToken);
@@ -208,7 +223,7 @@
                         saveAuthState();
                         
                         $log.info('AuthService: Token refreshed successfully');
-                        deferred.resolve(authData.token);
+                        deferred.resolve(authData.accessToken || authData.token);
                     } else {
                         throw new Error('Invalid refresh response');
                     }

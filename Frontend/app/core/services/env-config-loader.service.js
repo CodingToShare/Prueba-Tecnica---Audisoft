@@ -178,7 +178,7 @@
          */
         function getDefaultConfig() {
             return {
-                API_BASE_URL_DEVELOPMENT: 'http://localhost:5000/api/v1',
+                API_BASE_URL_DEVELOPMENT: 'http://localhost:5281/api/v1',
                 API_BASE_URL_PRODUCTION: 'https://api.audisoft.com/api/v1',
                 API_TIMEOUT: 30000,
                 API_RETRY_ATTEMPTS: 3,

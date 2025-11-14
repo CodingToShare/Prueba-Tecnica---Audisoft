@@ -123,14 +123,12 @@
     </footer>
 
     <!-- Scripts -->
-    <!-- AngularJS 1.8.3 (Latest stable 1.x) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js" integrity="sha512-KZmyTq3PLx9EZl0RHShHQuXtrvdJ+m35tuOiwlcZfs85fX4vboveQfUzQzH5esEqEl4l+A1yt+VRguSSqV6XD1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+    <!-- AngularJS 1.8.3 (from jsDelivr to avoid SRI/CDN issues) -->
+    <script src="https://cdn.jsdelivr.net/npm/angular@1.8.3/angular.min.js"></script>
     <!-- AngularJS Route -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-route.min.js" integrity="sha512-2ngKHTC4LxAhItTiC8ecBJAt2wCs7CT9RNr2VhxHtLcKIrDCBqSwLWqczpbLQ9PL+yATS0+DEQe1E6a7PxdR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-    <!-- AngularJS Resource (for REST API consumption) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-resource.min.js" integrity="sha512-oMnsejJOC5DMQR0Wca1prVgKp8g80bUqNTCUEYDZAUUgH8DWEWtpZ2b1ACpD6LYAW7+3j/1xkl8P9utRMAGJ7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/angular-route@1.8.3/angular-route.min.js"></script>
+    <!-- AngularJS Resource -->
+    <script src="https://cdn.jsdelivr.net/npm/angular-resource@1.8.3/angular-resource.min.js"></script>
     
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
@@ -146,7 +144,6 @@
     <script src="app/core/services/env-config-loader.service.js"></script>
     <script src="app/core/services/app-initializer.service.js"></script>
     <script src="app/core/services/config.service.js"></script>
-    <script src="app/core/services/auth.service.js"></script>
     <script src="app/core/services/route-auth.service.js"></script>
     <script src="app/core/services/api.service.js"></script>
     <script src="app/core/services/estudiantes.service.js"></script>
@@ -160,14 +157,24 @@
     <!-- Dashboard -->
     <script src="app/features/dashboard/dashboard.controller.js"></script>
     
-    <!-- Authentication (single service implementation) -->
+    <!-- Authentication (authoritative service overrides older one) -->
+    <script src="app/core/auth/auth.service.js"></script>
     
     <!-- Interceptors -->
     <script src="app/core/interceptors/auth.interceptor.js"></script>
     
     <!-- Other modules will be added in future METAs -->
     <script src="app/features/login/login.controller.js"></script>
-    <script src="app/features/estudiantes/estudiantes.controller.js"></script>
+        <!-- Feature scripts: Estudiantes -->
+        <script src="app/features/estudiantes/estudiantes.controller.js"></script>
+        <!-- Feature scripts: Profesores -->
+        <script src="app/features/profesores/profesores-list.controller.js"></script>
+        <script src="app/features/profesores/profesor-form.controller.js"></script>
+        <script src="app/features/profesores/profesor-detail.controller.js"></script>
+        <!-- Feature scripts: Notas -->
+        <script src="app/features/notas/notas-list.controller.js"></script>
+        <script src="app/features/notas/nota-form.controller.js"></script>
+        <script src="app/features/notas/nota-detail.controller.js"></script>
     
 </body>
 </html>

@@ -109,7 +109,7 @@
         function attemptTokenRefresh(originalRejection, authService, $http) {
             isRefreshingToken = true;
             
-            return authService.refreshToken()
+            return authService.refreshAccessToken()
                 .then(function(newToken) {
                     $log.info('AuthInterceptor: Token refreshed successfully');
                     
@@ -203,11 +203,22 @@
             if (!url) {
                 return false;
             }
-            
-            // Check if URL contains API paths
-            return url.indexOf('/api/') !== -1 || 
-                   url.indexOf('localhost:5000') !== -1 ||
-                   url.indexOf('api.audisoft.com') !== -1;
+
+            try {
+                var configService = $injector.get('configService');
+                var apiBase = (configService.getApiConfig && configService.getApiConfig().baseUrl) || '';
+                if (apiBase) {
+                    // Normalize both URL and base
+                    var base = String(apiBase).replace(/\/$/, '');
+                    var target = String(url);
+                    return target.indexOf(base) === 0;
+                }
+            } catch (e) {
+                // Fall through to heuristic if configService not available
+            }
+
+            // Heuristic fallback: treat paths containing '/api/' as API
+            return String(url).indexOf('/api/') !== -1;
         }
 
         /**
@@ -219,10 +230,10 @@
             if (!url) {
                 return false;
             }
-            
-            return url.indexOf('/auth/login') !== -1 || 
-                   url.indexOf('/auth/register') !== -1 ||
-                   url.indexOf('/auth/forgot-password') !== -1;
+            var u = String(url).toLowerCase();
+            return u.indexOf('/auth/login') !== -1 || 
+                   u.indexOf('/auth/register') !== -1 ||
+                   u.indexOf('/auth/forgot-password') !== -1;
         }
 
         /**

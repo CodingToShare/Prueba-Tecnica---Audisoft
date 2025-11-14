@@ -137,12 +137,38 @@
                 }
             })
 
-            // Default route - redirect to dashboard or login
+            // Default route - robust check for valid JWT before redirecting
             .when('/', {
-                redirectTo: function(routeParams, path, search) {
-                    // Check if user is authenticated
-                    var token = localStorage.getItem('audisoft_token');
-                    return token ? '/dashboard' : '/login';
+                redirectTo: function() {
+                    var tokenKey = 'audisoft_token';
+                    var token = localStorage.getItem(tokenKey);
+
+                    function isValidJwt(t) {
+                        if (!t || typeof t !== 'string' || t.split('.').length !== 3) return false;
+                        try {
+                            var payload = JSON.parse(atob(t.split('.')[1]));
+                            if (!payload || !payload.exp) return false;
+                            var nowMs = Date.now();
+                            var expMs = payload.exp * 1000;
+                            var bufferMs = 300000; // 5 min buffer
+                            return (expMs - bufferMs) > nowMs;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+
+                    if (isValidJwt(token)) {
+                        return '/dashboard';
+                    }
+
+                    // Clear any stale session keys to avoid flicker
+                    try {
+                        localStorage.removeItem(tokenKey);
+                        localStorage.removeItem('audisoft_user');
+                        localStorage.removeItem('audisoft_refresh_token');
+                    } catch (e) {}
+
+                    return '/login';
                 }
             })
 

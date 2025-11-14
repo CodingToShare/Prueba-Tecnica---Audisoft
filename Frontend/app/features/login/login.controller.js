@@ -16,12 +16,14 @@
         // Bindable properties
         vm.credentials = {
             username: '',
-            password: ''
+            password: '',
+            rememberMe: true
         };
         vm.loginForm = {};
         vm.isLoading = false;
         vm.error = null;
         vm.appInfo = configService.getAppInfo();
+        vm.currentYear = new Date().getFullYear();
 
         // Bindable methods
         vm.login = login;
@@ -68,16 +70,16 @@
             vm.isLoading = true;
             vm.error = null;
 
-            authService.login(vm.credentials.username, vm.credentials.password)
-                .then(function(result) {
+            authService.login({ userName: vm.credentials.username, password: vm.credentials.password, rememberMe: vm.credentials.rememberMe })
+                .then(function(user) {
                     vm.isLoading = false;
                     
                     // Show success message briefly
-                    var userName = result.user.nombre || result.user.username || 'Usuario';
+                    var userName = (user && (user.nombre || user.userName || user.username || user.email)) || 'Usuario';
                     showSuccessMessage('Bienvenido, ' + userName);
                     
                     // Redirect based on user role
-                    redirectBasedOnRole(result.user);
+                    redirectBasedOnRole(user);
                 })
                 .catch(function(error) {
                     vm.isLoading = false;
@@ -143,15 +145,15 @@
          */
         function redirectBasedOnRole(user) {
             // Check for stored redirect URL first
-            var storedRedirect = localStorage.getItem('redirectAfterLogin');
-            if (storedRedirect && storedRedirect !== '#!/login') {
-                localStorage.removeItem('redirectAfterLogin');
-                $location.url(storedRedirect.substring(3));
+            var redirectUrl = (typeof authService.getRedirectUrl === 'function') ? authService.getRedirectUrl() : null;
+            if (redirectUrl && redirectUrl !== '#!/login') {
+                $location.url(redirectUrl.substring(3));
                 return;
             }
             
             // Redirect based on user role
-            var userRole = authService.getRole();
+            var roles = (typeof authService.getUserRoles === 'function') ? authService.getUserRoles() : [];
+            var userRole = roles && roles.length ? roles[0] : 'Estudiante';
             
             switch (userRole) {
                 case 'Admin':
