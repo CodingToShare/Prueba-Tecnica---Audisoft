@@ -359,21 +359,25 @@ app.MapControllers();
 Log.Information("AudiSoft School API iniciada correctamente en {Environment}", 
     app.Environment.EnvironmentName);
 
-// Seed data in development
-if (app.Environment.IsDevelopment())
+// Seed data in development and production
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AudiSoftSchoolDbContext>();
     
     try
     {
+        Log.Information("Ejecutando migraciones de base de datos...");
+        await context.Database.MigrateAsync();
+        Log.Information("Migraciones completadas");
+
         Log.Information("Ejecutando seeder de datos iniciales...");
         await DataSeeder.SeedAsync(context);
         Log.Information("Seeder ejecutado correctamente");
     }
     catch (Exception ex)
     {
-        Log.Warning(ex, "Error al ejecutar seeder de datos iniciales");
+        Log.Warning(ex, "Error al ejecutar migraciones o seeder de datos iniciales");
     }
 }
 
