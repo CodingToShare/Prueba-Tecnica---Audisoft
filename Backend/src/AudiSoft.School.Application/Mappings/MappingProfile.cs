@@ -22,5 +22,19 @@ public class MappingProfile : Profile
         // Nota mappings
         CreateMap<Nota, NotaDto>().ReverseMap();
         CreateMap<CreateNotaDto, Nota>();
+
+        // Usuario mappings
+        CreateMap<Usuario, UsuarioDto>()
+            .ForMember(dest => dest.NombreProfesor, opt => opt.MapFrom(src => src.Profesor != null ? src.Profesor.Nombre : null))
+            .ForMember(dest => dest.NombreEstudiante, opt => opt.MapFrom(src => src.Estudiante != null ? src.Estudiante.Nombre : null))
+            .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.UsuarioRoles.Where(ur => !ur.IsDeleted).Select(ur => ur.Rol.Nombre).ToList()));
+        CreateMap<CreateUsuarioDto, Usuario>()
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Se manejará en el servicio
+            .ForMember(dest => dest.UsuarioRoles, opt => opt.Ignore()); // Se manejará en el servicio
+
+        // Rol mappings
+        CreateMap<Rol, RolDto>()
+            .ForMember(dest => dest.UsuarioCount, opt => opt.MapFrom(src => src.UsuarioRoles.Count(ur => !ur.IsDeleted)));
+        CreateMap<CreateRolDto, Rol>();
     }
 }

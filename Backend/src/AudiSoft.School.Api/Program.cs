@@ -83,11 +83,16 @@ builder.Services.AddDbContext<AudiSoftSchoolDbContext>(options =>
 builder.Services.AddScoped<IEstudianteRepository, EstudianteRepository>();
 builder.Services.AddScoped<IProfesorRepository, ProfesorRepository>();
 builder.Services.AddScoped<INotaRepository, NotaRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IRolRepository, RolRepository>();
+builder.Services.AddScoped<IUsuarioRolRepository, UsuarioRolRepository>();
 
 // Register Application Services
 builder.Services.AddScoped<EstudianteService>();
 builder.Services.AddScoped<ProfesorService>();
 builder.Services.AddScoped<NotaService>();
+builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<RolService>();
 
 // Ensure ILogger is available for services
 builder.Services.AddLogging();
@@ -133,6 +138,24 @@ app.MapControllers();
 // Log application startup completion
 Log.Information("AudiSoft School API iniciada correctamente en {Environment}", 
     app.Environment.EnvironmentName);
+
+// Seed data in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AudiSoftSchoolDbContext>();
+    
+    try
+    {
+        Log.Information("Ejecutando seeder de datos iniciales...");
+        await DataSeeder.SeedAsync(context);
+        Log.Information("Seeder ejecutado correctamente");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Error al ejecutar seeder de datos iniciales");
+    }
+}
 
 try
 {
