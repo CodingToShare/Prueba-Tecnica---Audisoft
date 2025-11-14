@@ -62,14 +62,19 @@
             var authService = $injector.get('authService');
             var $http = $injector.get('$http');
             
+            // Only handle API requests
+            if (!isApiRequest(rejection.config.url)) {
+                return $q.reject(rejection);
+            }
+            
             // Handle 401 Unauthorized responses
-            if (rejection.status === 401 && isApiRequest(rejection.config.url)) {
-                $log.debug('AuthInterceptor: 401 response received for', rejection.config.url);
+            if (rejection.status === 401) {
+                $log.warn('AuthInterceptor: 401 Unauthorized - Token expired/invalid for', rejection.config.url);
                 
-                // Skip token refresh for login/auth endpoints
+                // Skip token refresh for login/auth endpoints to avoid infinite loops
                 if (isAuthEndpoint(rejection.config.url)) {
                     $log.debug('AuthInterceptor: Skipping token refresh for auth endpoint');
-                    return $q.reject(rejection);
+                    return handleAuthenticationFailure(authService);
                 }
                 
                 // If we're already refreshing token, queue this request
@@ -79,6 +84,11 @@
                 
                 // Attempt token refresh if refresh token is available
                 return attemptTokenRefresh(rejection, authService, $http);
+            }
+            
+            // Handle 403 Forbidden responses
+            if (rejection.status === 403) {
+                return handleForbiddenError(rejection, authService);
             }
             
             // Handle other response errors
@@ -99,7 +109,7 @@
         function attemptTokenRefresh(originalRejection, authService, $http) {
             isRefreshingToken = true;
             
-            return authService.refreshAccessToken()
+            return authService.refreshToken()
                 .then(function(newToken) {
                     $log.info('AuthInterceptor: Token refreshed successfully');
                     
@@ -213,6 +223,64 @@
             return url.indexOf('/auth/login') !== -1 || 
                    url.indexOf('/auth/register') !== -1 ||
                    url.indexOf('/auth/forgot-password') !== -1;
+        }
+
+        /**
+         * Handle 403 Forbidden errors - Insufficient permissions
+         * @param {Object} rejection - HTTP response error
+         * @param {Object} authService - Authentication service
+         * @returns {Promise} Rejected promise after handling
+         */
+        function handleForbiddenError(rejection, authService) {
+            $log.warn('AuthInterceptor: 403 Forbidden - Insufficient permissions for', rejection.config.url);
+            
+            // Show user-friendly message
+            showErrorMessage('No tienes permisos para realizar esta acción.');
+            
+            // If user is authenticated but lacks permissions, redirect to unauthorized page
+            if (authService.isAuthenticated()) {
+                var $location = $injector.get('$location');
+                $location.path('/unauthorized');
+            } else {
+                // User is not authenticated, redirect to login
+                return handleAuthenticationFailure(authService);
+            }
+            
+            return $q.reject(rejection);
+        }
+
+        /**
+         * Handle authentication failure by clearing session and redirecting to login
+         * @param {Object} authService - Authentication service
+         * @returns {Promise} Rejected promise
+         */
+        function handleAuthenticationFailure(authService) {
+            $log.info('AuthInterceptor: Handling authentication failure - redirecting to login');
+            
+            // Show user-friendly message
+            showErrorMessage('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+            
+            // Clear user session and redirect to login
+            authService.logout().finally(function() {
+                authService.redirectToLogin();
+            });
+            
+            return $q.reject({ 
+                message: 'Authentication failed',
+                redirectToLogin: true 
+            });
+        }
+
+        /**
+         * Show error message to user
+         * @param {string} message - Error message to display
+         */
+        function showErrorMessage(message) {
+            // For now, use console warn. In a real app, this would be a toast/notification service
+            console.warn('AuthInterceptor Error:', message);
+            
+            // TODO: Integrate with toast notification service when available
+            // Example: notificationService.showError(message);
         }
 
         /**

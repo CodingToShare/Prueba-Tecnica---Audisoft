@@ -77,10 +77,10 @@
         }
 
         /**
-         * Authenticate user with username and password
-         * @param {string} username - User's username or email
-         * @param {string} password - User's password
-         * @returns {Promise} Promise that resolves with user data
+         * Authenticate user with username/email and password (backend: POST /api/v1/Auth/login)
+         * @param {string} username - UserName or Email
+         * @param {string} password - Password
+         * @returns {Promise} Resolves with { user, token }
          */
         function login(username, password) {
             if (!username || !password) {
@@ -89,41 +89,44 @@
 
             $log.debug('AuthService: Attempting login for user:', username);
 
+            // Backend expects PascalCase properties serialized to camelCase JSON by default
             var loginData = {
-                username: username,
-                password: password
+                userName: username,
+                password: password,
+                rememberMe: false
             };
 
             return apiService.post('auth/login', loginData)
                 .then(function(response) {
-                    var userData = response.data;
-                    
-                    // Validate response structure
-                    if (!userData.token || !userData.user) {
+                    var data = response.data || {};
+
+                    // Expected shape from backend:
+                    // { accessToken, tokenType, expiresIn, expiresAt, user: { id, userName, email, roles, ... } }
+                    if (!data.accessToken || !data.user) {
                         throw new Error('Invalid login response format');
                     }
 
-                    // Save authentication data
-                    saveSession(userData.token, userData.refreshToken, userData.user);
-                    
+                    // Save authentication data (no refresh token in current backend)
+                    saveSession(data.accessToken, null, data.user);
+
                     // Update current state
-                    currentUser = userData.user;
+                    currentUser = data.user;
                     isLoggedIn = true;
 
                     $log.info('AuthService: Login successful for user:', username);
-                    
+
                     // Notify listeners
                     notifyAuthStateChange(true, currentUser);
 
                     return {
                         user: currentUser,
-                        token: userData.token,
+                        token: data.accessToken,
                         success: true
                     };
                 })
                 .catch(function(error) {
                     $log.error('AuthService: Login failed:', error);
-                    
+
                     var errorMessage = 'Login failed';
                     if (error.status === 401) {
                         errorMessage = 'Invalid username or password';
@@ -133,9 +136,9 @@
                         errorMessage = error.data.message;
                     }
 
-                    return $q.reject({ 
+                    return $q.reject({
                         message: errorMessage,
-                        status: error.status 
+                        status: error.status
                     });
                 });
         }
@@ -180,41 +183,8 @@
          * @returns {Promise} Promise that resolves with new token
          */
         function refreshToken() {
-            var refreshToken = localStorage.getItem(authConfig.refreshTokenKey);
-            
-            if (!refreshToken) {
-                return $q.reject({ message: 'No refresh token available' });
-            }
-
-            $log.debug('AuthService: Refreshing token');
-
-            return apiService.post('auth/refresh', { refreshToken: refreshToken })
-                .then(function(response) {
-                    var tokenData = response.data;
-                    
-                    // Update stored token
-                    localStorage.setItem(authConfig.tokenKey, tokenData.token);
-                    
-                    if (tokenData.refreshToken) {
-                        localStorage.setItem(authConfig.refreshTokenKey, tokenData.refreshToken);
-                    }
-
-                    $log.debug('AuthService: Token refreshed successfully');
-
-                    return tokenData.token;
-                })
-                .catch(function(error) {
-                    $log.error('AuthService: Token refresh failed:', error);
-                    
-                    // Clear session on refresh failure
-                    clearSession();
-                    currentUser = null;
-                    isLoggedIn = false;
-                    
-                    notifyAuthStateChange(false, null);
-
-                    return $q.reject(error);
-                });
+            // Backend does not expose a refresh endpoint yet. Force re-login.
+            return $q.reject({ message: 'Token refresh not supported' });
         }
 
         /**
@@ -246,12 +216,11 @@
          * @returns {string|null} Primary role or null
          */
         function getRole() {
-            if (!currentUser || !currentUser.role) {
+            if (!currentUser || !currentUser.roles) {
                 return null;
             }
-            
-            // Return primary role (first role if multiple)
-            return Array.isArray(currentUser.role) ? currentUser.role[0] : currentUser.role;
+            // Return primary role (first role)
+            return Array.isArray(currentUser.roles) ? currentUser.roles[0] : currentUser.roles;
         }
 
         /**
@@ -259,11 +228,10 @@
          * @returns {Array} Array of roles
          */
         function getRoles() {
-            if (!currentUser || !currentUser.role) {
+            if (!currentUser || !currentUser.roles) {
                 return [];
             }
-            
-            return Array.isArray(currentUser.role) ? currentUser.role : [currentUser.role];
+            return Array.isArray(currentUser.roles) ? currentUser.roles : [currentUser.roles];
         }
 
         /**
@@ -380,7 +348,7 @@
                     // Check if session is still valid
                     if (!isSessionExpired()) {
                         isLoggedIn = true;
-                        $log.debug('AuthService: Session loaded for user:', currentUser.username);
+                        $log.debug('AuthService: Session loaded for user:', currentUser.userName || currentUser.username);
                     } else {
                         clearSession();
                         $log.debug('AuthService: Expired session cleared');

@@ -25,6 +25,7 @@
         // Bindable methods  
         vm.testLogin = testLogin;
         vm.testLogout = testLogout;
+        vm.testAuthenticatedRequest = testAuthenticatedRequest;
 
         // Bindable methods
         vm.canViewStudents = canViewStudents;
@@ -130,14 +131,14 @@
         }
 
         function testLogin() {
-            // Mock login for testing (will fail due to no backend auth endpoint yet)
-            authService.login('admin@test.com', 'admin123')
+            // Uses seeded development credentials from backend seeder
+            authService.login('admin', 'Admin@123456')
                 .then(function(result) {
-                    vm.authInfo.loginTest = 'Success: ' + result.user.username;
+                    vm.authInfo.loginTest = 'Success: ' + (result.user.userName || result.user.username);
                     loadAuthInfo();
                 })
                 .catch(function(error) {
-                    vm.authInfo.loginTest = 'Failed: ' + error.message;
+                    vm.authInfo.loginTest = 'Failed: ' + (error && error.message ? error.message : 'Unknown error');
                 });
         }
 
@@ -149,6 +150,23 @@
                 })
                 .catch(function(error) {
                     vm.authInfo.logoutTest = 'Failed: ' + error.message;
+                });
+        }
+
+        function testAuthenticatedRequest() {
+            // Test that interceptor adds Authorization header automatically
+            apiService.get('estudiantes')
+                .then(function(response) {
+                    vm.authInfo.interceptorTest = 'Success: Request with auto-token injection';
+                })
+                .catch(function(error) {
+                    if (error.status === 401) {
+                        vm.authInfo.interceptorTest = 'Expected 401: Interceptor working, needs auth';
+                    } else if (error.status === 0) {
+                        vm.authInfo.interceptorTest = 'Connection issue: Backend not accessible';
+                    } else {
+                        vm.authInfo.interceptorTest = 'Status ' + error.status + ': Interceptor functioning';
+                    }
                 });
         }
 

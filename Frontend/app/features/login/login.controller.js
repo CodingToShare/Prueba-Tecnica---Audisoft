@@ -15,7 +15,7 @@
 
         // Bindable properties
         vm.credentials = {
-            email: '',
+            username: '',
             password: ''
         };
         vm.loginForm = {};
@@ -36,18 +36,19 @@
         function activate() {
             // Redirect if already authenticated
             if (authService.isAuthenticated()) {
-                redirectAfterLogin();
+                var currentUser = authService.getCurrentUser();
+                redirectBasedOnRole(currentUser);
                 return;
             }
 
             // Clear any existing error state
             clearError();
             
-            // Focus on email field
+            // Focus on username field
             setTimeout(function() {
-                var emailField = document.getElementById('email');
-                if (emailField) {
-                    emailField.focus();
+                var usernameField = document.getElementById('username');
+                if (usernameField) {
+                    usernameField.focus();
                 }
             }, 100);
         }
@@ -67,15 +68,16 @@
             vm.isLoading = true;
             vm.error = null;
 
-            authService.login(vm.credentials)
-                .then(function(user) {
+            authService.login(vm.credentials.username, vm.credentials.password)
+                .then(function(result) {
                     vm.isLoading = false;
                     
                     // Show success message briefly
-                    showSuccessMessage('Bienvenido, ' + user.nombre || user.email);
+                    var userName = result.user.nombre || result.user.username || 'Usuario';
+                    showSuccessMessage('Bienvenido, ' + userName);
                     
-                    // Redirect after successful login
-                    redirectAfterLogin();
+                    // Redirect based on user role
+                    redirectBasedOnRole(result.user);
                 })
                 .catch(function(error) {
                     vm.isLoading = false;
@@ -84,13 +86,13 @@
                         type: error.type || 'auth_error'
                     };
                     
-                    // Focus back to email if validation error
-                    if (error.type === 'validation') {
+                    // Focus back to username if validation error
+                    if (error.status === 401) {
                         setTimeout(function() {
-                            var emailField = document.getElementById('email');
-                            if (emailField) {
-                                emailField.focus();
-                                emailField.select();
+                            var usernameField = document.getElementById('username');
+                            if (usernameField) {
+                                usernameField.focus();
+                                usernameField.select();
                             }
                         }, 100);
                     }
@@ -136,19 +138,33 @@
         }
 
         /**
-         * Redirect user after successful login
+         * Redirect user based on their role after successful login
+         * @param {Object} user - User object with role information
          */
-        function redirectAfterLogin() {
-            var redirectUrl = authService.getRedirectUrl();
+        function redirectBasedOnRole(user) {
+            // Check for stored redirect URL first
+            var storedRedirect = localStorage.getItem('redirectAfterLogin');
+            if (storedRedirect && storedRedirect !== '#!/login') {
+                localStorage.removeItem('redirectAfterLogin');
+                $location.url(storedRedirect.substring(3));
+                return;
+            }
             
-            // Clear redirect URL
-            localStorage.removeItem('redirect_url');
+            // Redirect based on user role
+            var userRole = authService.getRole();
             
-            // Navigate to target URL
-            if (redirectUrl.startsWith('#!/')) {
-                $location.url(redirectUrl.substring(3));
-            } else {
-                $location.path('/dashboard');
+            switch (userRole) {
+                case 'Admin':
+                    $location.path('/dashboard');
+                    break;
+                case 'Profesor':
+                    $location.path('/dashboard'); // Profesores también van al dashboard
+                    break;
+                case 'Estudiante':
+                    $location.path('/dashboard'); // Por ahora todos van al dashboard
+                    break;
+                default:
+                    $location.path('/dashboard');
             }
         }
 

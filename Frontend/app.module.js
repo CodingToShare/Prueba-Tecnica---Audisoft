@@ -26,8 +26,8 @@
         // Configure HTTP provider
         $httpProvider.defaults.headers.common['Content-Type'] = 'application/json';
         
-        // Will add auth interceptor in META 5
-        // $httpProvider.interceptors.push('authInterceptor');
+        // Add auth interceptor for automatic JWT token injection and 401/403 handling
+        $httpProvider.interceptors.push('authInterceptor');
     }
 
     // Run function - executes after module bootstrap
