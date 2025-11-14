@@ -1,0 +1,86 @@
+name: Deploy Backend to Azure
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH: 'Backend/src/AudiSoft.School.Api'
+  SOLUTION_PATH: 'Backend/AudiSoft.School.sln'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build
+        run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration Release --no-restore
+
+      - name: Test (opcional)
+        run: dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: Publish
+        run: dotnet publish "${{ env.PROJECT_PATH }}" --configuration Release --output ./publish
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: ./publish
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: ./publish
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_BACKEND_APP_NAME }}
+          package: ./publish
+          resource-group: ${{ secrets.AZURE_BACKEND_RESOURCE_GROUP }}
+
+      - name: Logout from Azure
+        run: az logout
+        if: always()
+
+      - name: Notify Deployment Success
+        if: success()
+        run: echo "✅ Backend deployed successfully to ${{ secrets.AZURE_BACKEND_APP_NAME }}"
+
+      - name: Notify Deployment Failure
+        if: failure()
+        run: echo "❌ Backend deployment failed"

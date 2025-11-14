@@ -1,0 +1,166 @@
+name: Deploy Frontend to Azure
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  FRONTEND_PATH: 'Frontend'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Create .env.production in Frontend
+        working-directory: ${{ env.FRONTEND_PATH }}
+        run: |
+          cat > .env << 'EOF'
+          # Production Environment for AudiSoft Frontend
+          API_BASE_URL_PRODUCTION=${{ secrets.FRONTEND_API_BASE_URL }}
+          API_TIMEOUT=30000
+          API_RETRY_ATTEMPTS=3
+          API_RETRY_DELAY=1000
+          AUTH_TOKEN_KEY=audisoft_token
+          AUTH_USER_KEY=audisoft_user
+          AUTH_REFRESH_TOKEN_KEY=audisoft_refresh_token
+          AUTH_TOKEN_EXPIRY_BUFFER=300000
+          PAGINATION_DEFAULT_PAGE_SIZE=20
+          PAGINATION_MAX_PAGE_SIZE=100
+          PAGINATION_PAGE_SIZES=10,20,50,100
+          UI_TOAST_DURATION=5000
+          UI_LOADING_DELAY=300
+          UI_DEBOUNCE_DELAY=300
+          APP_NAME=AudiSoft School
+          APP_VERSION=1.0.0
+          APP_DESCRIPTION=Sistema de Gestión Escolar
+          DEBUG_MODE=false
+          LOG_LEVEL=info
+          EOF
+
+      - name: Install dependencies
+        working-directory: ${{ env.FRONTEND_PATH }}
+        run: npm install
+
+      - name: Build (prepare static files)
+        working-directory: ${{ env.FRONTEND_PATH }}
+        run: |
+          mkdir -p public
+          cp index.html public/
+          cp -r app public/
+          cp -r assets public/
+          cp .env public/.env
+
+      - name: Create Express server for serving SPA
+        working-directory: ${{ env.FRONTEND_PATH }}
+        run: |
+          cat > server.js << 'EOF'
+          const express = require('express');
+          const path = require('path');
+          require('dotenv').config();
+
+          const app = express();
+
+          // Middleware para servir archivos estáticos
+          app.use(express.static(path.join(__dirname, 'public')));
+
+          // Health check endpoint
+          app.get('/health', (req, res) => {
+            res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+          });
+
+          // Ruta catch-all para SPA (redirigir a index.html)
+          app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+          });
+
+          const PORT = process.env.PORT || 8080;
+          app.listen(PORT, () => {
+            console.log(`🚀 AudiSoft Frontend running on port ${PORT}`);
+            console.log(`📡 API: ${process.env.API_BASE_URL_PRODUCTION}`);
+          });
+          EOF
+
+      - name: Create package.json if not exists
+        working-directory: ${{ env.FRONTEND_PATH }}
+        run: |
+          if [ ! -f "package.json" ] || ! grep -q '"start"' package.json; then
+            cat > package.json << 'EOF'
+          {
+            "name": "audisoft-frontend",
+            "version": "1.0.0",
+            "description": "AudiSoft School - Frontend SPA",
+            "main": "server.js",
+            "scripts": {
+              "start": "node server.js",
+              "dev": "node server.js"
+            },
+            "dependencies": {
+              "express": "^4.18.2",
+              "dotenv": "^16.0.3"
+            },
+            "engines": {
+              "node": "20.x"
+            }
+          }
+          EOF
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ${{ env.FRONTEND_PATH }}
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./frontend
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_FRONTEND_APP_NAME }}
+          package: ./frontend
+          resource-group: ${{ secrets.AZURE_FRONTEND_RESOURCE_GROUP }}
+
+      - name: Logout from Azure
+        run: az logout
+        if: always()
+
+      - name: Notify Deployment Success
+        if: success()
+        run: echo "✅ Frontend deployed successfully to ${{ secrets.AZURE_FRONTEND_APP_NAME }}"
+
+      - name: Notify Deployment Failure
+        if: failure()
+        run: echo "❌ Frontend deployment failed"
