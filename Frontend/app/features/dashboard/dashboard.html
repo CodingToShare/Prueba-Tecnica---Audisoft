@@ -1,0 +1,185 @@
+<!-- Dashboard - Main landing page for authenticated users -->
+<div class="container-fluid fade-in">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Dashboard</h1>
+                    <p class="text-muted mb-0">Bienvenido al Sistema de Gestión Escolar</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Último acceso: {{dashboard.lastLogin | date:'dd/MM/yyyy HH:mm'}}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <!-- Total Estudiantes -->
+        <div class="col-xl-3 col-md-6 mb-3" ng-if="dashboard.canViewStudents()">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{dashboard.stats.totalEstudiantes}}</h4>
+                            <p class="card-text mb-0">Estudiantes</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-primary bg-opacity-75">
+                    <a href="#!/estudiantes" class="text-white text-decoration-none">
+                        <small>Ver todos <i class="bi bi-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Profesores -->
+        <div class="col-xl-3 col-md-6 mb-3" ng-if="dashboard.canViewProfessors()">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{dashboard.stats.totalProfesores}}</h4>
+                            <p class="card-text mb-0">Profesores</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-person-workspace" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-success bg-opacity-75">
+                    <a href="#!/profesores" class="text-white text-decoration-none">
+                        <small>Ver todos <i class="bi bi-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Notas -->
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{dashboard.stats.totalNotas}}</h4>
+                            <p class="card-text mb-0">Notas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-journal-text" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-info bg-opacity-75">
+                    <a href="#!/notas" class="text-white text-decoration-none">
+                        <small>Ver todas <i class="bi bi-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promedio General -->
+        <div class="col-xl-3 col-md-6 mb-3" ng-if="dashboard.stats.promedioGeneral">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{dashboard.stats.promedioGeneral | number:1}}</h4>
+                            <p class="card-text mb-0">Promedio</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-warning bg-opacity-75">
+                    <small>Promedio general del sistema</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning-fill me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Create Student -->
+                        <div class="col-lg-3 col-md-6 mb-3" ng-if="dashboard.canCreateStudent()">
+                            <a href="#!/estudiantes/new" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="bi bi-person-plus-fill mb-2" style="font-size: 1.5rem;"></i>
+                                <span>Nuevo Estudiante</span>
+                            </a>
+                        </div>
+
+                        <!-- Create Professor -->
+                        <div class="col-lg-3 col-md-6 mb-3" ng-if="dashboard.canCreateProfessor()">
+                            <a href="#!/profesores/new" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="bi bi-person-workspace mb-2" style="font-size: 1.5rem;"></i>
+                                <span>Nuevo Profesor</span>
+                            </a>
+                        </div>
+
+                        <!-- Create Note -->
+                        <div class="col-lg-3 col-md-6 mb-3" ng-if="dashboard.canCreateNote()">
+                            <a href="#!/notas/new" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="bi bi-journal-plus mb-2" style="font-size: 1.5rem;"></i>
+                                <span>Nueva Nota</span>
+                            </a>
+                        </div>
+
+                        <!-- View Reports -->
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <button class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3" disabled>
+                                <i class="bi bi-graph-up mb-2" style="font-size: 1.5rem;"></i>
+                                <span>Reportes</span>
+                                <small class="text-muted">(Próximamente)</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row" ng-if="dashboard.recentActivity.length > 0">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Actividad Reciente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-start" 
+                             ng-repeat="activity in dashboard.recentActivity track by $index">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{activity.title}}</div>
+                                <small class="text-muted">{{activity.description}}</small>
+                            </div>
+                            <small class="text-muted">{{activity.date | date:'dd/MM HH:mm'}}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

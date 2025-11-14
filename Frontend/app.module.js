@@ -31,12 +31,20 @@
     }
 
     // Run function - executes after module bootstrap
-    runApp.$inject = ['$rootScope', '$location'];
-    function runApp($rootScope, $location) {
-        // Global event listeners
+    runApp.$inject = ['$rootScope', '$location', 'routeAuthService'];
+    function runApp($rootScope, $location, routeAuthService) {
+        // Global event listeners for route protection
         $rootScope.$on('$routeChangeStart', function(event, next, current) {
-            // Will add authentication checks in META 4
             console.log('Route change started:', next.originalPath);
+            
+            // Check route access if route has access configuration
+            if (next && next.access) {
+                routeAuthService.checkRouteAccess(next.access)
+                    .catch(function(error) {
+                        console.log('Route access denied:', error);
+                        event.preventDefault();
+                    });
+            }
         });
 
         $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
@@ -59,8 +67,8 @@
     }
 
     // Main Controller for navigation and global state
-    MainController.$inject = ['$scope', '$location'];
-    function MainController($scope, $location) {
+    MainController.$inject = ['$scope', '$location', 'routeAuthService'];
+    function MainController($scope, $location, routeAuthService) {
         var vm = this;
 
         // Bindable properties and methods
@@ -79,15 +87,13 @@
         }
 
         function isAuthenticated() {
-            // Will implement with authService in META 4
-            // For now, return false to show login state
-            return false;
+            // Delegate to routeAuthService
+            return routeAuthService.isAuthenticated();
         }
 
         function getCurrentUser() {
-            // Will implement with authService in META 4
-            // Return mock user for development
-            return {
+            // Delegate to routeAuthService
+            return routeAuthService.getCurrentUser() || {
                 userName: 'Usuario',
                 roles: ['Guest']
             };
@@ -96,6 +102,9 @@
         function logout() {
             // Will implement with authService in META 4
             console.log('Logout clicked');
+            // Clear localStorage for now
+            localStorage.removeItem('audisoft_token');
+            localStorage.removeItem('audisoft_user');
             $location.path('/login');
         }
     }

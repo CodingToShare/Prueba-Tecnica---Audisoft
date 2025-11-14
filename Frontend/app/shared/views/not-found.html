@@ -1,0 +1,51 @@
+<!-- Page Not Found -->
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm text-center">
+                <div class="card-body p-5">
+                    <!-- 404 Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                    </div>
+
+                    <!-- Error Message -->
+                    <h1 class="display-1 text-primary">404</h1>
+                    <h2 class="h4 text-dark mb-3">Página No Encontrada</h2>
+                    <p class="text-muted mb-4">
+                        La página que estás buscando no existe o ha sido movida. 
+                        Verifica la URL o regresa al dashboard.
+                    </p>
+
+                    <!-- Navigation Info -->
+                    <div class="alert alert-light" role="alert">
+                        <small class="text-muted">
+                            <strong>URL solicitada:</strong> {{$location.path()}}
+                        </small>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="#!/dashboard" class="btn btn-primary">
+                            <i class="bi bi-house-fill me-2"></i>
+                            Ir al Dashboard
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Volver Atrás
+                        </button>
+                    </div>
+
+                    <!-- Help Links -->
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <a href="#!/dashboard" class="text-decoration-none">Dashboard</a> |
+                            <a href="#!/estudiantes" class="text-decoration-none">Estudiantes</a> |
+                            <a href="#!/notas" class="text-decoration-none">Notas</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

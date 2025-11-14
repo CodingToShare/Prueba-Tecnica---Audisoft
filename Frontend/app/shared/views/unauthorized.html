@@ -1,0 +1,49 @@
+<!-- Unauthorized Access Page -->
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm text-center">
+                <div class="card-body p-5">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-shield-exclamation text-warning" style="font-size: 4rem;"></i>
+                    </div>
+
+                    <!-- Error Message -->
+                    <h2 class="h4 text-danger mb-3">Acceso Denegado</h2>
+                    <p class="text-muted mb-4">
+                        No tienes permisos suficientes para acceder a esta página. 
+                        Contacta al administrador si crees que esto es un error.
+                    </p>
+
+                    <!-- User Info -->
+                    <div class="alert alert-info" ng-if="main.isAuthenticated()">
+                        <small>
+                            <strong>Usuario actual:</strong> {{main.getCurrentUser().userName}}<br>
+                            <strong>Roles:</strong> {{main.getCurrentUser().roles.join(', ')}}
+                        </small>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="#!/dashboard" class="btn btn-primary">
+                            <i class="bi bi-house-fill me-2"></i>
+                            Ir al Dashboard
+                        </a>
+                        <a href="#!/login" class="btn btn-outline-secondary" ng-if="!main.isAuthenticated()">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Iniciar Sesión
+                        </a>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            Si necesitas acceso a esta funcionalidad, contacta al administrador del sistema.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
