@@ -6,18 +6,18 @@
 -- =============================================
 
 -- Crear la base de datos si no existe
-IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchoolDb')
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchool')
 BEGIN
-    CREATE DATABASE AudiSoftSchoolDb;
-    PRINT 'Base de datos AudiSoftSchoolDb creada exitosamente.';
+    CREATE DATABASE AudiSoftSchool;
+    PRINT 'Base de datos AudiSoftSchool creada exitosamente.';
 END
 ELSE
 BEGIN
-    PRINT 'Base de datos AudiSoftSchoolDb ya existe.';
+    PRINT 'Base de datos AudiSoftSchool ya existe.';
 END
 GO
 
-USE AudiSoftSchoolDb;
+USE AudiSoftSchool;
 GO
 
 -- =============================================

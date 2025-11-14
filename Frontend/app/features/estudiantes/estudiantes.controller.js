@@ -105,17 +105,21 @@
 
             estudiantesService.getEstudiantes(queryParams)
                 .then(function(result) {
-                    vm.estudiantes = result.data;
-                    vm.totalCount = result.totalCount;
-                    vm.totalPages = Math.ceil(vm.totalCount / vm.pageSize);
+                    // The service returns { data: [...], totalCount: N, page: X, pageSize: Y }
+                    // We need to assign the array from result.data to vm.estudiantes
+                    vm.estudiantes = result.data || [];
+                    vm.totalCount = result.totalCount || 0;
+                    vm.totalPages = vm.totalCount > 0 ? Math.ceil(vm.totalCount / vm.pageSize) : 0;
 
-                    $log.info('EstudiantesController: Loaded', vm.estudiantes.length, 'estudiantes');
+                    $log.info('EstudiantesController: Loaded', vm.estudiantes.length, 'estudiantes of', vm.totalCount, 'total');
                 })
                 .catch(function(error) {
                     vm.error = {
                         message: error && error.message ? error.message : 'Error cargando estudiantes',
                         status: error && error.status ? error.status : null
                     };
+                    vm.estudiantes = [];
+                    vm.totalCount = 0;
                     $log.error('EstudiantesController: Failed to load estudiantes', error);
                 })
                 .finally(function() {
