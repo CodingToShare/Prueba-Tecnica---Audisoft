@@ -1,4 +1,5 @@
 using AudiSoft.School.Application.DTOs;
+using AudiSoft.School.Domain.Entities;
 
 namespace AudiSoft.School.Application.Interfaces;
 
@@ -26,7 +27,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="usuario">Usuario para el cual generar el token</param>
     /// <returns>Token JWT generado</returns>
-    Task<string> GenerateTokenAsync(UsuarioDto usuario);
+    Task<string> GenerateTokenAsync(Usuario usuario);
 
     /// <summary>
     /// Revoca todos los tokens de un usuario (logout)

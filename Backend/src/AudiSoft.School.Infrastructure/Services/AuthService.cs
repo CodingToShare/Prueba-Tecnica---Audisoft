@@ -1,6 +1,7 @@
 using AudiSoft.School.Application.Configuration;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Interfaces;
+using AudiSoft.School.Domain.Entities;
 using AudiSoft.School.Domain.Exceptions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -97,8 +98,8 @@ public class AuthService : IAuthService
             usuario.UpdatedBy = $"Auth:{usuario.UserName}";
             await _usuarioRepository.UpdateAsync(usuario);
 
-            // Generar token
-            var accessToken = await GenerateTokenAsync(_mapper.Map<UsuarioDto>(usuario));
+            // Generar token (pasar el usuario original, no mapeado, para que tenga todos los datos)
+            var accessToken = await GenerateTokenAsync(usuario);
             
             // Calcular expiración
             var expiryTime = DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryMinutes);
@@ -138,7 +139,7 @@ public class AuthService : IAuthService
     /// <summary>
     /// Genera un nuevo token JWT para un usuario
     /// </summary>
-    public async Task<string> GenerateTokenAsync(UsuarioDto usuario)
+    public async Task<string> GenerateTokenAsync(Usuario usuario)
     {
         _logger.LogDebug("Generando token JWT para usuario: {UserId}", usuario.Id);
 
@@ -178,11 +179,13 @@ public class AuthService : IAuthService
             if (usuario.IdProfesor.HasValue)
             {
                 claims.Add(new Claim("idProfesor", usuario.IdProfesor.Value.ToString()));
+                _logger.LogDebug("Agregado claim idProfesor: {IdProfesor} para usuario: {UserId}", usuario.IdProfesor.Value, usuario.Id);
             }
 
             if (usuario.IdEstudiante.HasValue)
             {
                 claims.Add(new Claim("idEstudiante", usuario.IdEstudiante.Value.ToString()));
+                _logger.LogDebug("Agregado claim idEstudiante: {IdEstudiante} para usuario: {UserId}", usuario.IdEstudiante.Value, usuario.Id);
             }
 
             // Crear key y credentials
