@@ -30,12 +30,13 @@ public class ProfesoresController : ControllerBase
 
     /// <summary>
     /// Obtiene todos los profesores.
-    /// Solo Admin puede ver la lista completa de profesores.
+    /// Admin puede ver la lista completa, Profesores pueden ver la lista para dropdowns.
     /// </summary>
     /// <returns>Lista de profesores</returns>
     /// <response code="200">Operación exitosa</response>
     /// <response code="403">Sin permisos para ver profesores</response>
     [HttpGet]
+    [Authorize(Policy = "ProfesorOrAdmin")]  // Override class-level policy for this endpoint
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
