@@ -48,13 +48,57 @@
             
             var params = buildQueryParams(queryParams);
             var url = 'Notas';
+            var page = queryParams ? queryParams.page || 1 : 1;
+            var pageSize = queryParams ? queryParams.pageSize || paginationConfig.defaultPageSize : paginationConfig.defaultPageSize;
 
             return apiService.get(url, params)
                 .then(function(response) {
-                    var result = apiService.processSuccessResponse(response);
+                    $log.debug('NotasService: Full response:', response);
                     
-                    $log.info('NotasService: Fetched ' + (result.totalCount || result.length || 0) + 
-                        ' notas from page ' + (queryParams.page || 1));
+                    // Extract totalCount from X-Total-Count header or from response
+                    var totalCount = 0;
+                    if (response.headers && typeof response.headers === 'object') {
+                        totalCount = response.headers['x-total-count'] || response.headers['X-Total-Count'];
+                        if (totalCount) {
+                            totalCount = parseInt(totalCount, 10);
+                        } else {
+                            totalCount = 0;
+                        }
+                    }
+                    
+                    // The response.data contains the API response directly
+                    var responseData = response.data;
+                    var items = [];
+                    
+                    $log.debug('NotasService: responseData:', responseData);
+                    $log.debug('NotasService: responseData type:', typeof responseData);
+                    $log.debug('NotasService: responseData.items:', responseData ? responseData.items : 'N/A');
+                    
+                    if (responseData && responseData.items) {
+                        // Format 1: Direct PagedResult structure with items array
+                        items = responseData.items;
+                        if (responseData.totalCount && !totalCount) {
+                            totalCount = responseData.totalCount;
+                        }
+                    } else if (Array.isArray(responseData)) {
+                        // Format 2: Direct array
+                        items = responseData;
+                    } else {
+                        $log.warn('NotasService: Unexpected response format:', responseData);
+                    }
+                    
+                    var result = {
+                        data: items || [],
+                        totalCount: totalCount,
+                        page: page,
+                        pageSize: pageSize,
+                        totalPages: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+                        hasPreviousPage: page > 1,
+                        hasNextPage: (page * pageSize) < totalCount,
+                        items: items || []
+                    };
+                    
+                    $log.info('NotasService: Fetched ' + items.length + ' de ' + totalCount + ' notas');
                     
                     return result;
                 })
@@ -97,12 +141,53 @@
             
             var params = buildQueryParams(queryParams);
             var url = 'Notas/profesor/' + idProfesor;
+            var page = queryParams ? queryParams.page || 1 : 1;
+            var pageSize = queryParams ? queryParams.pageSize || paginationConfig.defaultPageSize : paginationConfig.defaultPageSize;
 
             return apiService.get(url, params)
                 .then(function(response) {
-                    var result = apiService.processSuccessResponse(response);
+                    $log.debug('NotasService: Full response:', response);
                     
-                    $log.info('NotasService: Fetched ' + (result.totalCount || result.length || 0) + 
+                    // Extract totalCount from X-Total-Count header or from response
+                    var totalCount = 0;
+                    if (response.headers && typeof response.headers === 'object') {
+                        totalCount = response.headers['x-total-count'] || response.headers['X-Total-Count'];
+                        if (totalCount) {
+                            totalCount = parseInt(totalCount, 10);
+                        } else {
+                            totalCount = 0;
+                        }
+                    }
+                    
+                    // The response.data contains the API response directly
+                    var responseData = response.data;
+                    var items = [];
+                    
+                    if (responseData && responseData.items) {
+                        // Format 1: Direct PagedResult structure with items array
+                        items = responseData.items;
+                        if (responseData.totalCount && !totalCount) {
+                            totalCount = responseData.totalCount;
+                        }
+                    } else if (Array.isArray(responseData)) {
+                        // Format 2: Direct array
+                        items = responseData;
+                    } else {
+                        $log.warn('NotasService: Unexpected response format:', responseData);
+                    }
+                    
+                    var result = {
+                        data: items || [],
+                        totalCount: totalCount,
+                        page: page,
+                        pageSize: pageSize,
+                        totalPages: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+                        hasPreviousPage: page > 1,
+                        hasNextPage: (page * pageSize) < totalCount,
+                        items: items || []
+                    };
+                    
+                    $log.info('NotasService: Fetched ' + items.length + ' de ' + totalCount + 
                         ' notas for profesor ' + idProfesor);
                     
                     return result;
@@ -124,12 +209,53 @@
             
             var params = buildQueryParams(queryParams);
             var url = 'Notas/estudiante/' + idEstudiante;
+            var page = queryParams ? queryParams.page || 1 : 1;
+            var pageSize = queryParams ? queryParams.pageSize || paginationConfig.defaultPageSize : paginationConfig.defaultPageSize;
 
             return apiService.get(url, params)
                 .then(function(response) {
-                    var result = apiService.processSuccessResponse(response);
+                    $log.debug('NotasService: Full response:', response);
                     
-                    $log.info('NotasService: Fetched ' + (result.totalCount || result.length || 0) + 
+                    // Extract totalCount from X-Total-Count header or from response
+                    var totalCount = 0;
+                    if (response.headers && typeof response.headers === 'object') {
+                        totalCount = response.headers['x-total-count'] || response.headers['X-Total-Count'];
+                        if (totalCount) {
+                            totalCount = parseInt(totalCount, 10);
+                        } else {
+                            totalCount = 0;
+                        }
+                    }
+                    
+                    // The response.data contains the API response directly
+                    var responseData = response.data;
+                    var items = [];
+                    
+                    if (responseData && responseData.items) {
+                        // Format 1: Direct PagedResult structure with items array
+                        items = responseData.items;
+                        if (responseData.totalCount && !totalCount) {
+                            totalCount = responseData.totalCount;
+                        }
+                    } else if (Array.isArray(responseData)) {
+                        // Format 2: Direct array
+                        items = responseData;
+                    } else {
+                        $log.warn('NotasService: Unexpected response format:', responseData);
+                    }
+                    
+                    var result = {
+                        data: items || [],
+                        totalCount: totalCount,
+                        page: page,
+                        pageSize: pageSize,
+                        totalPages: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+                        hasPreviousPage: page > 1,
+                        hasNextPage: (page * pageSize) < totalCount,
+                        items: items || []
+                    };
+                    
+                    $log.info('NotasService: Fetched ' + items.length + ' de ' + totalCount + 
                         ' notas for estudiante ' + idEstudiante);
                     
                     return result;
