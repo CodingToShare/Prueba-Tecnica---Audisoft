@@ -6,18 +6,18 @@
 -- =============================================
 
 -- Crear la base de datos si no existe
-IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchool')
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchoolDb')
 BEGIN
-    CREATE DATABASE AudiSoftSchool;
-    PRINT 'Base de datos AudiSoftSchool creada exitosamente.';
+    CREATE DATABASE AudiSoftSchoolDb;
+    PRINT 'Base de datos AudiSoftSchoolDb creada exitosamente.';
 END
 ELSE
 BEGIN
-    PRINT 'Base de datos AudiSoftSchool ya existe.';
+    PRINT 'Base de datos AudiSoftSchoolDb ya existe.';
 END
 GO
 
-USE AudiSoftSchool;
+USE AudiSoftSchoolDb;
 GO
 
 -- =============================================
@@ -187,20 +187,28 @@ BEGIN
         Id INT IDENTITY(1,1) PRIMARY KEY,
         IdUsuario INT NOT NULL,
         IdRol INT NOT NULL,
+        AsignadoEn DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+        ValidoHasta DATETIME2 NULL,
+        AsignadoPor NVARCHAR(100) NULL,
         CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         CreatedBy NVARCHAR(100) NULL,
+        UpdatedAt DATETIME2 NULL,
+        UpdatedBy NVARCHAR(100) NULL,
+        DeletedAt DATETIME2 NULL,
+        IsDeleted BIT NOT NULL DEFAULT 0,
         
         -- Claves foráneas
         CONSTRAINT FK_UsuarioRoles_Usuarios FOREIGN KEY (IdUsuario) REFERENCES Usuarios(Id),
-        CONSTRAINT FK_UsuarioRoles_Roles FOREIGN KEY (IdRol) REFERENCES Roles(Id),
-        
-        -- Evitar duplicados
-        CONSTRAINT UK_UsuarioRoles_Usuario_Rol UNIQUE (IdUsuario, IdRol)
+        CONSTRAINT FK_UsuarioRoles_Roles FOREIGN KEY (IdRol) REFERENCES Roles(Id)
     );
     
     -- Índices
-    CREATE INDEX IX_UsuarioRoles_IdUsuario ON UsuarioRoles(IdUsuario);
-    CREATE INDEX IX_UsuarioRoles_IdRol ON UsuarioRoles(IdRol);
+    CREATE INDEX IX_UsuarioRoles_IdUsuario ON UsuarioRoles(IdUsuario) WHERE IsDeleted = 0;
+    CREATE INDEX IX_UsuarioRoles_IdRol ON UsuarioRoles(IdRol) WHERE IsDeleted = 0;
+    CREATE INDEX IX_UsuarioRoles_IsDeleted ON UsuarioRoles(IsDeleted);
+    
+    -- Índice único compuesto para evitar duplicados (solo registros no eliminados)
+    CREATE UNIQUE INDEX UK_UsuarioRoles_Usuario_Rol ON UsuarioRoles(IdUsuario, IdRol) WHERE IsDeleted = 0;
     
     PRINT 'Tabla UsuarioRoles creada exitosamente.';
 END
