@@ -33,7 +33,8 @@
 
         // Filtering & Sorting
         vm.searchFilters = {
-            nombre: ''
+            nombre: '',
+            grado: ''
         };
         vm.orderBy = 'nombre';
         vm.orderDirection = 'asc';
@@ -122,6 +123,21 @@
                     // The service returns { data: [...], totalCount: N, page: X, pageSize: Y }
                     // We need to assign the array from result.data to vm.estudiantes
                     vm.estudiantes = result.data || [];
+                    
+                    // Extract grado from nombre for each estudiante
+                    // Format: "Nombre Completo - 9°" => grado = "9°"
+                    vm.estudiantes.forEach(function(estudiante) {
+                        var gradoMatch = estudiante.nombre.match(/-\s*(\d+°?)/);
+                        if (gradoMatch && gradoMatch[1]) {
+                            estudiante.grado = gradoMatch[1];
+                            // Extract the pure nombre without grado
+                            estudiante.nombreSinGrado = estudiante.nombre.replace(/-\s*\d+°?/, '').trim();
+                        } else {
+                            estudiante.grado = 'N/A';
+                            estudiante.nombreSinGrado = estudiante.nombre;
+                        }
+                    });
+                    
                     vm.totalCount = result.totalCount || 0;
                     vm.totalPages = vm.totalCount > 0 ? Math.ceil(vm.totalCount / vm.pageSize) : 0;
 
@@ -150,6 +166,19 @@
 
             if (vm.searchFilters.nombre && vm.searchFilters.nombre.trim()) {
                 filters.nombre = vm.searchFilters.nombre.trim();
+            }
+            
+            // If grado filter is selected, add it to the search
+            // Grado is stored in nombre as "- 9°", so we search for the pattern
+            if (vm.searchFilters.grado && vm.searchFilters.grado.trim()) {
+                // If nombre filter is already set, we need to use AND logic
+                // Backend filter syntax: "field:value; field:value" for AND
+                var gradoPattern = '- ' + vm.searchFilters.grado.trim();
+                if (filters.nombre) {
+                    filters.nombre = filters.nombre + ' ' + gradoPattern;
+                } else {
+                    filters.nombre = gradoPattern;
+                }
             }
 
             return filters;

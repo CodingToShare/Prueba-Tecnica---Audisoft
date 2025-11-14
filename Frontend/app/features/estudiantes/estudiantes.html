@@ -61,6 +61,7 @@
                     <label class="form-label">Grado</label>
                     <select class="form-select" 
                             ng-model="vm.searchFilters.grado"
+                            ng-change="vm.applyFilters()"
                             ng-options="grado.value as grado.label for grado in vm.gradosDisponibles">
                         <option value="">-- Todos los grados --</option>
                     </select>
@@ -135,7 +136,7 @@
                     <tr ng-repeat="estudiante in vm.estudiantes">
                         <td><code>{{ estudiante.id }}</code></td>
                         <td>
-                            <strong>{{ estudiante.nombre }}</strong>
+                            <strong>{{ estudiante.nombreSinGrado || estudiante.nombre }}</strong>
                         </td>
                         <td>
                             <span class="badge bg-info">{{ estudiante.grado || 'N/A' }}</span>
