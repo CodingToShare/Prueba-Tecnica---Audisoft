@@ -1,20 +1,27 @@
 -- =============================================
 -- AudiSoft School API - Script de Creación e Inicialización
 -- Descripción: Script completo para crear la base de datos, tablas y datos iniciales
--- Versión: 1.0
+-- Versión: 2.0
 -- Fecha: 2025-11-14
+-- Nota: Este script dropea y recrea la BD completamente para asegurar consistencia
 -- =============================================
 
--- Crear la base de datos si no existe
-IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchoolDb')
+-- Cambiar a master para poder dropear la BD
+USE master;
+GO
+
+-- Dropear la base de datos si existe
+IF EXISTS(SELECT * FROM sys.databases WHERE name = 'AudiSoftSchoolDb')
 BEGIN
-    CREATE DATABASE AudiSoftSchoolDb;
-    PRINT 'Base de datos AudiSoftSchoolDb creada exitosamente.';
+    ALTER DATABASE AudiSoftSchoolDb SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE AudiSoftSchoolDb;
+    PRINT 'Base de datos AudiSoftSchoolDb eliminada.';
 END
-ELSE
-BEGIN
-    PRINT 'Base de datos AudiSoftSchoolDb ya existe.';
-END
+GO
+
+-- Crear la base de datos
+CREATE DATABASE AudiSoftSchoolDb;
+PRINT 'Base de datos AudiSoftSchoolDb creada exitosamente.';
 GO
 
 USE AudiSoftSchoolDb;
@@ -25,197 +32,160 @@ GO
 -- =============================================
 
 -- Tabla Estudiantes
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Estudiantes' AND xtype='U')
-BEGIN
-    CREATE TABLE Estudiantes (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        Nombre NVARCHAR(255) NOT NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0
-    );
-    
-    -- Índices para optimizar consultas
-    CREATE INDEX IX_Estudiantes_Nombre ON Estudiantes(Nombre) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Estudiantes_CreatedAt ON Estudiantes(CreatedAt) WHERE IsDeleted = 0;
-    
-    PRINT 'Tabla Estudiantes creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla Estudiantes ya existe.';
-END
+CREATE TABLE Estudiantes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+
+-- Índices para optimizar consultas
+CREATE INDEX IX_Estudiantes_Nombre ON Estudiantes(Nombre) WHERE IsDeleted = 0;
+CREATE INDEX IX_Estudiantes_CreatedAt ON Estudiantes(CreatedAt) WHERE IsDeleted = 0;
+
+PRINT 'Tabla Estudiantes creada exitosamente.';
 GO
 
 -- Tabla Profesores
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Profesores' AND xtype='U')
-BEGIN
-    CREATE TABLE Profesores (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        Nombre NVARCHAR(255) NOT NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0
-    );
-    
-    -- Índices para optimizar consultas
-    CREATE INDEX IX_Profesores_Nombre ON Profesores(Nombre) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Profesores_CreatedAt ON Profesores(CreatedAt) WHERE IsDeleted = 0;
-    
-    PRINT 'Tabla Profesores creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla Profesores ya existe.';
-END
+CREATE TABLE Profesores (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+
+-- Índices para optimizar consultas
+CREATE INDEX IX_Profesores_Nombre ON Profesores(Nombre) WHERE IsDeleted = 0;
+CREATE INDEX IX_Profesores_CreatedAt ON Profesores(CreatedAt) WHERE IsDeleted = 0;
+
+PRINT 'Tabla Profesores creada exitosamente.';
 GO
 
 -- Tabla Notas
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notas' AND xtype='U')
-BEGIN
-    CREATE TABLE Notas (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        Nombre NVARCHAR(200) NOT NULL,
-        Valor DECIMAL(5,2) NOT NULL CHECK (Valor >= 0 AND Valor <= 100),
-        IdProfesor INT NOT NULL,
-        IdEstudiante INT NOT NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0,
-        
-        -- Claves foráneas
-        CONSTRAINT FK_Notas_Profesores FOREIGN KEY (IdProfesor) REFERENCES Profesores(Id),
-        CONSTRAINT FK_Notas_Estudiantes FOREIGN KEY (IdEstudiante) REFERENCES Estudiantes(Id)
-    );
+CREATE TABLE Notas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(200) NOT NULL,
+    Valor DECIMAL(5,2) NOT NULL CHECK (Valor >= 0 AND Valor <= 100),
+    IdProfesor INT NOT NULL,
+    IdEstudiante INT NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0,
     
-    -- Índices para optimizar consultas
-    CREATE INDEX IX_Notas_IdProfesor ON Notas(IdProfesor) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Notas_IdEstudiante ON Notas(IdEstudiante) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Notas_Valor ON Notas(Valor) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Notas_CreatedAt ON Notas(CreatedAt) WHERE IsDeleted = 0;
-    
-    PRINT 'Tabla Notas creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla Notas ya existe.';
-END
+    -- Claves foráneas
+    CONSTRAINT FK_Notas_Profesores FOREIGN KEY (IdProfesor) REFERENCES Profesores(Id),
+    CONSTRAINT FK_Notas_Estudiantes FOREIGN KEY (IdEstudiante) REFERENCES Estudiantes(Id)
+);
+
+-- Índices para optimizar consultas
+CREATE INDEX IX_Notas_IdProfesor ON Notas(IdProfesor) WHERE IsDeleted = 0;
+CREATE INDEX IX_Notas_IdEstudiante ON Notas(IdEstudiante) WHERE IsDeleted = 0;
+CREATE INDEX IX_Notas_Valor ON Notas(Valor) WHERE IsDeleted = 0;
+CREATE INDEX IX_Notas_CreatedAt ON Notas(CreatedAt) WHERE IsDeleted = 0;
+
+PRINT 'Tabla Notas creada exitosamente.';
 GO
 
 -- Tabla Roles
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Roles' AND xtype='U')
-BEGIN
-    CREATE TABLE Roles (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        Nombre NVARCHAR(50) NOT NULL UNIQUE,
-        Descripcion NVARCHAR(500) NULL,
-        IsActive BIT NOT NULL DEFAULT 1,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0
-    );
-    
-    -- Índices
-    CREATE INDEX IX_Roles_Nombre ON Roles(Nombre) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Roles_IsActive ON Roles(IsActive) WHERE IsDeleted = 0;
-    
-    PRINT 'Tabla Roles creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla Roles ya existe.';
-END
+CREATE TABLE Roles (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(50) NOT NULL UNIQUE,
+    Descripcion NVARCHAR(500) NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+
+-- Índices
+CREATE INDEX IX_Roles_Nombre ON Roles(Nombre) WHERE IsDeleted = 0;
+CREATE INDEX IX_Roles_IsActive ON Roles(IsActive) WHERE IsDeleted = 0;
+
+PRINT 'Tabla Roles creada exitosamente.';
 GO
 
 -- Tabla Usuarios
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Usuarios' AND xtype='U')
-BEGIN
-    CREATE TABLE Usuarios (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        UserName NVARCHAR(100) NOT NULL UNIQUE,
-        PasswordHash NVARCHAR(255) NOT NULL,
-        Email NVARCHAR(255) NULL,
-        IsActive BIT NOT NULL DEFAULT 1,
-        LastLoginAt DATETIME2 NULL,
-        IdProfesor INT NULL,
-        IdEstudiante INT NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0,
-        
-        -- Claves foráneas
-        CONSTRAINT FK_Usuarios_Profesores FOREIGN KEY (IdProfesor) REFERENCES Profesores(Id),
-        CONSTRAINT FK_Usuarios_Estudiantes FOREIGN KEY (IdEstudiante) REFERENCES Estudiantes(Id),
-        
-        -- Restricciones
-        CONSTRAINT CK_Usuarios_ProfesorOrEstudiante CHECK (
-            (IdProfesor IS NOT NULL AND IdEstudiante IS NULL) OR 
-            (IdProfesor IS NULL AND IdEstudiante IS NOT NULL) OR 
-            (IdProfesor IS NULL AND IdEstudiante IS NULL)
-        )
-    );
+CREATE TABLE Usuarios (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserName NVARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    Email NVARCHAR(255) NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    LastLoginAt DATETIME2 NULL,
+    IdProfesor INT NULL,
+    IdEstudiante INT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0,
     
-    -- Índices
-    CREATE INDEX IX_Usuarios_UserName ON Usuarios(UserName) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Usuarios_Email ON Usuarios(Email) WHERE IsDeleted = 0 AND Email IS NOT NULL;
-    CREATE INDEX IX_Usuarios_IsActive ON Usuarios(IsActive) WHERE IsDeleted = 0;
-    CREATE INDEX IX_Usuarios_IdProfesor ON Usuarios(IdProfesor) WHERE IsDeleted = 0 AND IdProfesor IS NOT NULL;
-    CREATE INDEX IX_Usuarios_IdEstudiante ON Usuarios(IdEstudiante) WHERE IsDeleted = 0 AND IdEstudiante IS NOT NULL;
+    -- Claves foráneas
+    CONSTRAINT FK_Usuarios_Profesores FOREIGN KEY (IdProfesor) REFERENCES Profesores(Id),
+    CONSTRAINT FK_Usuarios_Estudiantes FOREIGN KEY (IdEstudiante) REFERENCES Estudiantes(Id),
     
-    PRINT 'Tabla Usuarios creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla Usuarios ya existe.';
-END
+    -- Restricciones
+    CONSTRAINT CK_Usuarios_ProfesorOrEstudiante CHECK (
+        (IdProfesor IS NOT NULL AND IdEstudiante IS NULL) OR 
+        (IdProfesor IS NULL AND IdEstudiante IS NOT NULL) OR 
+        (IdProfesor IS NULL AND IdEstudiante IS NULL)
+    )
+);
+
+-- Índices
+CREATE INDEX IX_Usuarios_UserName ON Usuarios(UserName) WHERE IsDeleted = 0;
+CREATE INDEX IX_Usuarios_Email ON Usuarios(Email) WHERE IsDeleted = 0 AND Email IS NOT NULL;
+CREATE INDEX IX_Usuarios_IsActive ON Usuarios(IsActive) WHERE IsDeleted = 0;
+CREATE INDEX IX_Usuarios_IdProfesor ON Usuarios(IdProfesor) WHERE IsDeleted = 0 AND IdProfesor IS NOT NULL;
+CREATE INDEX IX_Usuarios_IdEstudiante ON Usuarios(IdEstudiante) WHERE IsDeleted = 0 AND IdEstudiante IS NOT NULL;
+
+PRINT 'Tabla Usuarios creada exitosamente.';
 GO
 
 -- Tabla UsuarioRoles (relación many-to-many)
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='UsuarioRoles' AND xtype='U')
-BEGIN
-    CREATE TABLE UsuarioRoles (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        IdUsuario INT NOT NULL,
-        IdRol INT NOT NULL,
-        AsignadoEn DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        ValidoHasta DATETIME2 NULL,
-        AsignadoPor NVARCHAR(100) NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        CreatedBy NVARCHAR(100) NULL,
-        UpdatedAt DATETIME2 NULL,
-        UpdatedBy NVARCHAR(100) NULL,
-        DeletedAt DATETIME2 NULL,
-        IsDeleted BIT NOT NULL DEFAULT 0,
-        
-        -- Claves foráneas
-        CONSTRAINT FK_UsuarioRoles_Usuarios FOREIGN KEY (IdUsuario) REFERENCES Usuarios(Id),
-        CONSTRAINT FK_UsuarioRoles_Roles FOREIGN KEY (IdRol) REFERENCES Roles(Id)
-    );
+CREATE TABLE UsuarioRoles (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    IdUsuario INT NOT NULL,
+    IdRol INT NOT NULL,
+    AsignadoEn DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    ValidoHasta DATETIME2 NULL,
+    AsignadoPor NVARCHAR(100) NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CreatedBy NVARCHAR(100) NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy NVARCHAR(100) NULL,
+    DeletedAt DATETIME2 NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0,
     
-    -- Índices
-    CREATE INDEX IX_UsuarioRoles_IdUsuario ON UsuarioRoles(IdUsuario) WHERE IsDeleted = 0;
-    CREATE INDEX IX_UsuarioRoles_IdRol ON UsuarioRoles(IdRol) WHERE IsDeleted = 0;
-    CREATE INDEX IX_UsuarioRoles_IsDeleted ON UsuarioRoles(IsDeleted);
-    
-    -- Índice único compuesto para evitar duplicados (solo registros no eliminados)
-    CREATE UNIQUE INDEX UK_UsuarioRoles_Usuario_Rol ON UsuarioRoles(IdUsuario, IdRol) WHERE IsDeleted = 0;
-    
-    PRINT 'Tabla UsuarioRoles creada exitosamente.';
-END
-ELSE
-BEGIN
-    PRINT 'Tabla UsuarioRoles ya existe.';
-END
+    -- Claves foráneas
+    CONSTRAINT FK_UsuarioRoles_Usuarios FOREIGN KEY (IdUsuario) REFERENCES Usuarios(Id),
+    CONSTRAINT FK_UsuarioRoles_Roles FOREIGN KEY (IdRol) REFERENCES Roles(Id)
+);
+
+-- Índices
+CREATE INDEX IX_UsuarioRoles_IdUsuario ON UsuarioRoles(IdUsuario) WHERE IsDeleted = 0;
+CREATE INDEX IX_UsuarioRoles_IdRol ON UsuarioRoles(IdRol) WHERE IsDeleted = 0;
+CREATE INDEX IX_UsuarioRoles_IsDeleted ON UsuarioRoles(IsDeleted);
+
+-- Índice único compuesto para evitar duplicados (solo registros no eliminados)
+CREATE UNIQUE INDEX UK_UsuarioRoles_Usuario_Rol ON UsuarioRoles(IdUsuario, IdRol) WHERE IsDeleted = 0;
+
+PRINT 'Tabla UsuarioRoles creada exitosamente.';
 GO
 
 -- =============================================
@@ -225,208 +195,156 @@ GO
 PRINT 'Iniciando inserción de datos iniciales...';
 
 -- Insertar Roles básicos
-IF NOT EXISTS (SELECT 1 FROM Roles WHERE Nombre = 'Admin')
-BEGIN
-    INSERT INTO Roles (Nombre, Descripcion, IsActive, CreatedBy) VALUES
-    ('Admin', 'Administrador del sistema con acceso completo', 1, 'SYSTEM'),
-    ('Profesor', 'Profesor con permisos para gestionar notas de sus estudiantes', 1, 'SYSTEM'),
-    ('Estudiante', 'Estudiante con permisos de solo lectura sobre sus notas', 1, 'SYSTEM');
-    
-    PRINT 'Roles iniciales insertados.';
-END
-ELSE
-BEGIN
-    PRINT 'Roles iniciales ya existen.';
-END
+INSERT INTO Roles (Nombre, Descripcion, IsActive, CreatedBy) VALUES
+('Admin', 'Administrador del sistema con acceso completo', 1, 'SYSTEM'),
+('Profesor', 'Profesor con permisos para gestionar notas de sus estudiantes', 1, 'SYSTEM'),
+('Estudiante', 'Estudiante con permisos de solo lectura sobre sus notas', 1, 'SYSTEM');
+
+PRINT 'Roles iniciales insertados.';
 GO
 
 -- Insertar Profesores de ejemplo
-IF NOT EXISTS (SELECT 1 FROM Profesores WHERE Nombre = 'María García López')
-BEGIN
-    INSERT INTO Profesores (Nombre, CreatedBy) VALUES
-    ('María García López', 'SYSTEM'),
-    ('Carlos Rodríguez Martín', 'SYSTEM'),
-    ('Ana Fernández Silva', 'SYSTEM'),
-    ('Miguel Torres Ruiz', 'SYSTEM'),
-    ('Laura Sánchez Moreno', 'SYSTEM');
-    
-    PRINT 'Profesores de ejemplo insertados.';
-END
-ELSE
-BEGIN
-    PRINT 'Profesores de ejemplo ya existen.';
-END
+INSERT INTO Profesores (Nombre, CreatedBy) VALUES
+('María García López', 'SYSTEM'),
+('Carlos Rodríguez Martín', 'SYSTEM'),
+('Ana Fernández Silva', 'SYSTEM'),
+('Miguel Torres Ruiz', 'SYSTEM'),
+('Laura Sánchez Moreno', 'SYSTEM');
+
+PRINT 'Profesores de ejemplo insertados.';
 GO
 
 -- Insertar Estudiantes de ejemplo
-IF NOT EXISTS (SELECT 1 FROM Estudiantes WHERE Nombre = 'Juan Pérez González')
-BEGIN
-    INSERT INTO Estudiantes (Nombre, CreatedBy) VALUES
-    ('Juan Pérez González', 'SYSTEM'),
-    ('Sofia Martín López', 'SYSTEM'),
-    ('Diego Hernández Castro', 'SYSTEM'),
-    ('Valentina Ruiz Jiménez', 'SYSTEM'),
-    ('Sebastián Torres Morales', 'SYSTEM'),
-    ('Camila Vargas Silva', 'SYSTEM'),
-    ('Mateo Rojas Herrera', 'SYSTEM'),
-    ('Isabella Cruz Mendoza', 'SYSTEM'),
-    ('Nicolás Reyes Vega', 'SYSTEM'),
-    ('Antonella Flores Ramos', 'SYSTEM');
-    
-    PRINT 'Estudiantes de ejemplo insertados.';
-END
-ELSE
-BEGIN
-    PRINT 'Estudiantes de ejemplo ya existen.';
-END
+INSERT INTO Estudiantes (Nombre, CreatedBy) VALUES
+('Juan Pérez González', 'SYSTEM'),
+('Sofia Martín López', 'SYSTEM'),
+('Diego Hernández Castro', 'SYSTEM'),
+('Valentina Ruiz Jiménez', 'SYSTEM'),
+('Sebastián Torres Morales', 'SYSTEM'),
+('Camila Vargas Silva', 'SYSTEM'),
+('Mateo Rojas Herrera', 'SYSTEM'),
+('Isabella Cruz Mendoza', 'SYSTEM'),
+('Nicolás Reyes Vega', 'SYSTEM'),
+('Antonella Flores Ramos', 'SYSTEM');
+
+PRINT 'Estudiantes de ejemplo insertados.';
 GO
 
 -- Insertar Usuario Administrador
 -- Contraseña: Admin@123456 (se debe cambiar en producción)
--- Hash generado con BCrypt para Admin@123456
-DECLARE @AdminPasswordHash NVARCHAR(255) = '$2a$11$rIwbeWPG/Vp5k0Q2YsOP6OE.VjJhx1zZQmwNLKjGhzFQWi5ZXh9Gi';
+-- Hash generado con SHA256 + Salt: AudiSoft_School_Salt_2024
+DECLARE @AdminPasswordHash NVARCHAR(255) = 't2eJXPeIYQVzMAwMW+jLZKW6fWnlcISBzr7M+AF3XpI=';
 
-IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UserName = 'admin')
-BEGIN
-    INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, CreatedBy)
-    VALUES ('admin', @AdminPasswordHash, 'admin@audisoft.com', 1, 'SYSTEM');
-    
-    -- Asignar rol Admin
-    DECLARE @AdminUserId INT = SCOPE_IDENTITY();
-    DECLARE @AdminRolId INT = (SELECT Id FROM Roles WHERE Nombre = 'Admin');
-    
-    INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
-    VALUES (@AdminUserId, @AdminRolId, 'SYSTEM');
-    
-    PRINT 'Usuario administrador creado (admin / Admin@123456).';
-END
-ELSE
-BEGIN
-    PRINT 'Usuario administrador ya existe.';
-END
+INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, CreatedBy)
+VALUES ('admin', @AdminPasswordHash, 'admin@audisoft.com', 1, 'SYSTEM');
+
+-- Asignar rol Admin
+DECLARE @AdminUserId INT = SCOPE_IDENTITY();
+DECLARE @AdminRolId INT = (SELECT Id FROM Roles WHERE Nombre = 'Admin');
+
+INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
+VALUES (@AdminUserId, @AdminRolId, 'SYSTEM');
+
+PRINT 'Usuario administrador creado (admin / Admin@123456).';
 GO
 
 -- Insertar usuarios de ejemplo para profesores
 -- Contraseña para todos: Profesor@123
-DECLARE @ProfesorPasswordHash NVARCHAR(255) = '$2a$11$xWFBqU7r6YvrD5Jq6YGP6.SgI.lmH4k5YGrHKzO8WV4McY7QcX.h6';
+-- Hash generado con SHA256 + Salt: AudiSoft_School_Salt_2024
+DECLARE @ProfesorPasswordHash NVARCHAR(255) = 'lo6Y0GQuS94+AmpPL07NNn4Nr2+L/EjUuRwadRX8lOo=';
 DECLARE @ProfesorRolId INT = (SELECT Id FROM Roles WHERE Nombre = 'Profesor');
 
 -- Profesor 1: María García
-IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UserName = 'maria.garcia')
-BEGIN
-    DECLARE @ProfesorId1 INT = (SELECT Id FROM Profesores WHERE Nombre = 'María García López');
-    
-    INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdProfesor, CreatedBy)
-    VALUES ('maria.garcia', @ProfesorPasswordHash, 'maria.garcia@audisoft.com', 1, @ProfesorId1, 'SYSTEM');
-    
-    INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
-    VALUES (SCOPE_IDENTITY(), @ProfesorRolId, 'SYSTEM');
-    
-    PRINT 'Usuario profesor María García creado.';
-END
+DECLARE @ProfesorId1 INT = (SELECT Id FROM Profesores WHERE Nombre = 'María García López');
+
+INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdProfesor, CreatedBy)
+VALUES ('maria.garcia', @ProfesorPasswordHash, 'maria.garcia@audisoft.com', 1, @ProfesorId1, 'SYSTEM');
+
+DECLARE @ProfesorUserId1 INT = SCOPE_IDENTITY();
+INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
+VALUES (@ProfesorUserId1, @ProfesorRolId, 'SYSTEM');
+
+PRINT 'Usuario profesor María García creado.';
 
 -- Profesor 2: Carlos Rodríguez  
-IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UserName = 'carlos.rodriguez')
-BEGIN
-    DECLARE @ProfesorId2 INT = (SELECT Id FROM Profesores WHERE Nombre = 'Carlos Rodríguez Martín');
-    
-    INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdProfesor, CreatedBy)
-    VALUES ('carlos.rodriguez', @ProfesorPasswordHash, 'carlos.rodriguez@audisoft.com', 1, @ProfesorId2, 'SYSTEM');
-    
-    INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
-    VALUES (SCOPE_IDENTITY(), @ProfesorRolId, 'SYSTEM');
-    
-    PRINT 'Usuario profesor Carlos Rodríguez creado.';
-END
+DECLARE @ProfesorId2 INT = (SELECT Id FROM Profesores WHERE Nombre = 'Carlos Rodríguez Martín');
+
+INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdProfesor, CreatedBy)
+VALUES ('carlos.rodriguez', @ProfesorPasswordHash, 'carlos.rodriguez@audisoft.com', 1, @ProfesorId2, 'SYSTEM');
+
+DECLARE @ProfesorUserId2 INT = SCOPE_IDENTITY();
+INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
+VALUES (@ProfesorUserId2, @ProfesorRolId, 'SYSTEM');
+
+PRINT 'Usuario profesor Carlos Rodríguez creado.';
 GO
 
 -- Insertar usuarios de ejemplo para estudiantes
 -- Contraseña para todos: Estudiante@123
-DECLARE @EstudiantePasswordHash NVARCHAR(255) = '$2a$11$K4eD8Wm7qOjBXhFUO4gL2.Nz5PqRv3CyM8sT6bY9jK1aE7hF2nG3c';
+-- Hash generado con SHA256 + Salt: AudiSoft_School_Salt_2024
+DECLARE @EstudiantePasswordHash NVARCHAR(255) = 'TbtzAuoi8LpS/CcSnmRzvyX76vGPQjFLZNF78zb9HGk=';
 DECLARE @EstudianteRolId INT = (SELECT Id FROM Roles WHERE Nombre = 'Estudiante');
 
 -- Estudiante 1: Juan Pérez
-IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UserName = 'juan.perez')
-BEGIN
-    DECLARE @EstudianteId1 INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Juan Pérez González');
-    
-    INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdEstudiante, CreatedBy)
-    VALUES ('juan.perez', @EstudiantePasswordHash, 'juan.perez@student.audisoft.com', 1, @EstudianteId1, 'SYSTEM');
-    
-    INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
-    VALUES (SCOPE_IDENTITY(), @EstudianteRolId, 'SYSTEM');
-    
-    PRINT 'Usuario estudiante Juan Pérez creado.';
-END
+DECLARE @EstudianteId1 INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Juan Pérez González');
+
+INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdEstudiante, CreatedBy)
+VALUES ('juan.perez', @EstudiantePasswordHash, 'juan.perez@student.audisoft.com', 1, @EstudianteId1, 'SYSTEM');
+
+DECLARE @EstudianteUserId1 INT = SCOPE_IDENTITY();
+INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
+VALUES (@EstudianteUserId1, @EstudianteRolId, 'SYSTEM');
+
+PRINT 'Usuario estudiante Juan Pérez creado.';
 
 -- Estudiante 2: Sofia Martín
-IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UserName = 'sofia.martin')
-BEGIN
-    DECLARE @EstudianteId2 INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Sofia Martín López');
-    
-    INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdEstudiante, CreatedBy)
-    VALUES ('sofia.martin', @EstudiantePasswordHash, 'sofia.martin@student.audisoft.com', 1, @EstudianteId2, 'SYSTEM');
-    
-    INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
-    VALUES (SCOPE_IDENTITY(), @EstudianteRolId, 'SYSTEM');
-    
-    PRINT 'Usuario estudiante Sofia Martín creado.';
-END
+DECLARE @EstudianteId2 INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Sofia Martín López');
+
+INSERT INTO Usuarios (UserName, PasswordHash, Email, IsActive, IdEstudiante, CreatedBy)
+VALUES ('sofia.martin', @EstudiantePasswordHash, 'sofia.martin@student.audisoft.com', 1, @EstudianteId2, 'SYSTEM');
+
+DECLARE @EstudianteUserId2 INT = SCOPE_IDENTITY();
+INSERT INTO UsuarioRoles (IdUsuario, IdRol, CreatedBy)
+VALUES (@EstudianteUserId2, @EstudianteRolId, 'SYSTEM');
+
+PRINT 'Usuario estudiante Sofia Martín creado.';
 GO
 
 -- Insertar notas de ejemplo
-IF NOT EXISTS (SELECT 1 FROM Notas WHERE Nombre = 'Examen Matemáticas')
-BEGIN
-    DECLARE @ProfesorMariaId INT = (SELECT Id FROM Profesores WHERE Nombre = 'María García López');
-    DECLARE @ProfesorCarlosId INT = (SELECT Id FROM Profesores WHERE Nombre = 'Carlos Rodríguez Martín');
-    DECLARE @EstudianteJuanId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Juan Pérez González');
-    DECLARE @EstudianteSofiaId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Sofia Martín López');
-    DECLARE @EstudianteDiegoId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Diego Hernández Castro');
-    
-    INSERT INTO Notas (Nombre, Valor, IdProfesor, IdEstudiante, CreatedBy) VALUES
-    -- Notas de María García
-    ('Examen Matemáticas', 85.5, @ProfesorMariaId, @EstudianteJuanId, 'SYSTEM'),
-    ('Tarea Álgebra', 92.0, @ProfesorMariaId, @EstudianteJuanId, 'SYSTEM'),
-    ('Examen Matemáticas', 78.5, @ProfesorMariaId, @EstudianteSofiaId, 'SYSTEM'),
-    ('Tarea Álgebra', 88.0, @ProfesorMariaId, @EstudianteSofiaId, 'SYSTEM'),
-    ('Quiz Geometría', 95.0, @ProfesorMariaId, @EstudianteDiegoId, 'SYSTEM'),
-    
-    -- Notas de Carlos Rodríguez  
-    ('Ensayo Literatura', 87.0, @ProfesorCarlosId, @EstudianteJuanId, 'SYSTEM'),
-    ('Análisis de Texto', 91.5, @ProfesorCarlosId, @EstudianteSofiaId, 'SYSTEM'),
-    ('Examen Gramática', 83.0, @ProfesorCarlosId, @EstudianteDiegoId, 'SYSTEM'),
-    ('Presentación Oral', 89.0, @ProfesorCarlosId, @EstudianteJuanId, 'SYSTEM'),
-    ('Comprensión Lectora', 94.5, @ProfesorCarlosId, @EstudianteSofiaId, 'SYSTEM');
-    
-    PRINT 'Notas de ejemplo insertadas.';
-END
-ELSE
-BEGIN
-    PRINT 'Notas de ejemplo ya existen.';
-END
+DECLARE @ProfesorMariaId INT = (SELECT Id FROM Profesores WHERE Nombre = 'María García López');
+DECLARE @ProfesorCarlosId INT = (SELECT Id FROM Profesores WHERE Nombre = 'Carlos Rodríguez Martín');
+DECLARE @EstudianteJuanId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Juan Pérez González');
+DECLARE @EstudianteSofiaId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Sofia Martín López');
+DECLARE @EstudianteDiegoId INT = (SELECT Id FROM Estudiantes WHERE Nombre = 'Diego Hernández Castro');
+
+INSERT INTO Notas (Nombre, Valor, IdProfesor, IdEstudiante, CreatedBy) VALUES
+-- Notas de María García
+('Examen Matemáticas', 85.5, @ProfesorMariaId, @EstudianteJuanId, 'SYSTEM'),
+('Tarea Álgebra', 92.0, @ProfesorMariaId, @EstudianteJuanId, 'SYSTEM'),
+('Examen Matemáticas', 78.5, @ProfesorMariaId, @EstudianteSofiaId, 'SYSTEM'),
+('Tarea Álgebra', 88.0, @ProfesorMariaId, @EstudianteSofiaId, 'SYSTEM'),
+('Quiz Geometría', 95.0, @ProfesorMariaId, @EstudianteDiegoId, 'SYSTEM'),
+
+-- Notas de Carlos Rodríguez  
+('Ensayo Literatura', 87.0, @ProfesorCarlosId, @EstudianteJuanId, 'SYSTEM'),
+('Análisis de Texto', 91.5, @ProfesorCarlosId, @EstudianteSofiaId, 'SYSTEM'),
+('Examen Gramática', 83.0, @ProfesorCarlosId, @EstudianteDiegoId, 'SYSTEM'),
+('Presentación Oral', 89.0, @ProfesorCarlosId, @EstudianteJuanId, 'SYSTEM'),
+('Comprensión Lectora', 94.5, @ProfesorCarlosId, @EstudianteSofiaId, 'SYSTEM');
+
+PRINT 'Notas de ejemplo insertadas.';
 GO
 
 -- Create __EFMigrationsHistory table
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
-BEGIN
-    CREATE TABLE [__EFMigrationsHistory] (
-        [MigrationId] nvarchar(150) NOT NULL,
-        [ProductVersion] nvarchar(32) NOT NULL,
-        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
-    );
-END
+CREATE TABLE [__EFMigrationsHistory] (
+    [MigrationId] nvarchar(150) NOT NULL,
+    [ProductVersion] nvarchar(32) NOT NULL,
+    CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+);
 GO
 
-IF NOT EXISTS (SELECT * FROM [__EFMigrationsHistory] WHERE [MigrationId] = '20251112_InitialCreate')
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251112_InitialCreate', '10.0.0');
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM [__EFMigrationsHistory] WHERE [MigrationId] = '20251114022538_AddUserRoleEntities')
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251114022538_AddUserRoleEntities', '8.0.0');
-END
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251112_InitialCreate', '8.0.0');
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251114022538_AddUserRoleEntities', '8.0.0');
 GO
 
 -- =============================================

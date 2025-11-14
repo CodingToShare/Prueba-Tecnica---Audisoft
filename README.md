@@ -4,7 +4,7 @@ Sistema de gestión escolar compuesto por:
 - Backend: API REST en .NET 8 (Clean Architecture, EF Core, JWT, Swagger)
 - Frontend: SPA en AngularJS 1.8 + Bootstrap 5 (auth JWT, UI por rol, componentes reutilizables, reportes)
 
-Este README ofrece una visión integral y una guía rápida de instalación conjunta. Para detalles completos, consulta los README específicos:
+Este README ofrece una visión integral y configuración para desarrollo local y producción en Azure. Para detalles completos, consulta:
 - Backend: `Backend/README.md`
 - Frontend: `Frontend/README.md`
 
@@ -20,7 +20,8 @@ Prueba-Tecnica---Audisoft/
 │   │   ├── AudiSoft.School.Application/    # Servicios, DTOs, validaciones
 │   │   ├── AudiSoft.School.Domain/         # Entidades y reglas de dominio
 │   │   └── AudiSoft.School.Infrastructure/ # EF Core, repositorios, migraciones
-│   ├── scripts/                            # SQL y utilidades
+│   ├── scripts/
+│   │   └── 01_CreateTables_And_Seed.sql   # ⭐ Script único de setup BD
 │   └── README.md                           # Guía completa del backend
 └── Frontend/
     ├── app/                                # Código AngularJS modularizado
@@ -46,124 +47,223 @@ Prueba-Tecnica---Audisoft/
 Opcional pero recomendado:
 - Docker (para levantar SQL Server y/o servir el frontend fácilmente)
 - VS Code + extensión Live Server
+- Azure CLI (para despliegue en nube)
+
+---
+
+## 🔐 Usuarios de Prueba (Locales y Producción)
+
+Las contraseñas se codifican con **SHA256 + Salt: `AudiSoft_School_Salt_2024`**
+
+| Usuario | Contraseña | Rol | Email |
+|---------|------------|-----|-------|
+| `admin` | `Admin@123456` | Admin | admin@audisoft.com |
+| `maria.garcia` | `Profesor@123` | Profesor | maria.garcia@audisoft.com |
+| `carlos.rodriguez` | `Profesor@123` | Profesor | carlos.rodriguez@audisoft.com |
+| `juan.perez` | `Estudiante@123` | Estudiante | juan.perez@student.audisoft.com |
+| `sofia.martin` | `Estudiante@123` | Estudiante | sofia.martin@student.audisoft.com |
 
 ---
 
 ## 🚀 Quick Start (entorno limpio, multiplataforma)
 
-A continuación, un flujo mínimo de punta a punta. Para mayor detalle, revisa los README de Backend y Frontend.
+### 1) Base de datos
 
-### 1) Base de datos (opción Docker)
+#### Opción A: Docker SQL Server
 
 ```bash
-# Levantar SQL Server en Docker
 docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
   -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-Actualiza la cadena de conexión del backend si usarás Docker SQL Server (ver más abajo).
+#### Opción B: SQL Server LocalDB (Windows)
+
+```powershell
+# Ya viene con Visual Studio o SQL Server Developer Edition
+# Verificar estado:
+sqllocaldb info
+sqllocaldb start MSSQLLocalDB
+```
 
 ### 2) Backend (.NET 8)
 
 ```bash
 cd Backend
+
 # Restaurar paquetes
 dotnet restore
 
-# (Opcional) Aplicar migraciones EF si las usas
-# cd src/AudiSoft.School.Infrastructure
-# dotnet ef database update --startup-project ../AudiSoft.School.Api
+# Ejecutar script SQL único (setup BD completo)
+# Windows LocalDB:
+cd scripts
+sqlcmd -S "(localdb)\MSSQLLocalDB" -i 01_CreateTables_And_Seed.sql
+cd ..
 
-# Ajustar appsettings para CORS y DB
-# - src/AudiSoft.School.Api/appsettings.Development.json
+# O Docker SQL Server:
+# sqlcmd -S localhost,1433 -U sa -P "YourStrong@Passw0rd" -i scripts/01_CreateTables_And_Seed.sql
+
+# Ajustar configuración (si usas Docker SQL Server):
+# Editar src/AudiSoft.School.Api/appsettings.Development.json:
+#   "ConnectionStrings": { 
+#     "DefaultConnection": "Server=localhost,1433;Database=AudiSoftSchoolDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true"
+#   }
 #   "Cors": { "AllowedOrigins": [ "http://localhost:8080" ] }
-#   "ConnectionStrings": { "DefaultConnection": "Server=localhost,1433;Database=AudiSoftSchoolDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true" }
 
 # Ejecutar API
 cd src/AudiSoft.School.Api
 dotnet run
 ```
 
-La API expone Swagger en el puerto configurado (ej.: http://localhost:5000) y la base `http://localhost:5000/api/v1` o similar si tu perfil/puerto difiere.
+La API expone Swagger en `http://localhost:5281` (o el puerto configurado).
 
 ### 3) Frontend (SPA estática)
 
-El frontend se sirve estáticamente. Elige una opción:
+Elige una opción:
 
-- Docker (nginx):
+#### Docker (nginx) - Recomendado ⭐
 ```bash
 cd Frontend
 docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
 ```
 
-- Python 3:
+#### Python 3
 ```bash
 cd Frontend
 python3 -m http.server 8080
 ```
 
-- Node.js (http-server):
+#### Node.js (http-server)
 ```bash
 npm install -g http-server
 cd Frontend
 http-server -p 8080 --cors
 ```
 
-Asegúrate que `Frontend/.env.development` apunte al backend (por defecto `http://localhost:5281/api/v1`). Si tu API corre en otro puerto, ajusta `API_BASE_URL_DEVELOPMENT`.
+#### VS Code Live Server
+Click derecho en `index.html` → "Open with Live Server".
 
 ### 4) Probar la app
 
-- Abre `http://localhost:8080`.
-- Inicia sesión con usuarios de prueba (ver README del backend).
-- Navega por Dashboard, Notas (CRUD por rol), Estudiantes/Profesores y Reportes (resumen + CSV).
+- Abre `http://localhost:8080`
+- Inicia sesión con: `admin` / `Admin@123456`
+- Navega por Dashboard, Notas (CRUD), Estudiantes/Profesores y Reportes
 
 ---
 
-## 🔧 Configuración Clave
+## 🌐 Configuración por Entorno
 
-### Backend
-- CORS configurable en `appsettings*.json` vía `Cors:AllowedOrigins`.
-- Cadenas de conexión en `ConnectionStrings:DefaultConnection`.
-- Endpoints principales (ejemplos):
-  - `POST /api/v1/Auth/login`
-  - `GET /api/v1/Notas`
-  - `GET /api/v1/Reportes/notas/resumen`
-  - `GET /api/v1/Reportes/notas/export`
+### Desarrollo Local
 
-Ver detalles, ejemplos de filtros, paginación y exportación en `Backend/README.md`.
+**Backend** (`src/AudiSoft.School.Api/appsettings.Development.json`):
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=AudiSoftSchoolDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true"
+  },
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:8080"]
+  }
+}
+```
 
-### Frontend
-- Carga de config por `.env.development` (localhost) o `.env` (prod), manejada por `env-config-loader`.
-- Interceptores de auth y loading ya configurados globalmente.
-- Página de Reportes en `#!/reportes` con filtros de fecha y descarga CSV.
+**Frontend** (`.env.development`):
+```
+API_BASE_URL_DEVELOPMENT=http://localhost:5281/api/v1
+UI_TOAST_DURATION=5000
+PAGINATION_DEFAULT_PAGE_SIZE=20
+```
 
-Ver estructura, opciones de despliegue estático y resolución de problemas en `Frontend/README.md`.
+### Producción (Azure)
+
+#### Recursos Azure Creados
+
+- **Resource Group**: `rg-audisoft-school` (East US 2)
+- **App Service Backend**: `app-audisoft-api` (Linux, B1)
+  - Runtime: .NET 8
+  - URL: `https://app-audisoft-api.azurewebsites.net`
+- **App Service Frontend**: `app-audisoft-web` (Linux, B1)
+  - Runtime: Node.js 20-lts
+  - URL: `https://app-audisoft-web.azurewebsites.net`
+- **SQL Database**: `AudiSoftSchoolDb`
+  - Server: `servidor-audisoft-1763149184.database.windows.net`
+  - Tier: Basic (5 DTUs)
+  - Credenciales: `adminuser` / `StrongPwd@2024`
+
+#### Backend Configuration (Producción)
+
+`src/AudiSoft.School.Api/appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=tcp:servidor-audisoft-1763149184.database.windows.net,1433;Initial Catalog=AudiSoftSchoolDb;Persist Security Info=False;User ID=adminuser;Password=StrongPwd@2024;Encrypt=true;Connection Timeout=30;TrustServerCertificate=false"
+  },
+  "Cors": {
+    "AllowedOrigins": ["https://app-audisoft-web.azurewebsites.net"]
+  },
+  "Swagger": {
+    "Enabled": true
+  }
+}
+```
+
+#### Frontend Configuration (Producción)
+
+`.env`:
+```
+API_BASE_URL_PRODUCTION=https://app-audisoft-api.azurewebsites.net/api/v1
+API_TIMEOUT=30000
+PAGINATION_DEFAULT_PAGE_SIZE=20
+```
+
+#### CI/CD (GitHub Actions)
+
+Workflows automáticos en `.github/workflows/`:
+- `deploy-backend.yml`: Build .NET 8, publica en App Service Backend
+- `deploy-frontend.yml`: Build Node.js, publica en App Service Frontend
+
+Trigger: Cada push a `main`
+
+Secretos requeridos en GitHub:
+- `AZURE_SUBSCRIPTION_ID`
+- `AZURE_CREDENTIALS`
+- `AZURE_RESOURCE_GROUP`
+- `AZURE_APP_SERVICE_API`
+- `AZURE_APP_SERVICE_WEB`
 
 ---
 
-## 👥 Roles y Seguridad
+## 📋 Checklist de Setup Inicial
 
-- Admin: Acceso total.
-- Profesor: Gestión de sus propias notas; acceso a listados permitidos.
-- Estudiante: Lectura de sus propias notas.
-
-El backend aplica el filtrado por rol en servidores; el frontend refleja y oculta/limita UI con directivas y protección de rutas.
+- [ ] Clonar repo: `git clone https://github.com/CodingToShare/Prueba-Tecnica---Audisoft.git`
+- [ ] Instalar .NET 8 SDK
+- [ ] Instalar SQL Server (LocalDB o Docker)
+- [ ] Ejecutar script BD: `sqlcmd ... -i Backend/scripts/01_CreateTables_And_Seed.sql`
+- [ ] Ajustar `appsettings.Development.json` (cadena de conexión, CORS)
+- [ ] Levantar Backend: `cd Backend/src/AudiSoft.School.Api && dotnet run`
+- [ ] Levantar Frontend: `cd Frontend && python3 -m http.server 8080` (o Docker/Node)
+- [ ] Acceder a `http://localhost:8080` y loguear con credenciales
 
 ---
 
-## 🆘 Resolución de Problemas (rápido)
+## 🔧 Solución de Problemas (rápido)
 
-- CORS bloquea peticiones: agrega el origen del frontend a `Cors:AllowedOrigins` y reinicia la API.
-- 401/403: verifica login y hora del sistema; revisa roles del usuario.
-- `.env.development` no carga: usa un servidor que sirva dotfiles (nginx/http-server sí lo hacen).
-- Reportes vacíos: revisa fechas `from/to` y que existan notas.
+| Problema | Solución |
+|----------|----------|
+| CORS bloquea peticiones | Agrega origen en `Cors:AllowedOrigins` y reinicia API |
+| 401/403 en login | Verifica credenciales; comprueba que BD tiene datos |
+| `.env.development` no carga | Usa servidor que sirva dotfiles (nginx/http-server sí) |
+| Reportes vacíos | Ajusta fechas en filtros; verifica que existan notas |
+| BD no conecta (local) | Verifica LocalDB está running: `sqllocaldb start MSSQLLocalDB` |
+| API no responde | Verifica puerto en `launchSettings.json`; prueba en Swagger |
 
 ---
 
 ## 📚 Referencias
+
 - Backend: `Backend/README.md`
 - Frontend: `Frontend/README.md`
+- SQL Script: `Backend/scripts/01_CreateTables_And_Seed.sql`
 
 ---
 
-Desarrollado con enfoque modular y principios de Clean Architecture.
+Desarrollado con enfoque modular, Clean Architecture y CI/CD automatizado en Azure.

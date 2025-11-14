@@ -120,18 +120,31 @@ cd Prueba-Tecnica---Audisoft/Backend
 
 ### 2. Configurar Base de Datos
 
-#### Opción A: Usar Scripts Incluidos (Recomendado)
+#### Opción A: Usar Script SQL Único (Recomendado) ⭐
+
+El script `01_CreateTables_And_Seed.sql` dropea y recrea la BD completamente, asegurando consistencia total:
 
 ```bash
-# Navegar a la carpeta de scripts
-cd scripts
+# Desde la carpeta Backend/scripts
 
-# Ejecutar script inicial (Windows con SQL Server LocalDB)
-sqlcmd -S "(localdb)\MSSQLLocalDB" -i 01_InitialCreate.sql
+# Windows con SQL Server LocalDB
+sqlcmd -S "(localdb)\MSSQLLocalDB" -i 01_CreateTables_And_Seed.sql
 
-# Ejecutar script de tablas y datos iniciales
-sqlcmd -S "(localdb)\MSSQLLocalDB" -i 02_CreateTables_And_Seed.sql
+# Windows con SQL Server completo/Express
+sqlcmd -S "localhost\SQLEXPRESS" -U sa -P YourPassword -i 01_CreateTables_And_Seed.sql
+
+# Linux/macOS con SQL Server en Docker
+sqlcmd -S localhost,1433 -U sa -P "YourStrong@Passw0rd" -i 01_CreateTables_And_Seed.sql
 ```
+
+**Qué hace el script:**
+- ✅ Dropea `AudiSoftSchoolDb` si existe
+- ✅ Crea la BD desde cero
+- ✅ Crea todas las tablas con esquema correcto (incluyendo `DeletedAt`)
+- ✅ Inserta datos iniciales (3 roles, 5 profesores, 10 estudiantes)
+- ✅ Crea usuarios con contraseñas codificadas correctamente
+- ✅ Inserta 10 notas de ejemplo
+- ✅ Actualiza tabla `__EFMigrationsHistory`
 
 #### Opción B: Usar Entity Framework Migrations
 
@@ -146,10 +159,9 @@ cd src/AudiSoft.School.Infrastructure
 dotnet ef database update --startup-project ../AudiSoft.School.Api
 ```
 
-### 3. Configurar Cadena de Conexión
+#### Cadenas de Conexión
 
-Editar `src/AudiSoft.School.Api/appsettings.Development.json`:
-
+**Desarrollo Local (SQL Server LocalDB):**
 ```json
 {
   "ConnectionStrings": {
@@ -158,7 +170,16 @@ Editar `src/AudiSoft.School.Api/appsettings.Development.json`:
 }
 ```
 
-#### Para Docker SQL Server:
+**Desarrollo Local (SQL Server Express):**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost\\SQLEXPRESS;Database=AudiSoftSchoolDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true"
+  }
+}
+```
+
+**Desarrollo Local (Docker SQL Server):**
 ```json
 {
   "ConnectionStrings": {
@@ -166,6 +187,19 @@ Editar `src/AudiSoft.School.Api/appsettings.Development.json`:
   }
 }
 ```
+
+**Producción (Azure SQL Database):**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=tcp:servidor-audisoft-1763149184.database.windows.net,1433;Initial Catalog=AudiSoftSchoolDb;Persist Security Info=False;User ID=adminuser;Password=StrongPwd@2024;Encrypt=true;Connection Timeout=30;TrustServerCertificate=false"
+  }
+}
+```
+
+Editar el archivo correspondiente según tu entorno:
+- **Desarrollo**: `src/AudiSoft.School.Api/appsettings.Development.json`
+- **Producción**: `src/AudiSoft.School.Api/appsettings.json`
 
 ## ▶️ Ejecución
 
@@ -220,13 +254,15 @@ dotnet test --filter "FullyQualifiedName~Integration"
 
 ## 🔐 Usuarios por Defecto
 
-El sistema incluye usuarios predefinidos para pruebas:
+El sistema incluye usuarios predefinidos para pruebas. Las contraseñas se codifican con **SHA256 + Salt: `AudiSoft_School_Salt_2024`**
 
-| Usuario | Contraseña | Rol | Descripción |
-|---------|------------|-----|-------------|
-| `admin` | `Admin123@` | Admin | Acceso completo al sistema |
-| `profesor1` | `Prof123@` | Profesor | Gestión de notas y consulta de estudiantes |
-| `estudiante1` | `Est123@` | Estudiante | Solo lectura de sus propias notas |
+| Usuario | Contraseña | Rol | Email | Hash SHA256 |
+|---------|------------|-----|-------|------------|
+| `admin` | `Admin@123456` | Admin | admin@audisoft.com | `t2eJXPeIYQVzMAwMW+jLZKW6fWnlcISBzr7M+AF3XpI=` |
+| `maria.garcia` | `Profesor@123` | Profesor | maria.garcia@audisoft.com | `lo6Y0GQuS94+AmpPL07NNn4Nr2+L/EjUuRwadRX8lOo=` |
+| `carlos.rodriguez` | `Profesor@123` | Profesor | carlos.rodriguez@audisoft.com | `lo6Y0GQuS94+AmpPL07NNn4Nr2+L/EjUuRwadRX8lOo=` |
+| `juan.perez` | `Estudiante@123` | Estudiante | juan.perez@student.audisoft.com | `TbtzAuoi8LpS/CcSnmRzvyX76vGPQjFLZNF78zb9HGk=` |
+| `sofia.martin` | `Estudiante@123` | Estudiante | sofia.martin@student.audisoft.com | `TbtzAuoi8LpS/CcSnmRzvyX76vGPQjFLZNF78zb9HGk=` |
 
 ## 📚 Documentación API
 

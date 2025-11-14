@@ -125,15 +125,9 @@ Importante: asegúrate de que el servidor estático no bloquee dotfiles (archivo
 
 El frontend carga configuración desde `.env.development` (en localhost/192.168.x) o `.env` (producción) vía `env-config-loader.service.js`.
 
-Variables principales:
+### Desarrollo Local (`.env.development`)
 
-- `API_BASE_URL_DEVELOPMENT` (por defecto `http://localhost:5281/api/v1`)
-- `API_BASE_URL_PRODUCTION`
-- `API_TIMEOUT`, `API_RETRY_ATTEMPTS`, `PAGINATION_DEFAULT_PAGE_SIZE`, etc.
-
-Ejemplo `.env.development`:
-
-```
+```properties
 # API base del backend en desarrollo
 API_BASE_URL_DEVELOPMENT=http://localhost:5281/api/v1
 
@@ -144,12 +138,48 @@ UI_LOADING_DELAY=300
 # Paginación
 PAGINATION_DEFAULT_PAGE_SIZE=20
 PAGINATION_MAX_PAGE_SIZE=100
+
+# API
+API_TIMEOUT=30000
+API_RETRY_ATTEMPTS=3
 ```
 
-Notas importantes:
+**Nota**: Asegúrate que el backend expone CORS para `http://localhost:8080` en `appsettings.Development.json`:
+```json
+{
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:8080"]
+  }
+}
+```
 
-- El backend debe permitir CORS para el origen del frontend (por ejemplo, `http://localhost:8080`). En el backend se configura en `Cors:AllowedOrigins` (ver README del backend).
-- Si sirves el frontend en otro puerto u origen, agrega ese origen en `Cors:AllowedOrigins`.
+### Producción (`.env`)
+
+```properties
+# API base del backend en producción (Azure)
+API_BASE_URL_PRODUCTION=https://app-audisoft-api.azurewebsites.net/api/v1
+
+# UI/UX
+UI_TOAST_DURATION=5000
+UI_LOADING_DELAY=300
+
+# Paginación
+PAGINATION_DEFAULT_PAGE_SIZE=20
+PAGINATION_MAX_PAGE_SIZE=100
+
+# API
+API_TIMEOUT=30000
+API_RETRY_ATTEMPTS=3
+```
+
+**Nota**: Asegúrate que el backend expone CORS para `https://app-audisoft-web.azurewebsites.net` en `appsettings.json`:
+```json
+{
+  "Cors": {
+    "AllowedOrigins": ["https://app-audisoft-web.azurewebsites.net"]
+  }
+}
+```
 
 ## 🔐 Autenticación y Roles
 
@@ -158,13 +188,17 @@ Notas importantes:
 - `acl.directive.js` aporta `has-role` y `has-any-role` para mostrar/ocultar elementos por rol.
 - Protección de rutas en `app.routes.js` mediante `route-auth.service.js`.
 
-Usuarios de prueba (según backend):
+### Usuarios de Prueba (Locales y Producción)
 
-| Usuario       | Contraseña  | Rol        |
-|---------------|-------------|------------|
-| `admin`       | `Admin123@` | Admin      |
-| `profesor1`   | `Prof123@`  | Profesor   |
-| `estudiante1` | `Est123@`   | Estudiante |
+Las contraseñas se codifican con **SHA256 + Salt: `AudiSoft_School_Salt_2024`**
+
+| Usuario | Contraseña | Rol | Email |
+|---------|------------|-----|-------|
+| `admin` | `Admin@123456` | Admin | admin@audisoft.com |
+| `maria.garcia` | `Profesor@123` | Profesor | maria.garcia@audisoft.com |
+| `carlos.rodriguez` | `Profesor@123` | Profesor | carlos.rodriguez@audisoft.com |
+| `juan.perez` | `Estudiante@123` | Estudiante | juan.perez@student.audisoft.com |
+| `sofia.martin` | `Estudiante@123` | Estudiante | sofia.martin@student.audisoft.com |
 
 ## 🧩 Componentes Reutilizables y UX Global
 
