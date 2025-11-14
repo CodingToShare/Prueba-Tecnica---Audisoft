@@ -80,6 +80,15 @@ public class Repository<T> : IRepository<T> where T : class
     /// </summary>
     public async Task<T> UpdateAsync(T entity)
     {
+        // Verificar si estamos usando InMemory database
+        if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            // InMemory no soporta transacciones, usar directamente
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+        
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {

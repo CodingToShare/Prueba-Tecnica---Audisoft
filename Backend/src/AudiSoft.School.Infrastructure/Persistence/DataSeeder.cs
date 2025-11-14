@@ -113,50 +113,90 @@ public static class DataSeeder
         await context.Estudiantes.AddRangeAsync(estudiantes);
         await context.SaveChangesAsync();
 
-        // Crear usuarios de ejemplo
+        // Crear usuarios de ejemplo que coincidan con los tests de integración
         var usuarios = new List<Usuario>();
 
-        // Usuario administrador
+        // Usuario administrador (esperado por tests de integración)
         usuarios.Add(new Usuario
         {
             UserName = "admin",
             Email = "admin@audisoft.com",
-            PasswordHash = HashPassword("Admin123!"), // Usar el mismo método que en UsuarioService
+            PasswordHash = HashPassword("Admin@123456"), // Coincide con tests de integración
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = "System"
         });
 
-        // Usuarios para profesores
-        for (int i = 0; i < profesores.Count; i++)
+        // Usuario profesor específico para tests (maria.garcia)
+        var profesorMaria = profesores.FirstOrDefault(p => p.Nombre.Contains("María"));
+        if (profesorMaria != null)
         {
-            var profesor = profesores[i];
             usuarios.Add(new Usuario
             {
-                UserName = $"prof{i + 1}",
-                Email = $"prof{i + 1}@audisoft.com",
-                PasswordHash = HashPassword("Profesor123!"),
-                IdProfesor = profesor.Id,
+                UserName = "maria.garcia",
+                Email = "maria.garcia@audisoft.com",
+                PasswordHash = HashPassword("Profesor@123"), // Coincide con tests de integración
+                IdProfesor = profesorMaria.Id,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             });
         }
 
-        // Usuarios para estudiantes
-        for (int i = 0; i < estudiantes.Count; i++)
+        // Usuario estudiante específico para tests (juan.perez)
+        var estudianteAna = estudiantes.FirstOrDefault(e => e.Nombre.Contains("Ana"));
+        if (estudianteAna != null)
         {
-            var estudiante = estudiantes[i];
             usuarios.Add(new Usuario
             {
-                UserName = $"est{i + 1}",
-                Email = $"est{i + 1}@estudiante.audisoft.com",
-                PasswordHash = HashPassword("Estudiante123!"),
-                IdEstudiante = estudiante.Id,
+                UserName = "juan.perez",
+                Email = "juan.perez@estudiante.audisoft.com",
+                PasswordHash = HashPassword("Estudiante@123"), // Coincide con tests de integración
+                IdEstudiante = estudianteAna.Id,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             });
+        }
+
+        // Usuarios adicionales para los otros profesores y estudiantes
+        for (int i = 0; i < profesores.Count; i++)
+        {
+            var profesor = profesores[i];
+            // Evitar duplicar maria.garcia
+            if (!profesor.Nombre.Contains("María"))
+            {
+                usuarios.Add(new Usuario
+                {
+                    UserName = $"prof{i + 1}",
+                    Email = $"prof{i + 1}@audisoft.com",
+                    PasswordHash = HashPassword("Profesor123!"),
+                    IdProfesor = profesor.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = "System"
+                });
+            }
+        }
+
+        // Usuarios adicionales para los otros estudiantes
+        for (int i = 0; i < estudiantes.Count; i++)
+        {
+            var estudiante = estudiantes[i];
+            // Evitar duplicar juan.perez (que usamos para Ana)
+            if (!estudiante.Nombre.Contains("Ana"))
+            {
+                usuarios.Add(new Usuario
+                {
+                    UserName = $"est{i + 1}",
+                    Email = $"est{i + 1}@estudiante.audisoft.com",
+                    PasswordHash = HashPassword("Estudiante123!"),
+                    IdEstudiante = estudiante.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = "System"
+                });
+            }
         }
 
         await context.Usuarios.AddRangeAsync(usuarios);
@@ -166,19 +206,22 @@ public static class DataSeeder
         var usuarioRoles = new List<UsuarioRol>();
 
         // Asignar rol Admin al usuario admin
-        var adminUser = usuarios.First(u => u.UserName == "admin");
+        var adminUser = usuarios.FirstOrDefault(u => u.UserName == "admin");
         var adminRole = roles.First(r => r.Nombre == "Admin");
-        usuarioRoles.Add(new UsuarioRol
+        if (adminUser != null)
         {
-            IdUsuario = adminUser.Id,
-            IdRol = adminRole.Id,
-            AsignadoEn = DateTime.UtcNow,
-            AsignadoPor = "System",
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = "System"
-        });
+            usuarioRoles.Add(new UsuarioRol
+            {
+                IdUsuario = adminUser.Id,
+                IdRol = adminRole.Id,
+                AsignadoEn = DateTime.UtcNow,
+                AsignadoPor = "System",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            });
+        }
 
-        // Asignar rol Profesor a usuarios de profesores
+        // Asignar rol Profesor a usuarios de profesores (incluyendo maria.garcia)
         var profesorRole = roles.First(r => r.Nombre == "Profesor");
         var usuariosProfesores = usuarios.Where(u => u.IdProfesor != null);
         foreach (var usuarioProfesor in usuariosProfesores)
@@ -194,7 +237,7 @@ public static class DataSeeder
             });
         }
 
-        // Asignar rol Estudiante a usuarios de estudiantes
+        // Asignar rol Estudiante a usuarios de estudiantes (incluyendo juan.perez)
         var estudianteRole = roles.First(r => r.Nombre == "Estudiante");
         var usuarioEstudiantes = usuarios.Where(u => u.IdEstudiante != null);
         foreach (var usuarioEstudiante in usuarioEstudiantes)

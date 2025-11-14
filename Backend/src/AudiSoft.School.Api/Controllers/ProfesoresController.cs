@@ -1,17 +1,22 @@
 using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
+using AudiSoft.School.Application.Extensions;
 using AudiSoft.School.Application.Services;
 using AudiSoft.School.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AudiSoft.School.Api.Controllers;
 
 /// <summary>
 /// API endpoints para gestión de Profesores.
-/// Proporciona operaciones CRUD completas.
+/// Solo Admin puede gestionar profesores completamente.
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize(Policy = "AdminOnly")]
+[SwaggerTag("Gestión completa de profesores - Solo administradores (CRUD, búsqueda, paginación)")]
 public class ProfesoresController : ControllerBase
 {
     private readonly ProfesorService _service;
@@ -25,9 +30,11 @@ public class ProfesoresController : ControllerBase
 
     /// <summary>
     /// Obtiene todos los profesores.
+    /// Solo Admin puede ver la lista completa de profesores.
     /// </summary>
     /// <returns>Lista de profesores</returns>
     /// <response code="200">Operación exitosa</response>
+    /// <response code="403">Sin permisos para ver profesores</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)

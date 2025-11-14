@@ -1,5 +1,6 @@
 using AudiSoft.School.Domain.Exceptions;
 using System.Net;
+using System.Security;
 using System.Text.Json;
 using FluentValidation;
 
@@ -93,7 +94,15 @@ public class ExceptionHandlingMiddleware
             UnauthorizedAccessException ex => (
                 StatusCodes.Status401Unauthorized,
                 LogLevel.Warning,
-                CreateErrorResponse(StatusCodes.Status401Unauthorized, "No autorizado", correlationId)
+                CreateErrorResponse(StatusCodes.Status401Unauthorized, 
+                    ex.Message.Contains("permisos") ? "No tiene permisos suficientes para realizar esta acción" : "No autorizado", 
+                    correlationId)
+            ),
+            
+            SecurityException ex => (
+                StatusCodes.Status403Forbidden,
+                LogLevel.Warning,
+                CreateErrorResponse(StatusCodes.Status403Forbidden, "Acceso denegado", correlationId)
             ),
             
             TimeoutException ex => (

@@ -2,6 +2,7 @@ using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
 namespace AudiSoft.School.Api.Controllers;
@@ -12,6 +13,7 @@ namespace AudiSoft.School.Api.Controllers;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
+[SwaggerTag("Endpoints para autenticación y gestión de sesiones JWT")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -39,6 +41,15 @@ public class AuthController : ControllerBase
     /// <response code="404">Usuario no encontrado</response>
     [HttpPost("login")]
     [AllowAnonymous]
+    [SwaggerOperation(
+        Summary = "Autenticar usuario",
+        Description = "Autentica las credenciales del usuario y devuelve un token JWT para acceder a endpoints protegidos.",
+        OperationId = "AuthenticateUser",
+        Tags = new[] { "Autenticación" }
+    )]
+    [SwaggerResponse(200, "Login exitoso", typeof(LoginResponseDto))]
+    [SwaggerResponse(401, "Credenciales inválidas")]
+    [SwaggerResponse(400, "Datos de entrada malformados")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -67,7 +78,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Valida un token JWT
     /// </summary>
-    /// <param name="token">Token a validar</param>
+    /// <param name="request">Solicitud con el token a validar</param>
     /// <returns>Información del token si es válido</returns>
     /// <response code="200">Token válido</response>
     /// <response code="401">Token inválido o expirado</response>

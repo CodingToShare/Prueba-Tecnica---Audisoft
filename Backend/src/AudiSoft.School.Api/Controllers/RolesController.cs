@@ -1,16 +1,20 @@
 using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AudiSoft.School.Api.Controllers;
 
 /// <summary>
-/// Controlador para gestión de roles
+/// Controlador para gestión de roles - Solo administradores
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
+[Authorize(Policy = "AdminOnly")]
+[SwaggerTag("Gestión de roles y permisos del sistema - Solo administradores")]
 public class RolesController : ControllerBase
 {
     private readonly RolService _rolService;

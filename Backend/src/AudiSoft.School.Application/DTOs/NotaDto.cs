@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace AudiSoft.School.Application.DTOs;
 
 /// <summary>
@@ -8,21 +10,30 @@ public class CreateNotaDto
     /// <summary>
     /// Nombre o descripción de la nota.
     /// </summary>
+    [Required(ErrorMessage = "El nombre de la nota es obligatorio")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 200 caracteres")]
     public string Nombre { get; set; } = null!;
 
     /// <summary>
     /// Valor numérico de la nota (0-100, máximo 2 decimales).
     /// </summary>
+    [Required(ErrorMessage = "El valor de la nota es obligatorio")]
+    [Range(0, 100, ErrorMessage = "El valor de la nota debe estar entre 0 y 100")]
+    [RegularExpression(@"^\d{1,2}(\.\d{1,2})?$|^100(\.00?)?$", ErrorMessage = "El valor debe tener máximo 2 decimales")]
     public decimal Valor { get; set; }
 
     /// <summary>
     /// Identificador del profesor que asigna la nota.
     /// </summary>
+    [Required(ErrorMessage = "El ID del profesor es obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El ID del profesor debe ser un número positivo")]
     public int IdProfesor { get; set; }
 
     /// <summary>
     /// Identificador del estudiante que recibe la nota.
     /// </summary>
+    [Required(ErrorMessage = "El ID del estudiante es obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El ID del estudiante debe ser un número positivo")]
     public int IdEstudiante { get; set; }
 }
 
@@ -83,8 +94,20 @@ public class NotaDto
 /// </summary>
 public class UpdateNotaDto
 {
+    [Required(ErrorMessage = "El nombre de la nota es obligatorio")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 200 caracteres")]
     public string Nombre { get; set; } = null!;
+
+    [Required(ErrorMessage = "El valor de la nota es obligatorio")]
+    [Range(0, 100, ErrorMessage = "El valor de la nota debe estar entre 0 y 100")]
+    [RegularExpression(@"^\d{1,2}(\.\d{1,2})?$|^100(\.00?)?$", ErrorMessage = "El valor debe tener máximo 2 decimales")]
     public decimal Valor { get; set; }
+
+    [Required(ErrorMessage = "El ID del profesor es obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El ID del profesor debe ser un número positivo")]
     public int IdProfesor { get; set; }
+
+    [Required(ErrorMessage = "El ID del estudiante es obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El ID del estudiante debe ser un número positivo")]
     public int IdEstudiante { get; set; }
 }

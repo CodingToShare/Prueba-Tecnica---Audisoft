@@ -1,16 +1,20 @@
 using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AudiSoft.School.Api.Controllers;
 
 /// <summary>
-/// Controlador para gestión de usuarios
+/// Controlador para gestión de usuarios - Solo administradores
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
+[Authorize(Policy = "AdminOnly")]
+[SwaggerTag("Administración de usuarios del sistema - Solo administradores")]
 public class UsuariosController : ControllerBase
 {
     private readonly UsuarioService _usuarioService;

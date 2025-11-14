@@ -47,26 +47,56 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "AudiSoft School API",
         Version = "v1.0",
-        Description = "API REST para gestión de estudiantes, profesores y notas con autenticación JWT",
+        Description = @"API REST completa para gestión escolar con autenticación JWT.
+
+## Características principales:
+- **Gestión de Estudiantes**: CRUD completo con validaciones
+- **Gestión de Profesores**: Administración de docentes
+- **Gestión de Notas**: Sistema de calificaciones con permisos por rol
+- **Gestión de Usuarios**: Sistema completo de usuarios y roles
+- **Autenticación JWT**: Seguridad basada en tokens
+- **Autorización por roles**: Admin, Profesor, Estudiante
+- **Filtrado avanzado**: Búsquedas complejas con múltiples operadores
+- **Paginación**: Resultados paginados en todas las listas
+- **Soft Delete**: Eliminación lógica de registros
+
+## Roles y permisos:
+- **Admin**: Acceso completo a todas las funcionalidades
+- **Profesor**: Gestión de sus propias notas y consulta de estudiantes
+- **Estudiante**: Solo lectura de sus propias notas
+
+## Filtros avanzados:
+Sintaxis: `campo:valor` (contains), `campo=valor` (equals), `campo>valor`, `campo<valor`
+Operadores: `;` (AND), `|` (OR)
+Ejemplo: `Nombre:Juan;Valor>80|Estado=Activo`",
         Contact = new OpenApiContact
         {
-            Name = "AudiSoft Team",
-            Email = "support@audisoft.com"
+            Name = "AudiSoft Development Team",
+            Email = "support@audisoft.com",
+            Url = new Uri("https://audisoft.com")
         },
         License = new OpenApiLicense
         {
-            Name = "MIT"
-        }
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        },
+        TermsOfService = new Uri("https://audisoft.com/terms")
     });
 
     // Configuración de seguridad JWT para Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header usando Bearer scheme. Ejemplo: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
+        Description = @"Autorización JWT usando Bearer scheme. 
+
+Ingrese 'Bearer' seguido de un espacio y su token JWT.
+
+Ejemplo: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+Para obtener un token, use el endpoint `/api/v1/Auth/login` con credenciales válidas.",
+        Name = "Authorization", 
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
         BearerFormat = "JWT"
     });
 
@@ -85,13 +115,60 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    // Incluir archivos XML de documentación
+    // Tags personalizados para organizar endpoints
+    options.TagActionsBy(api =>
+    {
+        if (api.GroupName != null)
+        {
+            return new[] { api.GroupName };
+        }
+
+        if (api.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor controllerActionDescriptor)
+        {
+            return new[] { controllerActionDescriptor.ControllerName };
+        }
+
+        throw new InvalidOperationException("Unable to determine tag for endpoint.");
+    });
+
+    options.DocInclusionPredicate((name, api) => true);
+
+    // Incluir archivos XML de documentación de múltiples proyectos
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
     {
         options.IncludeXmlComments(xmlPath);
     }
+
+    // Incluir documentación de la capa de aplicación si existe
+    var applicationXmlFile = "AudiSoft.School.Application.xml";
+    var applicationXmlPath = Path.Combine(AppContext.BaseDirectory, applicationXmlFile);
+    if (File.Exists(applicationXmlPath))
+    {
+        options.IncludeXmlComments(applicationXmlPath);
+    }
+
+    // Configuraciones adicionales de Swagger
+    options.EnableAnnotations();
+    options.DescribeAllParametersInCamelCase();
+    options.UseOneOfForPolymorphism();
+    options.UseAllOfForInheritance();
+
+    // Configurar ejemplos por defecto para tipos comunes
+    options.MapType<DateTime>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "date-time",
+        Example = new Microsoft.OpenApi.Any.OpenApiString(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
+    });
+
+    options.MapType<decimal>(() => new OpenApiSchema
+    {
+        Type = "number",
+        Format = "decimal",
+        Example = new Microsoft.OpenApi.Any.OpenApiDouble(85.50)
+    });
 });
 
 // Configure AutoMapper
@@ -281,3 +358,6 @@ finally
     Log.Information("Cerrando aplicación...");
     Log.CloseAndFlush();
 }
+
+// Hacer la clase Program accesible para testing
+public partial class Program { }
