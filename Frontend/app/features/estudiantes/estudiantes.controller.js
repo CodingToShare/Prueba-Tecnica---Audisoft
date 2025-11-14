@@ -215,10 +215,12 @@
             vm.error = null;
 
             // Concatenar nombre con grado si está seleccionado
-            // Formato: "Santiago José Castro Ruiz - 9°"
+            // Formato: "Santiago José Castro Ruiz - 9" (sin el símbolo ° para pasar validación)
             var nombreCompleto = vm.currentEstudiante.nombre.trim();
             if (vm.currentEstudiante.grado && vm.currentEstudiante.grado.trim()) {
-                nombreCompleto = nombreCompleto + ' - ' + vm.currentEstudiante.grado;
+                // Remover el símbolo ° si está presente, y concatenar solo el número
+                var gradoSolo = vm.currentEstudiante.grado.replace(/°/g, '');
+                nombreCompleto = nombreCompleto + ' - ' + gradoSolo;
             }
 
             var estudianteData = {

@@ -84,7 +84,9 @@
                 .then(function(response) {
                     // The API returns PagedResult with items array
                     // Extract totalCount from X-Total-Count header or from response
-                    var totalCount = parseInt(response.headers('X-Total-Count') || response.totalCount || 0);
+                    // Note: In AngularJS $http, headers is a function that returns the header value
+                    var headerValue = response.headers('X-Total-Count');
+                    var totalCount = headerValue ? parseInt(headerValue) : (response.totalCount || 0);
                     
                     var result = {
                         data: response.data || [],
