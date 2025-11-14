@@ -143,15 +143,23 @@
     <script src="app.routes.js"></script>
     
     <!-- Core Services -->
+    <script src="app/core/services/env-config-loader.service.js"></script>
+    <script src="app/core/services/app-initializer.service.js"></script>
+    <script src="app/core/services/config.service.js"></script>
+    <script src="app/core/services/auth.service.js"></script>
     <script src="app/core/services/route-auth.service.js"></script>
+    <script src="app/core/services/api.service.js"></script>
     
     <!-- Dashboard -->
     <script src="app/features/dashboard/dashboard.controller.js"></script>
     
+    <!-- Authentication -->
+    <script src="app/core/auth/auth.service.js"></script>
+    
+    <!-- Interceptors -->
+    <script src="app/core/interceptors/auth.interceptor.js"></script>
+    
     <!-- Other modules will be added in future METAs -->
-    <!-- <script src="app/core/services/api.service.js"></script> -->
-    <!-- <script src="app/core/auth/auth.service.js"></script> -->
-    <!-- <script src="app/core/interceptors/auth.interceptor.js"></script> -->
     <!-- <script src="app/features/login/login.controller.js"></script> -->
     
 </body>

@@ -157,6 +157,120 @@
         </div>
     </div>
 
+    <!-- System Status -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>
+                        Estado del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Estado de API:</small><br>
+                            <span class="badge" ng-class="dashboard.apiStatus.includes('✓') ? 'bg-success' : 'bg-warning'">
+                                {{dashboard.apiStatus}}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Endpoint:</small><br>
+                            <code>{{dashboard.apiConfig.baseUrl}}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENVIRONMENT CONFIGURATION TEST -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>
+                        ENVIRONMENT CONFIG - Variables de Entorno
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li><strong>Config Loaded:</strong> 
+                            <span class="badge bg-{{dashboard.envInfo.configLoaded ? 'success' : 'danger'}}">
+                                {{dashboard.envInfo.configLoaded ? 'Yes' : 'No'}}
+                            </span>
+                        </li>
+                        <li><strong>Environment:</strong> <code>{{dashboard.envInfo.environment}}</code></li>
+                        <li><strong>Config File:</strong> <code>{{dashboard.envInfo.envFile}}</code></li>
+                        <li><strong>API Base URL:</strong> <code>{{dashboard.envInfo.apiBaseUrl}}</code></li>
+                        <li><strong>App Name:</strong> {{dashboard.envInfo.appName}}</li>
+                        <li><strong>App Version:</strong> <code>v{{dashboard.envInfo.appVersion}}</code></li>
+                        <li><strong>Debug Mode:</strong> 
+                            <span class="badge bg-{{dashboard.envInfo.debugMode ? 'warning' : 'secondary'}}">
+                                {{dashboard.envInfo.debugMode ? 'ON' : 'OFF'}}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTH SERVICE TEST -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-shield-check me-2"></i>
+                        AUTH SERVICE - META 4 Validation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Auth Status -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Authentication Status</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>API Status:</strong> <span class="badge bg-primary">{{dashboard.apiStatus}}</span></li>
+                                <li><strong>Authenticated:</strong> {{dashboard.authInfo.isAuthenticated ? 'Yes' : 'No'}}</li>
+                                <li><strong>Token:</strong> {{dashboard.authInfo.token}}</li>
+                                <li><strong>Current Role:</strong> {{dashboard.authInfo.role || 'None'}}</li>
+                                <li><strong>All Roles:</strong> {{dashboard.authInfo.roles.join(', ') || 'None'}}</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Test Actions -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Test Actions</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-success btn-sm" ng-click="dashboard.testLogin()">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                                    Test Login
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" ng-click="dashboard.testLogout()">
+                                    <i class="bi bi-box-arrow-left me-1"></i>
+                                    Test Logout
+                                </button>
+                            </div>
+                            
+                            <!-- Test Results -->
+                            <div class="mt-2" ng-if="dashboard.authInfo.loginTest || dashboard.authInfo.logoutTest">
+                                <small class="text-muted d-block">Test Results:</small>
+                                <div ng-if="dashboard.authInfo.loginTest" class="text-small">
+                                    Login: {{dashboard.authInfo.loginTest}}
+                                </div>
+                                <div ng-if="dashboard.authInfo.logoutTest" class="text-small">
+                                    Logout: {{dashboard.authInfo.logoutTest}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Activity -->
     <div class="row" ng-if="dashboard.recentActivity.length > 0">
         <div class="col">

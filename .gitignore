@@ -1,13 +1,120 @@
+# ==============================================
+# AudiSoft School - Unified .gitignore
+# Backend + Frontend + General exclusions
+# ==============================================
+
+# Backend - .NET Core
 Backend/run_api.bat
-.gitignore
 Backend/test_api.ps1
 .vs/
 bin/
 *.user
 **/bin/
 **/obj/
-**/bin/
 Logs/
 docs/
 .config/
-TestResults
+TestResults/
+*.cache
+*.dll
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+[Bb]in/
+[Dd]ebug*/
+[Rr]elease*/
+
+# Frontend - Dependencies & Build
+Frontend/node_modules/
+Frontend/jspm_packages/
+Frontend/dist/
+Frontend/build/
+Frontend/coverage/
+
+# Frontend - Logs
+Frontend/*.log
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+
+# Frontend - Runtime
+Frontend/pids
+Frontend/*.pid
+Frontend/*.seed
+Frontend/*.pid.lock
+Frontend/.npm
+Frontend/.eslintcache
+
+# IDE Files (Global)
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS Files (Global)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary Files (Global)
+*.tmp
+*.temp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# Compression Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Database Files
+*.sqlite
+*.sqlite3
+*.db
+
+# Security & Secrets
+*.key
+*.pem
+*.p12
+*.p8
+secrets/
+.secrets/
+
+# Package Managers
+.npm
+.yarn
+yarn.lock
+package-lock.json
+
+# Testing
+test-results/
+test-coverage/
+.nyc_output/

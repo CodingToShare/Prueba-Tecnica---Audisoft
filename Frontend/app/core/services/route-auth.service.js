@@ -9,8 +9,8 @@
         .module('audiSoftSchoolApp')
         .factory('routeAuthService', routeAuthService);
 
-    routeAuthService.$inject = ['$location', '$q'];
-    function routeAuthService($location, $q) {
+    routeAuthService.$inject = ['$location', '$q', 'authService'];
+    function routeAuthService($location, $q, authService) {
         
         var service = {
             checkRouteAccess: checkRouteAccess,
@@ -68,10 +68,7 @@
          * @returns {boolean} True if authenticated, false otherwise
          */
         function isAuthenticated() {
-            // TODO: Implement with authService in META 4
-            // For now, check if token exists in localStorage
-            var token = localStorage.getItem('audisoft_token');
-            return !!token;
+            return authService.isAuthenticated();
         }
 
         /**
@@ -80,9 +77,7 @@
          * @returns {boolean} True if user has role, false otherwise
          */
         function hasRole(role) {
-            // TODO: Implement with authService in META 4
-            var user = getCurrentUser();
-            return user && user.roles && user.roles.indexOf(role) !== -1;
+            return authService.hasRole(role);
         }
 
         /**
@@ -90,28 +85,14 @@
          * @returns {Object|null} User object or null if not authenticated
          */
         function getCurrentUser() {
-            // TODO: Implement with authService in META 4
-            // For now, return mock data if token exists
-            var token = localStorage.getItem('audisoft_token');
-            if (!token) {
-                return null;
-            }
-
-            // Mock user data - replace with real implementation in META 4
-            try {
-                var userData = localStorage.getItem('audisoft_user');
-                return userData ? JSON.parse(userData) : null;
-            } catch (e) {
-                console.error('Error parsing user data:', e);
-                return null;
-            }
+            return authService.getCurrentUser();
         }
 
         /**
          * Redirect to login page
          */
         function redirectToLogin() {
-            $location.path('/login');
+            authService.redirectToLogin();
         }
 
         /**

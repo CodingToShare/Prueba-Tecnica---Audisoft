@@ -31,8 +31,11 @@
     }
 
     // Run function - executes after module bootstrap
-    runApp.$inject = ['$rootScope', '$location', 'routeAuthService'];
-    function runApp($rootScope, $location, routeAuthService) {
+    runApp.$inject = ['$rootScope', '$location', 'routeAuthService', 'appInitializer'];
+    function runApp($rootScope, $location, routeAuthService, appInitializer) {
+        
+        // Initialize environment configuration
+        appInitializer.initialize();
         // Global event listeners for route protection
         $rootScope.$on('$routeChangeStart', function(event, next, current) {
             console.log('Route change started:', next.originalPath);
