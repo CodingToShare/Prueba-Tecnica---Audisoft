@@ -33,8 +33,7 @@
 
         // Filtering & Sorting
         vm.searchFilters = {
-            nombre: '',
-            grado: ''
+            nombre: ''
         };
         vm.orderBy = 'nombre';
         vm.orderDirection = 'asc';
@@ -42,6 +41,21 @@
             { value: 'nombre', label: 'Nombre' },
             { value: 'createdAt', label: 'Fecha Creación' },
             { value: 'id', label: 'ID' }
+        ];
+
+        // Grados disponibles (para UI, no se guarda en BD)
+        vm.gradosDisponibles = [
+            { value: '1°', label: '1° Primaria' },
+            { value: '2°', label: '2° Primaria' },
+            { value: '3°', label: '3° Primaria' },
+            { value: '4°', label: '4° Primaria' },
+            { value: '5°', label: '5° Primaria' },
+            { value: '6°', label: '6° Primaria' },
+            { value: '7°', label: '7° Secundaria' },
+            { value: '8°', label: '8° Secundaria' },
+            { value: '9°', label: '9° Secundaria' },
+            { value: '10°', label: '10° Secundaria' },
+            { value: '11°', label: '11° Secundaria' }
         ];
 
         // User Permissions
@@ -138,10 +152,6 @@
                 filters.nombre = vm.searchFilters.nombre.trim();
             }
 
-            if (vm.searchFilters.grado && vm.searchFilters.grado.trim()) {
-                filters.grado = vm.searchFilters.grado.trim();
-            }
-
             return filters;
         }
 
@@ -172,7 +182,7 @@
             vm.isEditMode = false;
             vm.currentEstudiante = {
                 nombre: '',
-                grado: ''
+                grado: '' // Para UI del combo, no se envía al backend
             };
             vm.showModal = true;
         }
@@ -204,9 +214,20 @@
             vm.isLoading = true;
             vm.error = null;
 
+            // Concatenar nombre con grado si está seleccionado
+            // Formato: "Santiago José Castro Ruiz - 9°"
+            var nombreCompleto = vm.currentEstudiante.nombre.trim();
+            if (vm.currentEstudiante.grado && vm.currentEstudiante.grado.trim()) {
+                nombreCompleto = nombreCompleto + ' - ' + vm.currentEstudiante.grado;
+            }
+
+            var estudianteData = {
+                nombre: nombreCompleto
+            };
+
             var promise = vm.isEditMode
-                ? estudiantesService.updateEstudiante(vm.currentEstudiante.id, vm.currentEstudiante)
-                : estudiantesService.createEstudiante(vm.currentEstudiante);
+                ? estudiantesService.updateEstudiante(vm.currentEstudiante.id, estudianteData)
+                : estudiantesService.createEstudiante(estudianteData);
 
             promise
                 .then(function(result) {

@@ -269,10 +269,12 @@
                         <!-- Grado -->
                         <div class="mb-3">
                             <label for="grado" class="form-label">Grado</label>
-                            <input type="text" class="form-control" id="grado"
-                                   ng-model="vm.currentEstudiante.grado"
-                                   placeholder="Ej: 10°, 9°">
-                            <small class="form-text text-muted">Grado o nivel del estudiante</small>
+                            <select class="form-select" id="grado"
+                                    ng-model="vm.currentEstudiante.grado"
+                                    ng-options="grado.value as grado.label for grado in vm.gradosDisponibles">
+                                <option value="">-- Selecciona un grado --</option>
+                            </select>
+                            <small class="form-text text-muted">Selecciona el grado del estudiante</small>
                         </div>
                     </form>
                 </div>

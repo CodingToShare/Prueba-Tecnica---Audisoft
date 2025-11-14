@@ -55,12 +55,12 @@
             queryParams = queryParams || {};
             var page = queryParams.page || 1;
             var pageSize = queryParams.pageSize || paginationConfig.defaultPageSize;
-            var skip = (page - 1) * pageSize;
 
-            // Build API parameters
+            // Build API parameters according to backend QueryParams structure
             var apiParams = {
-                skip: skip,
-                take: pageSize
+                page: page,
+                pageSize: pageSize,
+                maxPageSize: 100
             };
 
             // Add filtering if present
@@ -73,24 +73,27 @@
 
             // Add sorting if present
             if (queryParams.orderBy) {
-                apiParams.orderBy = queryParams.orderBy;
-                if (queryParams.orderDirection) {
-                    apiParams.orderBy += ' ' + queryParams.orderDirection.toUpperCase();
-                }
+                apiParams.sortField = queryParams.orderBy;
+                // Backend expects sortDesc: true for desc, false for asc
+                apiParams.sortDesc = queryParams.orderDirection === 'desc' ? true : false;
             }
 
-            $log.debug('EstudiantesService: Fetching estudiantes', apiParams);
+            $log.debug('EstudiantesService: Fetching estudiantes with params', apiParams);
 
             apiService.get('estudiantes', apiParams)
                 .then(function(response) {
+                    // The API returns PagedResult with items array
+                    // Extract totalCount from X-Total-Count header or from response
+                    var totalCount = parseInt(response.headers('X-Total-Count') || response.totalCount || 0);
+                    
                     var result = {
                         data: response.data || [],
-                        totalCount: response.totalCount || 0,
+                        totalCount: totalCount,
                         page: page,
                         pageSize: pageSize
                     };
 
-                    $log.info('EstudiantesService: Fetched', result.data.length, 'estudiantes');
+                    $log.info('EstudiantesService: Fetched', result.data.length, 'de', result.totalCount, 'estudiantes');
                     deferred.resolve(result);
                 })
                 .catch(function(error) {
@@ -221,7 +224,11 @@
 
         /**
          * Build filter query string for backend advanced filtering
-         * Example: "nombre:Juan;grado=10" (nombre contains 'Juan' AND grado equals '10')
+         * Backend supports:
+         * - "Nombre:Juan" (contains)
+         * - "Id=5" (equals) 
+         * - "Valor>50;Nombre:Maria" (AND with ;)
+         * - "Nombre:Juan|Nombre:Maria" (OR with |)
          * @param {Object} filters - Filter object
          * @returns {string} Filter query string
          */
@@ -237,8 +244,8 @@
                     var value = String(filters[key]).trim();
 
                     if (value) {
-                        // Use 'contains' filter by default (field:value syntax)
-                        // For exact match, would use field=value syntax
+                        // Use 'contains' filter syntax for string fields: fieldName:value
+                        // This matches the backend's advanced filter syntax
                         filterParts.push(key + ':' + value);
                     }
                 }
