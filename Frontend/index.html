@@ -149,6 +149,11 @@
     <script src="app/core/services/estudiantes.service.js"></script>
     <script src="app/core/services/profesores.service.js"></script>
     <script src="app/core/services/notas.service.js"></script>
+    <script src="app/core/services/loading.service.js"></script>
+    <script src="app/core/services/toast.service.js"></script>
+
+    <!-- Core Directives -->
+    <script src="app/core/directives/acl.directive.js"></script>
     
     <!-- Core Filters -->
     <script src="app/core/filters/range.filter.js"></script>
@@ -164,6 +169,7 @@
     
     <!-- Interceptors -->
     <script src="app/core/interceptors/auth.interceptor.js"></script>
+    <script src="app/core/interceptors/loading.interceptor.js"></script>
     
     <!-- Other modules will be added in future METAs -->
     <script src="app/features/login/login.controller.js"></script>
@@ -177,6 +183,11 @@
         <script src="app/features/profesores/profesores.controller.js"></script>
         <!-- Feature scripts: Notas -->
         <script src="app/features/notas/notas.controller.js"></script>
+
+    <!-- Shared reusable components -->
+    <script src="app/shared/components/as-table.directive.js"></script>
+    <script src="app/shared/components/as-modal.directive.js"></script>
+    <script src="app/shared/components/as-input.directive.js"></script>
     
 </body>
 </html>

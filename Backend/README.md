@@ -387,14 +387,3 @@ dotnet run --urls "http://localhost:5002"
 # Confiar en certificados de desarrollo
 dotnet dev-certs https --trust
 ```
-
-## 📧 Soporte
-
-Para problemas o preguntas:
-- **Email**: support@audisoft.com
-- **Documentación**: Swagger UI en http://localhost:5000
-- **Issues**: GitHub Issues del repositorio
-
----
-
-**Desarrollado con ❤️ por el equipo AudiSoft**

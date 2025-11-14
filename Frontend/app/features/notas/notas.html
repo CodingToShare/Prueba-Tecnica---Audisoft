@@ -9,7 +9,7 @@
         </div>
         <div class="col-md-4 text-end">
             <button class="btn btn-primary" ng-click="vm.openCreateModal()" ng-if="vm.canCreate" 
-                    [disabled]="vm.isLoading">
+                    ng-disabled="vm.isLoading">
                 <i class="bi bi-plus-circle me-2"></i>
                 Nueva Nota
             </button>
@@ -167,296 +167,158 @@
         </div>
     </div>
 
-    <!-- Notas Table -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h6 class="mb-0">
-                <i class="bi bi-list-ul me-2"></i>
-                Listado de Notas ({{ vm.totalCount }} total)
-            </h6>
-        </div>
-        <div class="table-responsive" ng-if="vm.notas.length > 0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 60px;">ID</th>
-                        <th>Nombre</th>
-                        <th style="width: 100px;">Valor</th>
-                        <th ng-if="vm.canViewAll">Profesor</th>
-                        <th ng-if="vm.canViewAll">Estudiante</th>
-                        <th>Fecha Creación</th>
-                        <th style="width: 120px; text-align: center;" ng-if="vm.canEdit || vm.canDelete">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="nota in vm.notas">
-                        <td><code>{{ nota.id }}</code></td>
-                        <td>
-                            <strong>{{ nota.nombre }}</strong>
-                        </td>
-                        <td>
-                            <span class="badge bg-success">{{ nota.valor }}</span>
-                        </td>
-                        <td ng-if="vm.canViewAll">
-                            <small class="text-muted">{{ (vm.profesores | filter:{id: nota.idProfesor})[0].nombre || 'N/A' }}</small>
-                        </td>
-                        <td ng-if="vm.canViewAll">
-                            <small class="text-muted">{{ (vm.estudiantes | filter:{id: nota.idEstudiante})[0].nombre || 'N/A' }}</small>
-                        </td>
-                        <td>
-                            <small class="text-muted">{{ nota.createdAt | date:'short' }}</small>
-                        </td>
-                        <td style="text-align: center;" ng-if="vm.canEdit || vm.canDelete">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-outline-primary" 
-                                        ng-click="vm.openEditModal(nota)"
-                                        ng-if="vm.canEdit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Editar nota">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                                <button class="btn btn-outline-danger" 
-                                        ng-click="vm.openDeleteConfirm(nota)"
-                                        ng-if="vm.canDelete"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Eliminar nota">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Empty State -->
-        <div class="card-body text-center text-muted" ng-if="vm.notas.length === 0 && !vm.isLoading">
-            <i class="bi bi-inbox display-1 mb-3 d-block"></i>
-            <p>No se encontraron notas</p>
-            <p class="small">Intenta ajustar los filtros o crea una nueva nota</p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="card-footer bg-light" ng-if="vm.totalPages > 1">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <label class="form-label mb-0">
-                        Elementos por página:
-                        <select class="form-select d-inline-block w-auto" 
-                                ng-model="vm.pageSize"
-                                ng-change="vm.changePageSize()"
-                                ng-options="size for size in vm.pageSizes">
-                        </select>
-                    </label>
-                </div>
-                <div class="col-md-6">
-                    <nav aria-label="Page navigation" class="float-end">
-                        <ul class="pagination mb-0 justify-content-end">
-                            <!-- Previous Page -->
-                            <li class="page-item" ng-class="{'disabled': vm.currentPage === 1}">
-                                <a class="page-link" ng-click="vm.goToPage(vm.currentPage - 1)"
-                                   ng-if="vm.currentPage > 1">
-                                    <i class="bi bi-chevron-left"></i> Anterior
-                                </a>
-                                <span class="page-link" ng-if="vm.currentPage === 1">
-                                    <i class="bi bi-chevron-left"></i> Anterior
-                                </span>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <li class="page-item" ng-repeat="page in [] | range:1:(vm.totalPages + 1)"
-                                ng-class="{'active': page === vm.currentPage}"
-                                ng-if="page >= vm.currentPage - 2 && page <= vm.currentPage + 2">
-                                <a class="page-link" ng-click="vm.goToPage(page)"
-                                   ng-if="page !== vm.currentPage">{{ page }}</a>
-                                <span class="page-link" ng-if="page === vm.currentPage">
-                                    {{ page }} <span class="visually-hidden">(current)</span>
-                                </span>
-                            </li>
-
-                            <!-- Next Page -->
-                            <li class="page-item" ng-class="{'disabled': vm.currentPage === vm.totalPages}">
-                                <a class="page-link" ng-click="vm.goToPage(vm.currentPage + 1)"
-                                   ng-if="vm.currentPage < vm.totalPages">
-                                    Siguiente <i class="bi bi-chevron-right"></i>
-                                </a>
-                                <span class="page-link" ng-if="vm.currentPage === vm.totalPages">
-                                    Siguiente <i class="bi bi-chevron-right"></i>
-                                </span>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-            <div class="small text-muted text-center mt-2">
-                Mostrando {{ (vm.currentPage - 1) * vm.pageSize + 1 }} a {{ vm.Math.min(vm.currentPage * vm.pageSize, vm.totalCount) }} de {{ vm.totalCount }} notas
-            </div>
-        </div>
+    <!-- Notas Table (reutilizable) -->
+    <div class="mb-3">
+        <as-table
+            items="vm.notas"
+            columns="vm.tableColumns"
+            total="vm.totalCount"
+            page="vm.currentPage"
+            page-size="vm.pageSize"
+            page-sizes="vm.pageSizes"
+            order-by="vm.orderBy"
+            order-direction="vm.orderDirection"
+            loading="vm.isLoading"
+            on-page-change="vm.goToPage(page)"
+            on-page-size-change="vm.changePageSize()"
+            on-sort="vm.setSort(field)"
+            empty-message="No se encontraron notas">
+            <actions>
+                <button class="btn btn-outline-primary" 
+                        ng-click="vm.openEditModal(row)"
+                        ng-if="vm.canEdit"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Editar nota">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger" 
+                        ng-click="vm.openDeleteConfirm(row)"
+                        ng-if="vm.canDelete"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Eliminar nota">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </actions>
+        </as-table>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div class="modal" id="notaModal" tabindex="-1" ng-show="vm.showModal" 
-         style="display: block; background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- Header -->
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-pencil-square': vm.isEditMode}"></i>
-                        {{ vm.isEditMode ? 'Editar Nota' : 'Nueva Nota' }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeModal()"></button>
+    <!-- Create/Edit Modal (reutilizable) -->
+    <as-modal title="{{ vm.isEditMode ? 'Editar Nota' : 'Nueva Nota' }}" visible="vm.showModal" variant="primary" on-close="vm.closeModal()">
+        <body>
+            <!-- Error in Modal -->
+            <div ng-if="vm.error" class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                {{ vm.error.message }}
+            </div>
+
+            <!-- Form -->
+            <form ng-submit="vm.saveNota(notaForm)" name="notaForm" novalidate>
+                <div ng-if="vm.isEditMode" class="mb-3">
+                    <label class="form-label">ID</label>
+                    <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly>
                 </div>
 
-                <!-- Body -->
-                <div class="modal-body">
-                    <!-- Error in Modal -->
-                    <div ng-if="vm.error" class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-circle me-2"></i>
-                        {{ vm.error.message }}
-                    </div>
+                <as-input 
+                    label="Nombre" 
+                    name="nombre"
+                    type="text" 
+                    model="vm.currentNota.nombre" 
+                    required="true" 
+                    minlength="3"
+                    maxlength="200"
+                    pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s\-0-9]+$"
+                    placeholder="Nombre o descripción de la nota" 
+                    help="Máx. 200 caracteres." 
+                    error-required="El nombre es obligatorio"
+                    error-minlength="Debe tener al menos 3 caracteres"
+                    error-maxlength="Debe tener como máximo 200 caracteres"
+                    error-pattern="Solo letras, números, espacios y guiones">
+                </as-input>
+                <as-input 
+                    label="Valor" 
+                    name="valor"
+                    type="number" 
+                    model="vm.currentNota.valor" 
+                    required="true" 
+                    min="0" 
+                    max="100" 
+                    step="0.01" 
+                    placeholder="0.00" 
+                    help="Entre 0 y 100 con máximo 2 decimales." 
+                    error-required="El valor es obligatorio"
+                    error-min="El valor mínimo es 0"
+                    error-max="El valor máximo es 100">
+                </as-input>
+                <as-input 
+                    label="Profesor" 
+                    name="idProfesor"
+                    type="select" 
+                    model="vm.currentNota.idProfesor" 
+                    required="true" 
+                    options="vm.profesores" 
+                    value-field="id" 
+                    label-field="nombre"
+                    error-required="Selecciona un profesor">
+                </as-input>
+                <as-input 
+                    label="Estudiante" 
+                    name="idEstudiante"
+                    type="select" 
+                    model="vm.currentNota.idEstudiante" 
+                    required="true" 
+                    options="vm.estudiantes" 
+                    value-field="id" 
+                    label-field="nombre"
+                    error-required="Selecciona un estudiante">
+                </as-input>
+            </form>
+        </body>
+        <footer>
+            <button type="button" class="btn btn-secondary" ng-click="vm.closeModal()" ng-disabled="vm.isLoading">Cancelar</button>
+            <button type="submit" class="btn btn-primary" ng-click="vm.saveNota(notaForm)" form="notaForm" ng-disabled="vm.isLoading">
+                <span ng-if="!vm.isLoading">
+                    <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-check-circle': vm.isEditMode}"></i>
+                    {{ vm.isEditMode ? 'Actualizar' : 'Crear' }}
+                </span>
+                <span ng-if="vm.isLoading">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Guardando...
+                </span>
+            </button>
+        </footer>
+    </as-modal>
 
-                    <!-- Form -->
-                    <form ng-submit="vm.saveNota()" name="notaForm" novalidate>
-                        <!-- ID (Read-only for edit) -->
-                        <div class="mb-3" ng-if="vm.isEditMode">
-                            <label class="form-label">ID</label>
-                            <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly>
-                        </div>
-
-                        <!-- Nombre -->
-                        <div class="mb-3">
-                            <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="nombre"
-                                   ng-model="vm.currentNota.nombre"
-                                   placeholder="Nombre o descripción de la nota"
-                                   required
-                                   autofocus>
-                            <small class="form-text text-muted">Máx. 200 caracteres.</small>
-                        </div>
-
-                        <!-- Valor -->
-                        <div class="mb-3">
-                            <label for="valor" class="form-label">Valor <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="valor"
-                                   ng-model="vm.currentNota.valor"
-                                   min="0" max="100" step="0.01"
-                                   placeholder="0.00"
-                                   required>
-                            <small class="form-text text-muted">Entre 0 y 100 con máximo 2 decimales.</small>
-                        </div>
-
-                        <!-- Profesor Selector -->
-                        <div class="mb-3">
-                            <label for="idProfesor" class="form-label">Profesor <span class="text-danger">*</span></label>
-                            <select class="form-select" id="idProfesor"
-                                    ng-model="vm.currentNota.idProfesor"
-                                    ng-options="prof.id as prof.nombre for prof in vm.profesores"
-                                    required>
-                                <option value="">-- Seleccionar profesor --</option>
-                            </select>
-                        </div>
-
-                        <!-- Estudiante Selector -->
-                        <div class="mb-3">
-                            <label for="idEstudiante" class="form-label">Estudiante <span class="text-danger">*</span></label>
-                            <select class="form-select" id="idEstudiante"
-                                    ng-model="vm.currentNota.idEstudiante"
-                                    ng-options="est.id as (est.nombre + (est.grado ? ' (' + est.grado + ')' : '')) for est in vm.estudiantes"
-                                    required>
-                                <option value="">-- Seleccionar estudiante --</option>
-                            </select>
-                        </div>
-                    </form>
+    <!-- Delete Confirmation Modal (reutilizable) -->
+    <as-modal title="Confirmar Eliminación" visible="vm.showDeleteConfirm" variant="danger" on-close="vm.closeDeleteConfirm()">
+        <body>
+            <p class="mb-0"><strong>¿Estás seguro de que deseas eliminar esta nota?</strong></p>
+            <div class="mt-3 p-3 bg-light rounded border-start border-danger border-4">
+                <div class="mb-2">
+                    <span class="text-muted">Nombre:</span>
+                    <strong>{{ vm.notaToDelete.nombre }}</strong>
                 </div>
-
-                <!-- Footer -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" ng-click="vm.closeModal()" [disabled]="vm.isLoading">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" ng-click="vm.saveNota()" 
-                            form="notaForm" [disabled]="vm.isLoading">
-                        <span ng-if="!vm.isLoading">
-                            <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-check-circle': vm.isEditMode}"></i>
-                            {{ vm.isEditMode ? 'Actualizar' : 'Crear' }}
-                        </span>
-                        <span ng-if="vm.isLoading">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Guardando...
-                        </span>
-                    </button>
+                <div class="mb-2">
+                    <span class="text-muted">Valor:</span>
+                    <strong><span class="badge bg-success">{{ vm.notaToDelete.valor | number:'1.2-2' }}</span></strong>
+                </div>
+                <div>
+                    <span class="text-muted">ID:</span>
+                    <code>{{ vm.notaToDelete.id }}</code>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" ng-show="vm.showModal" ng-class="{'show': vm.showModal}"></div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal" id="deleteConfirmModal" tabindex="-1" ng-show="vm.showDeleteConfirm" 
-         style="display: block; background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-danger">
-                <!-- Header -->
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Confirmar Eliminación
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeDeleteConfirm()"></button>
-                </div>
-
-                <!-- Body -->
-                <div class="modal-body">
-                    <p class="mb-0">
-                        <strong>¿Estás seguro de que deseas eliminar esta nota?</strong>
-                    </p>
-                    <div class="mt-3 p-3 bg-light rounded border-start border-danger border-4">
-                        <div class="mb-2">
-                            <span class="text-muted">Nombre:</span>
-                            <strong>{{ vm.notaToDelete.nombre }}</strong>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-muted">Valor:</span>
-                            <strong><span class="badge bg-success">{{ vm.notaToDelete.valor | number:'1.2-2' }}</span></strong>
-                        </div>
-                        <div>
-                            <span class="text-muted">ID:</span>
-                            <code>{{ vm.notaToDelete.id }}</code>
-                        </div>
-                    </div>
-                    <div class="alert alert-warning mt-3 mb-0" role="alert">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <small>Esta acción no se puede deshacer.</small>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" ng-click="vm.closeDeleteConfirm()" 
-                            [disabled]="vm.isDeleting">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-danger" ng-click="vm.confirmDelete()" 
-                            [disabled]="vm.isDeleting">
-                        <span ng-if="!vm.isDeleting">
-                            <i class="bi bi-trash-fill me-1"></i>
-                            Eliminar
-                        </span>
-                        <span ng-if="vm.isDeleting">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Eliminando...
-                        </span>
-                    </button>
-                </div>
+            <div class="alert alert-warning mt-3 mb-0" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>Esta acción no se puede deshacer.</small>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal Backdrop for Delete Confirm -->
-    <div class="modal-backdrop fade" ng-show="vm.showDeleteConfirm" ng-class="{'show': vm.showDeleteConfirm}"></div>
+        </body>
+        <footer>
+            <button type="button" class="btn btn-secondary" ng-click="vm.closeDeleteConfirm()" ng-disabled="vm.isDeleting">Cancelar</button>
+            <button type="button" class="btn btn-danger" ng-click="vm.confirmDelete()" ng-disabled="vm.isDeleting">
+                <span ng-if="!vm.isDeleting"><i class="bi bi-trash-fill me-1"></i>Eliminar</span>
+                <span ng-if="vm.isDeleting"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Eliminando...</span>
+            </button>
+        </footer>
+    </as-modal>
 </div>
 
 <style>

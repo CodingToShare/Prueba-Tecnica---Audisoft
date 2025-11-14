@@ -287,11 +287,12 @@
          * @param {string} message - Error message to display
          */
         function showErrorMessage(message) {
-            // For now, use console warn. In a real app, this would be a toast/notification service
-            console.warn('AuthInterceptor Error:', message);
-            
-            // TODO: Integrate with toast notification service when available
-            // Example: notificationService.showError(message);
+            try {
+                var toastService = $injector.get('toastService');
+                toastService.error(message);
+            } catch (e) {
+                console.warn('AuthInterceptor Error:', message);
+            }
         }
 
         /**

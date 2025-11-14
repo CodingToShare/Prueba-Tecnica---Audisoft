@@ -8,8 +8,8 @@
             </h1>
         </div>
         <div class="col-md-4 text-end">
-            <button class="btn btn-primary" ng-click="vm.openCreateModal()" ng-if="vm.canCreate" 
-                    [disabled]="vm.isLoading">
+                <button class="btn btn-primary" ng-click="vm.openCreateModal()" ng-if="vm.canCreate" 
+                    ng-disabled="vm.isLoading">
                 <i class="bi bi-plus-circle me-2"></i>
                 Nuevo Estudiante
             </button>
@@ -289,11 +289,11 @@
 
                 <!-- Footer -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" ng-click="vm.closeModal()" [disabled]="vm.isLoading">
+                    <button type="button" class="btn btn-secondary" ng-click="vm.closeModal()" ng-disabled="vm.isLoading">
                         Cancelar
                     </button>
                     <button type="submit" class="btn btn-primary" ng-click="vm.saveEstudiante()" 
-                            form="estudianteForm" [disabled]="vm.isLoading">
+                            form="estudianteForm" ng-disabled="vm.isLoading">
                         <span ng-if="!vm.isLoading">
                             <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-check-circle': vm.isEditMode}"></i>
                             {{ vm.isEditMode ? 'Actualizar' : 'Crear' }}
@@ -355,11 +355,11 @@
                 <!-- Footer -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" ng-click="vm.closeDeleteConfirm()" 
-                            [disabled]="vm.isDeleting">
+                            ng-disabled="vm.isDeleting">
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-danger" ng-click="vm.confirmDelete()" 
-                            [disabled]="vm.isDeleting">
+                            ng-disabled="vm.isDeleting">
                         <span ng-if="!vm.isDeleting">
                             <i class="bi bi-trash-fill me-1"></i>
                             Eliminar

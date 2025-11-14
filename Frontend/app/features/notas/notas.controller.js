@@ -10,10 +10,10 @@
         .module('audiSoftSchoolApp')
         .controller('NotasController', NotasController);
 
-    NotasController.$inject = ['$scope', '$location', 'authService', 'notasService', 'estudiantesService', 
-                               'profesoresService', 'configService', '$log'];
+        NotasController.$inject = ['$scope', '$location', 'authService', 'notasService', 'estudiantesService', 
+                                                             'profesoresService', 'configService', '$log', 'toastService'];
     function NotasController($scope, $location, authService, notasService, estudiantesService, 
-                             profesoresService, configService, $log) {
+                                                         profesoresService, configService, $log, toastService) {
         var vm = this;
 
         // UI State
@@ -82,6 +82,17 @@
         vm.goToPage = goToPage;
         vm.changePageSize = changePageSize;
         vm.toggleSortOrder = toggleSortOrder;
+        vm.setSort = setSort;
+
+        // Table columns configuration for reusable table component
+        vm.tableColumns = [
+            { field: 'id', label: 'ID', width: '60px', sortable: true, type: 'code' },
+            { field: 'nombre', label: 'Nombre', sortable: true },
+            { field: 'valor', label: 'Valor', sortable: true, type: 'badge', badgeClass: 'bg-success' },
+            { field: 'profesor', label: 'Profesor', sortable: false, visible: vm.canViewAll ? undefined : false, get: function(row){ return getProfesorNombre(row.idProfesor); }, type: 'small' },
+            { field: 'estudiante', label: 'Estudiante', sortable: false, visible: vm.canViewAll ? undefined : false, get: function(row){ return getEstudianteNombre(row.idEstudiante); }, type: 'small' },
+            { field: 'createdAt', label: 'Fecha Creación', sortable: true, get: function(row){ return $scope.$eval("row.createdAt | date:'short'", { row: row }); }, type: 'small' }
+        ];
 
         // Initialize
         activate();
@@ -164,6 +175,16 @@
                     $log.error('NotasController: Error loading estudiantes', error);
                     vm.estudiantes = [];
                 });
+        }
+
+        function getProfesorNombre(idProfesor) {
+            var match = (vm.profesores || []).find(function(p){ return p.id === idProfesor; });
+            return match ? match.nombre : 'N/A';
+        }
+
+        function getEstudianteNombre(idEstudiante) {
+            var match = (vm.estudiantes || []).find(function(e){ return e.id === idEstudiante; });
+            return match ? match.nombre : 'N/A';
         }
 
         /**
@@ -249,24 +270,10 @@
         /**
          * Save nota (create or update)
          */
-        function saveNota() {
-            if (!vm.currentNota || !vm.currentNota.nombre || vm.currentNota.valor === '' || 
-                !vm.currentNota.idProfesor || !vm.currentNota.idEstudiante) {
-                vm.error = { message: 'Todos los campos son requeridos' };
-                return;
-            }
-
-            // Validate nota name (letters, numbers, spaces, hyphens)
-            var nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$/;
-            if (!nameRegex.test(vm.currentNota.nombre)) {
-                vm.error = { message: 'El nombre de la nota contiene caracteres inválidos' };
-                return;
-            }
-
-            // Validate valor (0-100, max 2 decimals)
-            var valor = parseFloat(vm.currentNota.valor);
-            if (isNaN(valor) || valor < 0 || valor > 100) {
-                vm.error = { message: 'El valor debe estar entre 0 y 100' };
+        function saveNota(form) {
+            if (form && form.$invalid) {
+                form.$setSubmitted();
+                vm.error = { message: 'Revisa los errores del formulario' };
                 return;
             }
 
@@ -279,9 +286,9 @@
 
             promise
                 .then(function(result) {
-                    vm.success = { 
-                        message: vm.isEditMode ? 'Nota actualizada exitosamente' : 'Nota creada exitosamente'
-                    };
+                    var successMsg = vm.isEditMode ? 'Nota actualizada exitosamente' : 'Nota creada exitosamente';
+                    vm.success = { message: successMsg };
+                    toastService.success(successMsg);
                     closeModal();
                     loadNotas();
 
@@ -294,10 +301,9 @@
                 })
                 .catch(function(error) {
                     vm.isLoading = false;
-                    vm.error = {
-                        message: error && error.message ? error.message : 'Error guardando nota',
-                        status: error && error.status ? error.status : null
-                    };
+                    var errMsg = (error && (error.message || (error.data && error.data.message))) || 'Error guardando nota';
+                    vm.error = { message: errMsg, status: error && error.status ? error.status : null };
+                    toastService.error(errMsg);
                     $log.error('NotasController: Error saving nota', error);
                 });
         }
@@ -351,6 +357,7 @@
             notasService.deleteNota(vm.notaToDelete.id)
                 .then(function() {
                     vm.success = { message: 'Nota eliminada exitosamente' };
+                    toastService.success('Nota eliminada exitosamente');
                     closeDeleteConfirm();
                     loadNotas();
 
@@ -363,10 +370,9 @@
                 })
                 .catch(function(error) {
                     vm.isDeleting = false;
-                    vm.error = {
-                        message: error && error.message ? error.message : 'Error eliminando nota',
-                        status: error && error.status ? error.status : null
-                    };
+                    var delErr = (error && (error.message || (error.data && error.data.message))) || 'Error eliminando nota';
+                    vm.error = { message: delErr, status: error && error.status ? error.status : null };
+                    toastService.error(delErr);
                     $log.error('NotasController: Error deleting nota', error);
                 });
         }
@@ -455,6 +461,16 @@
          */
         function toggleSortOrder() {
             vm.orderDirection = vm.orderDirection === 'asc' ? 'desc' : 'asc';
+            loadNotas();
+        }
+
+        function setSort(field) {
+            if (vm.orderBy === field) {
+                vm.orderDirection = vm.orderDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                vm.orderBy = field;
+                vm.orderDirection = 'asc';
+            }
             loadNotas();
         }
     }
