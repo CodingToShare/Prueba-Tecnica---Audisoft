@@ -337,15 +337,13 @@ app.UseSerilogRequestLogging(options =>
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Enable Swagger for both Development and Production
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AudiSoft School API v1.0");
-        options.RoutePrefix = string.Empty;
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "AudiSoft School API v1.0");
+    options.RoutePrefix = string.Empty;
+});
 
 // app.UseHttpsRedirection();
 

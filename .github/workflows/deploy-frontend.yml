@@ -100,12 +100,12 @@ jobs:
       - name: Create package.json if not exists
         working-directory: ${{ env.FRONTEND_PATH }}
         run: |
-          if [ ! -f "package.json" ] || ! grep -q '"start"' package.json; then
+          if [ ! -f "package.json" ]; then
             cat > package.json << 'EOF'
           {
-            "name": "audisoft-frontend",
+            "name": "audisoft-school-frontend",
             "version": "1.0.0",
-            "description": "AudiSoft School - Frontend SPA",
+            "description": "AudiSoft School - Sistema de Gestión Escolar",
             "main": "server.js",
             "scripts": {
               "start": "node server.js",
@@ -113,10 +113,10 @@ jobs:
             },
             "dependencies": {
               "express": "^4.18.2",
-              "dotenv": "^16.0.3"
+              "dotenv": "^16.3.1"
             },
             "engines": {
-              "node": "20.x"
+              "node": ">=20.0.0"
             }
           }
           EOF
