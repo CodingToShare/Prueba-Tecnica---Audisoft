@@ -31,7 +31,7 @@
         ////////////////
 
         /**
-         * Load environment configuration from environment-specific .env file
+         * Load environment configuration from API endpoint or .env files
          * @returns {Promise} Promise that resolves when config is loaded
          */
         function loadConfig() {
@@ -39,32 +39,46 @@
                 return $q.resolve(envConfig);
             }
 
-            var envFile = getEnvironmentFile();
-            $log.debug('EnvConfigLoader: Loading configuration from', envFile);
-
-            return $http.get(envFile)
+            // Try 1: Load from /api/config endpoint (recommended)
+            $log.debug('EnvConfigLoader: Attempt 1 - Loading from /api/config');
+            return $http.get('/api/config', { timeout: 5000 })
                 .then(function(response) {
-                    envConfig = parseEnvFile(response.data);
+                    envConfig = response.data;
                     isLoaded = true;
-                    $log.info('EnvConfigLoader: Configuration loaded successfully from', envFile);
+                    $log.info('EnvConfigLoader: Configuration loaded from /api/config', envConfig);
                     return envConfig;
                 })
                 .catch(function(error) {
-                    $log.warn('EnvConfigLoader: Failed to load', envFile, 'trying fallback .env file');
+                    $log.warn('EnvConfigLoader: /api/config failed, attempting .env files');
                     
-                    // Fallback to default .env file
-                    return $http.get('.env')
+                    // Try 2: Load from environment-specific .env file
+                    var envFile = getEnvironmentFile();
+                    $log.debug('EnvConfigLoader: Attempt 2 - Loading from', envFile);
+                    
+                    return $http.get(envFile, { timeout: 5000 })
                         .then(function(response) {
                             envConfig = parseEnvFile(response.data);
                             isLoaded = true;
-                            $log.info('EnvConfigLoader: Fallback configuration loaded from .env');
+                            $log.info('EnvConfigLoader: Configuration loaded from', envFile);
                             return envConfig;
                         })
-                        .catch(function(fallbackError) {
-                            $log.error('EnvConfigLoader: All env files failed, using defaults:', fallbackError);
-                            envConfig = getDefaultConfig();
-                            isLoaded = true;
-                            return envConfig;
+                        .catch(function(error2) {
+                            $log.warn('EnvConfigLoader: Environment-specific file failed, trying .env fallback');
+                            
+                            // Try 3: Load from default .env file
+                            return $http.get('.env', { timeout: 5000 })
+                                .then(function(response) {
+                                    envConfig = parseEnvFile(response.data);
+                                    isLoaded = true;
+                                    $log.info('EnvConfigLoader: Configuration loaded from .env fallback');
+                                    return envConfig;
+                                })
+                                .catch(function(error3) {
+                                    $log.error('EnvConfigLoader: All config sources failed, using defaults');
+                                    envConfig = getDefaultConfig();
+                                    isLoaded = true;
+                                    return envConfig;
+                                });
                         });
                 });
         }
