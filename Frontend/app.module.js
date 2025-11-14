@@ -70,14 +70,15 @@
     }
 
     // Main Controller for navigation and global state
-    MainController.$inject = ['$scope', '$location', 'routeAuthService'];
-    function MainController($scope, $location, routeAuthService) {
+    MainController.$inject = ['$scope', '$location', 'routeAuthService', 'authService'];
+    function MainController($scope, $location, routeAuthService, authService) {
         var vm = this;
 
         // Bindable properties and methods
         vm.isAuthenticated = isAuthenticated;
         vm.getCurrentUser = getCurrentUser;
         vm.logout = logout;
+        vm.logoutAndLogin = logoutAndLogin;
 
         // Initialize controller
         activate();
@@ -106,9 +107,20 @@
             // Will implement with authService in META 4
             console.log('Logout clicked');
             // Clear localStorage for now
-            localStorage.removeItem('audisoft_token');
-            localStorage.removeItem('audisoft_user');
+            authService.logout();
             $location.path('/login');
+        }
+
+        /**
+         * Logout current session and redirect to login
+         * Used when user is in unauthorized page and wants to login with different credentials
+         */
+        function logoutAndLogin() {
+            console.log('Logout and Login clicked - clearing session and redirecting to login');
+            // Clear current session completely
+            authService.logout();
+            // Redirect to login with a flag to show success message
+            $location.path('/login').search({ forceLogin: true });
         }
     }
 
