@@ -95,9 +95,9 @@
             $log.debug('NotasController: Activating');
             
             // Get current user info
-            var user = authService.getUser();
+            var user = authService.getCurrentUser();
             vm.userRole = user && user.roles ? user.roles[0] : null;
-            vm.currentUserId = user && user.userId ? user.userId : null;
+            vm.currentUserId = user && user.id ? user.id : null;
 
             $log.debug('NotasController: User role =', vm.userRole, 'ID =', vm.currentUserId);
 
