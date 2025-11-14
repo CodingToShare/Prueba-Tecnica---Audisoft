@@ -41,34 +41,12 @@
             // ===== ESTUDIANTES ROUTES =====
             // Lista de estudiantes - Admin y Profesor
             .when('/estudiantes', {
-                templateUrl: 'app/features/estudiantes/estudiantes-list.html',
-                controller: 'EstudiantesListController',
-                controllerAs: 'estudiantesList',
+                templateUrl: 'app/features/estudiantes/estudiantes.html',
+                controller: 'EstudiantesController',
+                controllerAs: 'vm',
                 access: {
                     requiresLogin: true,
                     allowedRoles: ['Admin', 'Profesor']
-                }
-            })
-            
-            // Crear estudiante - Solo Admin
-            .when('/estudiantes/new', {
-                templateUrl: 'app/features/estudiantes/estudiante-form.html',
-                controller: 'EstudianteFormController',
-                controllerAs: 'estudianteForm',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin']
-                }
-            })
-            
-            // Ver/Editar estudiante - Admin (editar) / Profesor (ver) / Estudiante (solo sus datos)
-            .when('/estudiantes/:id', {
-                templateUrl: 'app/features/estudiantes/estudiante-detail.html',
-                controller: 'EstudianteDetailController',
-                controllerAs: 'estudianteDetail',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin', 'Profesor', 'Estudiante']
                 }
             })
 

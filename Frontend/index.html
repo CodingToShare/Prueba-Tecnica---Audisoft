@@ -50,7 +50,7 @@
                     </li>
                     
                     <!-- Estudiantes - Admin y Profesor -->
-                    <li class="nav-item" ng-if="main.getCurrentUser().roles.indexOf('Admin') !== -1 || main.getCurrentUser().roles.indexOf('Profesor') !== -1">
+                    <li class="nav-item" ng-if="main.hasAnyRole(['Admin', 'Profesor'])">
                         <a class="nav-link" href="#!/estudiantes">
                             <i class="bi bi-people-fill me-1"></i>
                             Estudiantes
@@ -58,7 +58,7 @@
                     </li>
                     
                     <!-- Profesores - Solo Admin -->
-                    <li class="nav-item" ng-if="main.getCurrentUser().roles.indexOf('Admin') !== -1">
+                    <li class="nav-item" ng-if="main.hasAnyRole(['Admin'])">
                         <a class="nav-link" href="#!/profesores">
                             <i class="bi bi-person-workspace me-1"></i>
                             Profesores
@@ -66,7 +66,7 @@
                     </li>
                     
                     <!-- Notas - Todos los roles autenticados -->
-                    <li class="nav-item">
+                    <li class="nav-item" ng-if="main.isAuthenticated()">
                         <a class="nav-link" href="#!/notas">
                             <i class="bi bi-journal-text me-1"></i>
                             Notas
@@ -149,6 +149,13 @@
     <script src="app/core/services/auth.service.js"></script>
     <script src="app/core/services/route-auth.service.js"></script>
     <script src="app/core/services/api.service.js"></script>
+    <script src="app/core/services/estudiantes.service.js"></script>
+    
+    <!-- Core Filters -->
+    <script src="app/core/filters/range.filter.js"></script>
+    
+    <!-- Main Controller -->
+    <script src="app/core/controllers/main.controller.js"></script>
     
     <!-- Dashboard -->
     <script src="app/features/dashboard/dashboard.controller.js"></script>
@@ -160,6 +167,7 @@
     
     <!-- Other modules will be added in future METAs -->
     <script src="app/features/login/login.controller.js"></script>
+    <script src="app/features/estudiantes/estudiantes.controller.js"></script>
     
 </body>
 </html>
