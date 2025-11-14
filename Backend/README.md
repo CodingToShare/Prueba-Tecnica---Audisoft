@@ -274,6 +274,10 @@ POST   /api/v1/Notas             # Crear nota (Profesor/Admin)
 GET    /api/v1/Notas/{id}        # Obtener nota
 PUT    /api/v1/Notas/{id}        # Actualizar nota (Profesor/Admin)
 DELETE /api/v1/Notas/{id}        # Eliminar nota (Profesor/Admin)
+
+📈 Reportes de Notas
+GET  /api/v1/Reportes/notas/resumen   # Resumen estadístico (total, promedio, top por profesor/estudiante, distribución)
+GET  /api/v1/Reportes/notas/export    # Exportación CSV (aplica mismos filtros y restricciones por rol)
 ```
 
 ## 🔍 Funcionalidades Avanzadas
@@ -299,6 +303,38 @@ GET /api/v1/Estudiantes?Filter=Nombre:Juan
 GET /api/v1/Notas?Filter=Valor>=80;Nombre:Matemáticas
 GET /api/v1/Notas?Filter=Valor>90|Estudiante:María
 ```
+
+### Reportes: Filtros y Exportación
+
+Los reportes de notas soportan los mismos filtros avanzados y agregan parámetros específicos. El filtrado por rol se aplica siempre en el servidor: Admin ve todo; Profesor solo sus notas; Estudiante solo sus notas.
+
+Parámetros comunes (query string):
+
+- from: fecha inicio (YYYY-MM-DD)
+- to: fecha fin (YYYY-MM-DD)
+- idProfesor: filtra por profesor (efectivo principalmente para Admin)
+- idEstudiante: filtra por estudiante (efectivo principalmente para Admin)
+- Filter / FilterField / FilterValue: filtros avanzados existentes
+- SortField / SortDesc: ordenamiento
+
+Ejemplos:
+
+```
+# Resumen del año actual
+GET /api/v1/Reportes/notas/resumen?from=2025-01-01&to=2025-12-31
+
+# Solo profesor 3 (Admin) y orden por fecha descendente
+GET /api/v1/Reportes/notas/resumen?idProfesor=3&sortField=CreatedAt&sortDesc=true
+
+# Exportación CSV con rango de fechas
+GET /api/v1/Reportes/notas/export?from=2025-01-01&to=2025-06-30
+```
+
+Detalles de exportación CSV:
+
+- Codificación UTF-8 con BOM (compatible con Excel)
+- Cabecera: `Id,Nombre,Valor,Profesor,Estudiante,CreatedAt`
+- Tamaño limitado razonablemente en servidor para prevenir exportaciones excesivas
 
 ### Paginación
 Todos los endpoints de listado soportan paginación:
@@ -351,6 +387,40 @@ Backend/
 │   └── AudiSoft.School.Tests/    # Pruebas unitarias e integración
 ├── 📄 scripts/                   # Scripts SQL
 └── 📋 README.md                  # Este archivo
+
+## 🌐 Configuración de CORS
+
+El origen del frontend ya no está codificado en el código. Se configura desde `appsettings` mediante la sección `Cors:AllowedOrigins`.
+
+Ejemplo (desarrollo): `src/AudiSoft.School.Api/appsettings.Development.json`
+
+```json
+{
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:8080"
+    ]
+  }
+}
+```
+
+Ejemplo (producción): `src/AudiSoft.School.Api/appsettings.json`
+
+```json
+{
+  "Cors": {
+    "AllowedOrigins": [
+      "https://app.audisoft.com",
+      "https://admin.audisoft.com"
+    ]
+  }
+}
+```
+
+Notas:
+
+- Si `Cors:AllowedOrigins` está vacío o ausente, en desarrollo se aplica un fallback permisivo con log de advertencia.
+- Asegúrate de incluir todos los orígenes necesarios (HTTP/HTTPS y puertos correctos).
 ```
 
 ## 🚨 Solución de Problemas
