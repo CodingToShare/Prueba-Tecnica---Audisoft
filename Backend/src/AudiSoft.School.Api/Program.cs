@@ -286,6 +286,19 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Profesor", "Admin"));
 });
 
+// Configure CORS to allow requests from the frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            // Allow the specific origin of the frontend application
+            policy.WithOrigins("http://localhost:8080") 
+                  .AllowAnyHeader() // Allow all HTTP headers in the request
+                  .AllowAnyMethod(); // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+        });
+});
+
 var app = builder.Build();
 
 // Add request logging middleware
@@ -316,6 +329,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS before authentication and authorization
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
