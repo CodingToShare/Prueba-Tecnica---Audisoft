@@ -37,7 +37,17 @@ Log.Information("Iniciando AudiSoft School API...");
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressMapClientErrors = false;
+    });
+
+// Configure routing to use lowercase URLs
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+});
 
 // Configure Swagger/OpenAPI (Swashbuckle) with full documentation
 builder.Services.AddEndpointsApiExplorer();

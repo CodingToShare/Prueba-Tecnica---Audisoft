@@ -82,15 +82,43 @@
 
             apiService.get('estudiantes', apiParams)
                 .then(function(response) {
-                    // The apiService already processes headers and returns response.headers as an object
+                    $log.debug('EstudiantesService: Full response:', response);
+                    
                     // Extract totalCount from X-Total-Count header or from response
                     var totalCount = 0;
                     if (response.headers && typeof response.headers === 'object') {
-                        totalCount = response.headers['X-Total-Count'] ? parseInt(response.headers['X-Total-Count']) : 0;
+                        // Try both lowercase and capitalized versions
+                        totalCount = response.headers['x-total-count'] || response.headers['X-Total-Count'];
+                        if (totalCount) {
+                            totalCount = parseInt(totalCount, 10);
+                        } else {
+                            totalCount = 0;
+                        }
+                    }
+                    
+                    // The response.data contains the API response directly
+                    var responseData = response.data;
+                    var items = [];
+                    
+                    $log.debug('EstudiantesService: responseData:', responseData);
+                    $log.debug('EstudiantesService: responseData type:', typeof responseData);
+                    $log.debug('EstudiantesService: responseData.items:', responseData ? responseData.items : 'N/A');
+                    
+                    if (responseData && responseData.items) {
+                        // Format 1: Direct PagedResult structure with items array
+                        items = responseData.items;
+                        if (responseData.totalCount && !totalCount) {
+                            totalCount = responseData.totalCount;
+                        }
+                    } else if (Array.isArray(responseData)) {
+                        // Format 2: Direct array
+                        items = responseData;
+                    } else {
+                        $log.warn('EstudiantesService: Unexpected response format:', responseData);
                     }
                     
                     var result = {
-                        data: response.data || [],
+                        data: items || [],
                         totalCount: totalCount,
                         page: page,
                         pageSize: pageSize

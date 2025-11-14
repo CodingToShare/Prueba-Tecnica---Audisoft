@@ -90,10 +90,15 @@
         function get(endpoint, params, options) {
             var url = buildUrl(endpoint);
             
+            // For GET requests, don't send Content-Type header to avoid CORS preflight
+            var headers = {
+                'Accept': 'application/json'
+            };
+            
             var httpConfig = angular.extend({
                 method: 'GET',
                 url: url,
-                headers: angular.copy(config.defaultHeaders),
+                headers: headers,
                 timeout: config.timeout,
                 params: params || {}
             }, options || {});
@@ -193,15 +198,23 @@
         function processSuccessResponse(response) {
             $log.debug('API Service Success:', response.status, response.config.url);
             
+            // Extract headers - handle both function and object formats
+            var headersObj = {};
+            if (typeof response.headers === 'function') {
+                headersObj = response.headers() || {};
+            } else if (typeof response.headers === 'object') {
+                headersObj = response.headers || {};
+            }
+            
             // Extract pagination headers if present
             var result = {
                 data: response.data,
                 status: response.status,
-                headers: response.headers()
+                headers: headersObj
             };
 
             // Add pagination info if available (X-Total-Count header)
-            var totalCount = response.headers('X-Total-Count');
+            var totalCount = headersObj['x-total-count'] || headersObj['X-Total-Count'];
             if (totalCount) {
                 result.totalCount = parseInt(totalCount, 10);
             }
