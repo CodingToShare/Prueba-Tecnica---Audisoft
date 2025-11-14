@@ -40,7 +40,9 @@
             }
 
             // Check if user is authenticated
+            // If token exists but is invalid, authService will handle cleanup
             if (!isAuthenticated()) {
+                console.log('User not authenticated, redirecting to login');
                 redirectToLogin();
                 deferred.reject('Not authenticated');
                 return deferred.promise;
@@ -53,6 +55,7 @@
                 });
 
                 if (!hasRequiredRole) {
+                    console.log('User lacks required role. Required:', routeAccess.allowedRoles, 'Has:', getCurrentUser().roles);
                     redirectToUnauthorized();
                     deferred.reject('Insufficient permissions');
                     return deferred.promise;

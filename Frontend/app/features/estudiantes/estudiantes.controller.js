@@ -228,6 +228,18 @@
 
             vm.isEditMode = true;
             vm.currentEstudiante = angular.copy(estudiante);
+            
+            // Extract grado from nombre if present
+            // Format: "Nombre - 9°" => grado = "9°"
+            var gradoMatch = vm.currentEstudiante.nombre.match(/-\s*(\d+°?)/);
+            if (gradoMatch && gradoMatch[1]) {
+                vm.currentEstudiante.grado = gradoMatch[1];
+                // Clean up nombre to show only the name without grado
+                vm.currentEstudiante.nombre = vm.currentEstudiante.nombre.replace(/-\s*\d+°?/, '').trim();
+            } else {
+                vm.currentEstudiante.grado = '';
+            }
+            
             vm.showModal = true;
         }
 
@@ -243,9 +255,16 @@
             vm.isLoading = true;
             vm.error = null;
 
+            // Limpiar el nombre: remover el grado anterior si existe
+            // Formato anterior: "Santiago José Castro Ruiz - 9"
+            // Resultado: "Santiago José Castro Ruiz"
+            var nombreLimpio = vm.currentEstudiante.nombre.trim();
+            // Remover todo lo que venga después de un guión (que es el grado anterior)
+            nombreLimpio = nombreLimpio.replace(/\s*-\s*\d+°?$/, '').trim();
+
             // Concatenar nombre con grado si está seleccionado
             // Formato: "Santiago José Castro Ruiz - 9" (con guión, para pasar validación)
-            var nombreCompleto = vm.currentEstudiante.nombre.trim();
+            var nombreCompleto = nombreLimpio;
             if (vm.currentEstudiante.grado && vm.currentEstudiante.grado.trim()) {
                 // Remover el símbolo ° si está presente, y concatenar con guión
                 var gradoSolo = vm.currentEstudiante.grado.replace(/°/g, '');
