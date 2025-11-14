@@ -51,33 +51,11 @@
             })
 
             // ===== PROFESORES ROUTES =====
-            // Lista de profesores - Solo Admin
+            // Lista de profesores con CRUD inline - Solo Admin
             .when('/profesores', {
-                templateUrl: 'app/features/profesores/profesores-list.html',
-                controller: 'ProfesoresListController',
-                controllerAs: 'profesoresList',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin']
-                }
-            })
-            
-            // Crear profesor - Solo Admin
-            .when('/profesores/new', {
-                templateUrl: 'app/features/profesores/profesor-form.html',
-                controller: 'ProfesorFormController',
-                controllerAs: 'profesorForm',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin']
-                }
-            })
-            
-            // Ver/Editar profesor - Solo Admin
-            .when('/profesores/:id', {
-                templateUrl: 'app/features/profesores/profesor-detail.html',
-                controller: 'ProfesorDetailController',
-                controllerAs: 'profesorDetail',
+                templateUrl: 'app/features/profesores/profesores.html',
+                controller: 'ProfesoresController',
+                controllerAs: 'vm',
                 access: {
                     requiresLogin: true,
                     allowedRoles: ['Admin']

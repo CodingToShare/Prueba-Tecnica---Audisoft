@@ -19,6 +19,9 @@
         vm.success = null;
         vm.showModal = false;
         vm.isEditMode = false;
+        vm.showDeleteConfirm = false;
+        vm.isDeleting = false;
+        vm.estudianteToDelete = null;
 
         // Data
         vm.estudiantes = [];
@@ -70,6 +73,9 @@
         vm.openEditModal = openEditModal;
         vm.saveEstudiante = saveEstudiante;
         vm.deleteEstudiante = deleteEstudiante;
+        vm.openDeleteConfirm = openDeleteConfirm;
+        vm.closeDeleteConfirm = closeDeleteConfirm;
+        vm.confirmDelete = confirmDelete;
         vm.closeModal = closeModal;
         vm.applyFilters = applyFilters;
         vm.clearFilters = clearFilters;
@@ -319,38 +325,55 @@
          * @param {Object} estudiante - Student to delete
          */
         function deleteEstudiante(estudiante) {
+            // Este método ya no se usa, solo para backward compatibility
+            openDeleteConfirm(estudiante);
+        }
+
+        function openDeleteConfirm(estudiante) {
             if (!vm.canDelete) {
                 vm.error = { message: 'No tienes permisos para eliminar estudiantes' };
                 return;
             }
 
-            if (!confirm('¿Está seguro de que desea eliminar a ' + estudiante.nombre + '?')) {
+            vm.estudianteToDelete = estudiante;
+            vm.showDeleteConfirm = true;
+        }
+
+        function closeDeleteConfirm() {
+            vm.showDeleteConfirm = false;
+            vm.estudianteToDelete = null;
+            vm.isDeleting = false;
+        }
+
+        function confirmDelete() {
+            if (!vm.estudianteToDelete || vm.isDeleting) {
                 return;
             }
 
-            vm.isLoading = true;
+            vm.isDeleting = true;
             vm.error = null;
 
-            estudiantesService.deleteEstudiante(estudiante.id)
+            estudiantesService.deleteEstudiante(vm.estudianteToDelete.id)
                 .then(function() {
                     vm.success = { message: 'Estudiante eliminado exitosamente' };
+                    closeDeleteConfirm();
 
                     loadEstudiantes();
 
                     // Clear success message after 3 seconds
                     setTimeout(function() {
-                        vm.success = null;
+                        $scope.$apply(function() {
+                            vm.success = null;
+                        });
                     }, 3000);
                 })
                 .catch(function(error) {
+                    vm.isDeleting = false;
                     vm.error = {
                         message: error && error.message ? error.message : 'Error eliminando estudiante',
                         status: error && error.status ? error.status : null
                     };
                     $log.error('EstudiantesController: Failed to delete estudiante', error);
-                })
-                .finally(function() {
-                    vm.isLoading = false;
                 });
         }
 
