@@ -328,7 +328,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // Enable CORS before authentication and authorization
 app.UseCors("AllowFrontend");
