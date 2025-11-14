@@ -34,8 +34,8 @@ public class ProfesoresController : ControllerBase
     /// <returns>Lista de profesores</returns>
     /// <response code="200">Operación exitosa</response>
     /// <response code="403">Sin permisos para ver profesores</response>
-    [HttpGet]
-    [Authorize(Policy = "ProfesorOrAdmin")]
+        [HttpGet]
+        [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
@@ -48,8 +48,8 @@ public class ProfesoresController : ControllerBase
     /// <summary>
     /// Búsqueda avanzada de profesores mediante expresión en QueryParams.Filter
     /// </summary>
-    [HttpGet("search")]
-    [Authorize(Policy = "ProfesorOrAdmin")]
+        [HttpGet("search")]
+        [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> Search([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
@@ -67,7 +67,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="200">Profesor encontrado</response>
     /// <response code="404">Profesor no encontrado</response>
     [HttpGet("{id}")]
-    [Authorize(Policy = "ProfesorOrAdmin")]
+        [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProfesorDto>> GetById(int id)
