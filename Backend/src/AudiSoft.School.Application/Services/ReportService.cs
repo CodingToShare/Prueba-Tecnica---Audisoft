@@ -108,7 +108,7 @@ public class ReportService : IReportService
                 n.Valor.ToString(CultureInfo.InvariantCulture),
                 Escape(n.Profesor?.Nombre ?? string.Empty),
                 Escape(n.Estudiante?.Nombre ?? string.Empty),
-                (n.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty)
+                (n.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty)
             });
             sb.AppendLine(line);
         }
