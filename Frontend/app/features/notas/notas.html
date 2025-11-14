@@ -195,13 +195,13 @@
                             <strong>{{ nota.nombre }}</strong>
                         </td>
                         <td>
-                            <span class="badge bg-success">{{ nota.valor | number:'1.2-2' }}</span>
+                            <span class="badge bg-success">{{ nota.valor }}</span>
                         </td>
                         <td ng-if="vm.canViewAll">
-                            <small class="text-muted">ID: {{ nota.idProfesor }}</small>
+                            <small class="text-muted">{{ (vm.profesores | filter:{id: nota.idProfesor})[0].nombre || 'N/A' }}</small>
                         </td>
                         <td ng-if="vm.canViewAll">
-                            <small class="text-muted">ID: {{ nota.idEstudiante }}</small>
+                            <small class="text-muted">{{ (vm.estudiantes | filter:{id: nota.idEstudiante})[0].nombre || 'N/A' }}</small>
                         </td>
                         <td>
                             <small class="text-muted">{{ nota.createdAt | date:'short' }}</small>

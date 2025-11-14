@@ -74,6 +74,23 @@ public class AuthService : IAuthService
                 throw new InvalidEntityStateException("Credenciales inválidas");
             }
 
+            // Auto-asignar IdProfesor/IdEstudiante si no están asignados
+            var roles = usuario.UsuarioRoles.Where(ur => ur.Rol.IsActive).Select(ur => ur.Rol.Nombre).ToList();
+
+            // Si es profesor pero no tiene IdProfesor asignado, y tiene Profesor incluido
+            if (roles.Contains("Profesor") && !usuario.IdProfesor.HasValue && usuario.Profesor != null)
+            {
+                usuario.IdProfesor = usuario.Profesor.Id;
+                _logger.LogInformation("Auto-asignado IdProfesor {ProfesorId} al usuario {UserName}", usuario.Profesor.Id, usuario.UserName);
+            }
+
+            // Si es estudiante pero no tiene IdEstudiante asignado, y tiene Estudiante incluido
+            if (roles.Contains("Estudiante") && !usuario.IdEstudiante.HasValue && usuario.Estudiante != null)
+            {
+                usuario.IdEstudiante = usuario.Estudiante.Id;
+                _logger.LogInformation("Auto-asignado IdEstudiante {EstudianteId} al usuario {UserName}", usuario.Estudiante.Id, usuario.UserName);
+            }
+
             // Actualizar último login
             usuario.LastLoginAt = DateTime.UtcNow;
             usuario.UpdatedAt = DateTime.UtcNow;
