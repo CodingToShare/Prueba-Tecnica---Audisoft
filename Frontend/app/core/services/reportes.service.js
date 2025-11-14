@@ -7,7 +7,8 @@
 
     reportesService.$inject = ['apiService', '$log'];
     function reportesService(apiService, $log) {
-        var baseEndpoint = '/api/v1/reportes';
+        // Base endpoint relative to configured API baseUrl (which already includes /api/v1)
+        var baseEndpoint = 'Reportes';
 
         var service = {
             getNotasResumen: getNotasResumen,
