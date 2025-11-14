@@ -114,7 +114,7 @@
                 case 'development':
                     return envConfig.API_BASE_URL_DEVELOPMENT || 'http://localhost:5281/api/v1';
                 case 'production':
-                    return envConfig.API_BASE_URL_PRODUCTION || 'https://api.audisoft.com/api/v1';
+                    return envConfig.API_BASE_URL_PRODUCTION || 'https://app-audisoft-api.azurewebsites.net/api/v1';
                 default:
                     return envConfig.API_BASE_URL_DEVELOPMENT || 'http://localhost:5281/api/v1';
             }
