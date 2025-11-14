@@ -16,34 +16,30 @@
                 variant: '@?',
                 onClose: '&?'
             },
-            transclude: {
-                body: '?body',
-                footer: '?footer'
-            },
+            transclude: true,
             template:
-                '<div ng-if="visible">' +
-                '  <div class="modal" tabindex="-1" ng-class="{\'d-block\': visible}" role="dialog" style="background-color: rgba(0,0,0,0.5);">' +
-                '    <div class="modal-dialog" ng-class="dialogClass()">' +
+                '<div>' +
+                '  <div class="modal" tabindex="-1" ng-show="visible" style="display: block; background-color: rgba(0,0,0,0.5);" role="dialog">' +
+                '    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" ng-class="dialogClass()">' +
                 '      <div class="modal-content">' +
                 '        <div class="modal-header" ng-class="headerClass()">' +
                 '          <h5 class="modal-title">{{ title }}</h5>' +
                 '          <button type="button" class="btn-close" ng-class="{\'btn-close-white\': isColoredHeader()}" ng-click="close()" aria-label="Close"></button>' +
                 '        </div>' +
-                '        <div class="modal-body" ng-transclude="body"></div>' +
-                '        <div class="modal-footer" ng-transclude="footer" ng-if="hasFooter()" ng-class="{\'gap-2\': true}"></div>' +
+                '        <div ng-transclude></div>' +
                 '      </div>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="modal-backdrop fade show" style="display: block;"></div>' +
+                '  <div class="modal-backdrop fade" ng-show="visible" ng-class="{\'show\': visible}"></div>' +
                 '</div>',
-            link: function (scope, element, attrs, ctrl, $transclude) {
+            link: function (scope) {
                 scope.variant = scope.variant || 'primary';
 
                 scope.dialogClass = function () {
                     if (scope.size === 'sm') return 'modal-sm';
                     if (scope.size === 'lg') return 'modal-lg';
                     if (scope.size === 'xl') return 'modal-xl';
-                    return 'modal-dialog-centered modal-dialog-scrollable';
+                    return '';
                 };
 
                 scope.headerClass = function () {
@@ -54,10 +50,6 @@
                     return ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'dark'].indexOf(scope.variant) !== -1;
                 };
 
-                scope.hasFooter = function () {
-                    return $transclude && $transclude.isSlotFilled && $transclude.isSlotFilled('footer');
-                };
-
                 scope.close = function () {
                     scope.visible = false;
                     if (scope.onClose) scope.onClose();
@@ -66,3 +58,4 @@
         };
     }
 })();
+
