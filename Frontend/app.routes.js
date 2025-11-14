@@ -122,6 +122,8 @@
             // Acceso denegado
             .when('/unauthorized', {
                 templateUrl: 'app/shared/views/unauthorized.html',
+                controller: 'UnauthorizedController',
+                controllerAs: 'unauth',
                 access: {
                     requiresLogin: false,
                     allowedRoles: []
