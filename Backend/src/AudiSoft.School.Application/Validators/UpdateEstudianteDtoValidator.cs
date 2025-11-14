@@ -14,7 +14,7 @@ public class UpdateEstudianteDtoValidator : AbstractValidator<UpdateEstudianteDt
                 .WithMessage("El nombre debe tener al menos 3 caracteres")
             .MaximumLength(255)
                 .WithMessage("El nombre no puede exceder 255 caracteres")
-            .Matches(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$")
-                .WithMessage("El nombre solo puede contener letras y espacios");
+            .Matches(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$")
+                .WithMessage("El nombre solo puede contener letras, espacios, guiones y números");
     }
 }

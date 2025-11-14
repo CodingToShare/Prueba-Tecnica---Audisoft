@@ -49,7 +49,7 @@
             <div class="row g-3">
                 <!-- Nombre Filter -->
                 <div class="col-md-4">
-                    <label class="form-label">Nombre o Matrícula</label>
+                    <label class="form-label">Nombre o Matícula</label>
                     <input type="text" class="form-control" 
                            ng-model="vm.searchFilters.nombre"
                            placeholder="Buscar por nombre..."
@@ -59,9 +59,11 @@
                 <!-- Grado Filter -->
                 <div class="col-md-4">
                     <label class="form-label">Grado</label>
-                    <input type="text" class="form-control" 
-                           ng-model="vm.searchFilters.grado"
-                           placeholder="Ej: 10°, 9°">
+                    <select class="form-select" 
+                            ng-model="vm.searchFilters.grado"
+                            ng-options="grado.value as grado.label for grado in vm.gradosDisponibles">
+                        <option value="">-- Todos los grados --</option>
+                    </select>
                 </div>
 
                 <!-- Sort Field -->
@@ -261,9 +263,10 @@
                             <input type="text" class="form-control" id="nombre"
                                    ng-model="vm.currentEstudiante.nombre"
                                    placeholder="Nombre completo del estudiante"
+                                   pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$"
                                    required
                                    autofocus>
-                            <small class="form-text text-muted">Nombre completo del estudiante</small>
+                            <small class="form-text text-muted">Solo letras, espacios, guiones y números. El grado se agregará automáticamente al final.</small>
                         </div>
 
                         <!-- Grado -->

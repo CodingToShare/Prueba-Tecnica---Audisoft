@@ -215,12 +215,22 @@
             vm.error = null;
 
             // Concatenar nombre con grado si está seleccionado
-            // Formato: "Santiago José Castro Ruiz - 9" (sin el símbolo ° para pasar validación)
+            // Formato: "Santiago José Castro Ruiz - 9" (con guión, para pasar validación)
             var nombreCompleto = vm.currentEstudiante.nombre.trim();
             if (vm.currentEstudiante.grado && vm.currentEstudiante.grado.trim()) {
-                // Remover el símbolo ° si está presente, y concatenar solo el número
+                // Remover el símbolo ° si está presente, y concatenar con guión
                 var gradoSolo = vm.currentEstudiante.grado.replace(/°/g, '');
                 nombreCompleto = nombreCompleto + ' - ' + gradoSolo;
+            }
+
+            // Validar que el nombre cumpla con la expresión regular del backend
+            // ^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$ (letras, espacios, guiones y números)
+            var nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$/;
+            if (!nombreRegex.test(nombreCompleto)) {
+                vm.error = { message: 'El nombre solo puede contener letras, espacios, guiones y números' };
+                vm.isLoading = false;
+                $log.warn('EstudiantesController: Nombre no válido:', nombreCompleto);
+                return;
             }
 
             var estudianteData = {

@@ -82,11 +82,12 @@
 
             apiService.get('estudiantes', apiParams)
                 .then(function(response) {
-                    // The API returns PagedResult with items array
+                    // The apiService already processes headers and returns response.headers as an object
                     // Extract totalCount from X-Total-Count header or from response
-                    // Note: In AngularJS $http, headers is a function that returns the header value
-                    var headerValue = response.headers('X-Total-Count');
-                    var totalCount = headerValue ? parseInt(headerValue) : (response.totalCount || 0);
+                    var totalCount = 0;
+                    if (response.headers && typeof response.headers === 'object') {
+                        totalCount = response.headers['X-Total-Count'] ? parseInt(response.headers['X-Total-Count']) : 0;
+                    }
                     
                     var result = {
                         data: response.data || [],
