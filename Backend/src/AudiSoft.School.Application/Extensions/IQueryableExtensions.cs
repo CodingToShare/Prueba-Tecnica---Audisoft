@@ -6,372 +6,316 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AudiSoft.School.Application.Extensions;
 
+/// <summary>
+/// Extensiones para IQueryable que proporcionan filtrado dinámico, ordenamiento y paginación.
+/// Soporta expresiones complejas como "Nombre:Juan;Valor>50|Nombre:Maria"
+/// </summary>
 public static class IQueryableExtensions
 {
+    /// <summary>
+    /// Aplica filtros dinámicos basados en una expresión de filtro avanzada o filtro simple de campo/valor.
+    /// </summary>
+    /// <param name="query">Query base</param>
+    /// <param name="filterExpression">Expresión avanzada como "Nombre:Juan;Id>5|Nombre:Maria"</param>
+    /// <param name="field">Campo simple para filtrar (usado si filterExpression está vacío)</param>
+    /// <param name="value">Valor simple para filtrar (usado si filterExpression está vacío)</param>
     public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> query, string? filterExpression, string? field, string? value)
     {
-        // If an advanced filter expression is provided, parse it; otherwise fallback to simple field/value filtering
         if (!string.IsNullOrWhiteSpace(filterExpression))
         {
-            // Support OR groups separated by '|', AND within group separated by ';'
-            // Example: "Nombre:Juan;Valor>50|Nombre:Maria"
-            var orGroups = filterExpression.Split('|', StringSplitOptions.RemoveEmptyEntries);
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
-            Expression? orExpression = null;
-
-            foreach (var group in orGroups)
-            {
-                var andParts = group.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                Expression? andExpression = null;
-
-                foreach (var partRaw in andParts)
-                {
-                    var part = partRaw.Trim();
-                    if (string.IsNullOrWhiteSpace(part))
-                        continue;
-
-                    // Parse token: field operator value
-                    var m = Regex.Match(part, "^\\s*(\\w+)\\s*(==|=|!=|>=|<=|>|<|:)\\s*(.+)\\s*$");
-                    string propName;
-                    string op;
-                    string val;
-
-                    if (m.Success)
-                    {
-                        propName = m.Groups[1].Value;
-                        op = m.Groups[2].Value;
-                        val = m.Groups[3].Value.Trim();
-                    }
-                    else
-                    {
-                        // Fallback: try "Field:Value" or "Field Value"
-                        var idx = part.IndexOfAny(new[] { ':', '=' });
-                        if (idx > 0)
-                        {
-                            propName = part.Substring(0, idx).Trim();
-                            op = part[idx].ToString();
-                            val = part.Substring(idx + 1).Trim();
-                        }
-                        else
-                        {
-                            // No operator: assume contains on string property with entire part as value and unknown field -> skip
-                            continue;
-                        }
-                    }
-
-                    var prop = typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                    if (prop == null)
-                        continue;
-                        // Support nested properties using dot notation: "Profesor.Nombre"
-                        var propInfo = typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                        Expression member = parameter;
-                        Type propType = typeof(T);
-                        if (propName.Contains('.'))
-                        {
-                            var parts = propName.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                            Type currentType = typeof(T);
-                            Expression currentExpr = parameter;
-                            PropertyInfo? currentProp = null;
-                            bool failed = false;
-                            foreach (var part in parts)
-                            {
-                                currentProp = currentType.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                                if (currentProp == null)
-                                {
-                                    failed = true;
-                                    break;
-                                }
-                                currentExpr = Expression.Property(currentExpr, currentProp);
-                                currentType = currentProp.PropertyType;
-                            }
-                            if (failed)
-                                continue;
-                            member = currentExpr;
-                            propType = currentType;
-                        }
-                        else
-                        {
-                            var prop = propInfo ?? typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                            if (prop == null)
-                                continue;
-                            member = Expression.Property(parameter, prop);
-                            propType = prop.PropertyType;
-                        }
-                    var member = Expression.Property(parameter, prop);
-                    var propType = prop.PropertyType;
-                    Expression? condition = null;
-
-                    // Handle string operations
-                    if (propType == typeof(string))
-                    {
-                        var constExpr = Expression.Constant(val, typeof(string));
-                        if (op == ":")
-                        {
-                            var method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                            condition = Expression.Call(member, method!, constExpr);
-                        }
-                        else if (op == "=" || op == "==")
-                        {
-                            var method = typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) });
-                            var comparison = Expression.Constant(StringComparison.OrdinalIgnoreCase);
-                            condition = Expression.Call(member, method!, constExpr, comparison);
-                        }
-                        else if (op == "!=")
-                        {
-                            var method = typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) });
-                            var comparison = Expression.Constant(StringComparison.OrdinalIgnoreCase);
-                            var equalsCall = Expression.Call(member, method!, constExpr, comparison);
-                            condition = Expression.Not(equalsCall);
-                        }
-                    }
-                    else
-                    {
-                        // numeric or comparable types
-                        // attempt to parse value into target type
-                        try
-                        {
-                            object? parsed = null;
-                            if (propType == typeof(int) || propType == typeof(int?))
-                                parsed = int.Parse(val);
-                            else if (propType == typeof(long) || propType == typeof(long?))
-                                parsed = long.Parse(val);
-                            else if (propType == typeof(decimal) || propType == typeof(decimal?))
-                                parsed = decimal.Parse(val);
-                            else if (propType == typeof(double) || propType == typeof(double?))
-                                parsed = double.Parse(val);
-                            else if (propType == typeof(DateTime) || propType == typeof(DateTime?))
-                                parsed = DateTime.Parse(val);
-                            else if (propType.IsEnum)
-                                parsed = Enum.Parse(propType, val, true);
-
-                            if (parsed != null)
-                            {
-                                var constant = Expression.Constant(parsed, propType);
-                                switch (op)
-                                {
-                                    case "=":
-                                    case "==":
-                                        condition = Expression.Equal(member, Expression.Convert(constant, propType));
-                                        break;
-                                    case "!=":
-                                        condition = Expression.NotEqual(member, Expression.Convert(constant, propType));
-                                        break;
-                                    case ">":
-                                        condition = Expression.GreaterThan(member, Expression.Convert(constant, propType));
-                                        break;
-                                    case "<":
-                                        condition = Expression.LessThan(member, Expression.Convert(constant, propType));
-                                        break;
-                                    case ">=":
-                                        condition = Expression.GreaterThanOrEqual(member, Expression.Convert(constant, propType));
-                                        break;
-                                    case "<=":
-                                        condition = Expression.LessThanOrEqual(member, Expression.Convert(constant, propType));
-                                        break;
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // ignore parse errors for this token
-                        }
-                    }
-
-                    if (condition == null)
-                        continue;
-
-                    if (andExpression == null)
-                        andExpression = condition;
-                    else
-                        andExpression = Expression.AndAlso(andExpression, condition);
-                }
-
-                if (andExpression != null)
-                {
-                    if (orExpression == null)
-                        orExpression = andExpression;
-                    else
-                        orExpression = Expression.OrElse(orExpression, andExpression);
-                }
-            }
-
-            if (orExpression == null)
-                return query;
-
-            var lambda = Expression.Lambda<Func<T, bool>>(orExpression, parameter);
-            return query.Where(lambda);
+            return query.ApplyAdvancedFilter(filterExpression);
         }
 
-        // Fallback to original simple field/value behavior
-        if (string.IsNullOrWhiteSpace(field) || string.IsNullOrWhiteSpace(value))
-            // Support nested property for simple field/value fallback
-            PropertyInfo? propSimple = null;
-            Expression parameterSimple = Expression.Parameter(typeof(T), "x");
-            Expression memberSimpleExpr = parameterSimple;
-            var propTypeSimple = typeof(object);
-            if (field.Contains('.'))
-            {
-                var parts = field.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                Type currentType = typeof(T);
-                Expression currentExpr = parameterSimple;
-                PropertyInfo? currentProp = null;
-                bool failed = false;
-                foreach (var part in parts)
-                {
-                    currentProp = currentType.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                    if (currentProp == null)
-                    {
-                        failed = true;
-                        break;
-                    }
-                    currentExpr = Expression.Property(currentExpr, currentProp);
-                    currentType = currentProp.PropertyType;
-                }
-                if (failed)
-                    return query;
-                memberSimpleExpr = currentExpr;
-                propTypeSimple = currentType;
-            }
-            else
-            {
-                propSimple = typeof(T).GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                if (propSimple == null)
-                    return query;
-                memberSimpleExpr = Expression.Property(parameterSimple, propSimple);
-                propTypeSimple = propSimple.PropertyType;
-            }
-        var propSimple = typeof(T).GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-        if (propSimple == null)
-            return query;
-
-        var parameterSimple = Expression.Parameter(typeof(T), "x");
-        var memberSimple = Expression.Property(parameterSimple, propSimple);
-
-        var propTypeSimple = propSimple.PropertyType;
-        if (propTypeSimple == typeof(int) || propTypeSimple == typeof(int?) ||
-            propTypeSimple == typeof(long) || propTypeSimple == typeof(long?) ||
-            propTypeSimple == typeof(decimal) || propTypeSimple == typeof(decimal?) ||
-            propTypeSimple == typeof(double) || propTypeSimple == typeof(double?))
-        {
-            try
-            {
-                Expression? equality = null;
-                if (propTypeSimple == typeof(int) || propTypeSimple == typeof(int?))
-                {
-                    if (int.TryParse(value, out var intVal))
-                    {
-                        var constant = Expression.Constant(intVal, typeof(int));
-                        equality = Expression.Equal(memberSimple, Expression.Convert(constant, propTypeSimple));
-                    }
-                }
-                else if (propTypeSimple == typeof(long) || propTypeSimple == typeof(long?))
-                {
-                    if (long.TryParse(value, out var longVal))
-                    {
-                        var constant = Expression.Constant(longVal, typeof(long));
-                        equality = Expression.Equal(memberSimple, Expression.Convert(constant, propTypeSimple));
-                    }
-                }
-                else if (propTypeSimple == typeof(decimal) || propTypeSimple == typeof(decimal?))
-                {
-                    if (decimal.TryParse(value, out var decVal))
-                    {
-                        var constant = Expression.Constant(decVal, typeof(decimal));
-                        equality = Expression.Equal(memberSimple, Expression.Convert(constant, propTypeSimple));
-                    }
-                }
-                else if (propTypeSimple == typeof(double) || propTypeSimple == typeof(double?))
-                {
-                    if (double.TryParse(value, out var dblVal))
-                    {
-                        var constant = Expression.Constant(dblVal, typeof(double));
-                        equality = Expression.Equal(memberSimple, Expression.Convert(constant, propTypeSimple));
-                    }
-                }
-
-                if (equality != null)
-                {
-                    var lambda = Expression.Lambda<Func<T, bool>>(equality, parameterSimple);
-                    return query.Where(lambda);
-                }
-            }
-            catch
-            {
-                // ignore parse errors and fall back to string comparison
-            }
-        }
-
-        if (propTypeSimple == typeof(string))
-        {
-            var raw = value;
-            var isExact = raw.StartsWith("=");
-            if (isExact)
-                raw = raw.Substring(1);
-
-            var constant = Expression.Constant(raw, typeof(string));
-            var memberExpr = memberSimple;
-            var method = isExact
-                ? typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) })
-                : typeof(string).GetMethod("Contains", new[] { typeof(string) });
-
-            Expression call;
-            if (isExact && method != null)
-            {
-                var comparison = Expression.Constant(StringComparison.OrdinalIgnoreCase);
-                call = Expression.Call(memberExpr, method, constant, comparison);
-            }
-            else
-            {
-                call = Expression.Call(memberExpr, method!, constant);
-            }
-
-            var lambda = Expression.Lambda<Func<T, bool>>(call, parameterSimple);
-            return query.Where(lambda);
-        }
-
-        Expression memberAsString = memberSimple;
-        var toStringMethod = propTypeSimple.GetMethod("ToString", Type.EmptyTypes);
-        if (toStringMethod != null)
-            memberAsString = Expression.Call(memberSimple, toStringMethod);
-
-        var constVal = Expression.Constant(value, typeof(string));
-        var containsMethodFallback = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-        var containsCallFallback = Expression.Call(memberAsString, containsMethodFallback!, constVal);
-        var lambdaFallback = Expression.Lambda<Func<T, bool>>(containsCallFallback, parameterSimple);
-        return query.Where(lambdaFallback);
+        return query.ApplySimpleFilter(field, value);
     }
 
+    /// <summary>
+    /// Aplica filtros avanzados con sintaxis: "Campo:Valor" (contains), "Campo=Valor" (equals), "Campo>Valor", etc.
+    /// Soporta operadores lógicos: ';' para AND, '|' para OR
+    /// </summary>
+    private static IQueryable<T> ApplyAdvancedFilter<T>(this IQueryable<T> query, string filterExpression)
+    {
+        var orGroups = filterExpression.Split('|', StringSplitOptions.RemoveEmptyEntries);
+        var parameter = Expression.Parameter(typeof(T), "x");
+        Expression? orExpression = null;
+
+        foreach (var group in orGroups)
+        {
+            var andParts = group.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            Expression? andExpression = null;
+
+            foreach (var part in andParts)
+            {
+                var trimmedPart = part.Trim();
+                if (string.IsNullOrWhiteSpace(trimmedPart))
+                    continue;
+
+                var condition = BuildFilterCondition<T>(parameter, trimmedPart);
+                if (condition == null)
+                    continue;
+
+                andExpression = andExpression == null ? condition : Expression.AndAlso(andExpression, condition);
+            }
+
+            if (andExpression != null)
+            {
+                orExpression = orExpression == null ? andExpression : Expression.OrElse(orExpression, andExpression);
+            }
+        }
+
+        if (orExpression == null)
+            return query;
+
+        var lambda = Expression.Lambda<Func<T, bool>>(orExpression, parameter);
+        return query.Where(lambda);
+    }
+
+    /// <summary>
+    /// Construye una condición de filtro a partir de un token como "Nombre:Juan" o "Valor>50"
+    /// </summary>
+    private static Expression? BuildFilterCondition<T>(ParameterExpression parameter, string filterPart)
+    {
+        // Regex para capturar: campo operador valor (soporta propiedades anidadas)
+        var match = Regex.Match(filterPart, @"^\s*(\w+(?:\.\w+)*)\s*(==|=|!=|>=|<=|>|<|:)\s*(.+)\s*$");
+        
+        string propName, op, value;
+        if (match.Success)
+        {
+            propName = match.Groups[1].Value;
+            op = match.Groups[2].Value;
+            value = match.Groups[3].Value.Trim();
+        }
+        else
+        {
+            // Fallback para formato simple "Campo:Valor"
+            var separatorIndex = filterPart.IndexOfAny(new[] { ':', '=' });
+            if (separatorIndex <= 0) return null;
+            
+            propName = filterPart.Substring(0, separatorIndex).Trim();
+            op = filterPart[separatorIndex].ToString();
+            value = filterPart.Substring(separatorIndex + 1).Trim();
+        }
+
+        // Construir acceso a propiedad (soporta propiedades anidadas como "Profesor.Nombre")
+        var (memberExpression, propType) = BuildPropertyAccess<T>(parameter, propName);
+        if (memberExpression == null || propType == null) return null;
+
+        return BuildComparisonExpression(memberExpression, propType, op, value);
+    }
+
+    /// <summary>
+    /// Construye expresión de acceso a propiedad, incluyendo propiedades anidadas
+    /// </summary>
+    private static (Expression? memberExpression, Type? propType) BuildPropertyAccess<T>(ParameterExpression parameter, string propertyPath)
+    {
+        var parts = propertyPath.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        Type currentType = typeof(T);
+        Expression currentExpr = parameter;
+
+        foreach (var part in parts)
+        {
+            var prop = currentType.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            if (prop == null)
+                return (null, null);
+
+            currentExpr = Expression.Property(currentExpr, prop);
+            currentType = prop.PropertyType;
+        }
+
+        return (currentExpr, currentType);
+    }
+
+    /// <summary>
+    /// Construye expresión de comparación basada en el tipo de dato y operador
+    /// </summary>
+    private static Expression? BuildComparisonExpression(Expression memberExpression, Type propType, string op, string value)
+    {
+        // Manejar tipos string
+        if (propType == typeof(string))
+        {
+            var constExpr = Expression.Constant(value, typeof(string));
+            
+            return op switch
+            {
+                ":" => Expression.Call(memberExpression, typeof(string).GetMethod("Contains", new[] { typeof(string) })!, constExpr),
+                "=" or "==" => Expression.Call(memberExpression, typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) })!, 
+                                              constExpr, Expression.Constant(StringComparison.OrdinalIgnoreCase)),
+                "!=" => Expression.Not(Expression.Call(memberExpression, typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) })!, 
+                                                     constExpr, Expression.Constant(StringComparison.OrdinalIgnoreCase))),
+                _ => null
+            };
+        }
+
+        // Manejar tipos numéricos y fechas
+        try
+        {
+            object? parsedValue = TryParseValue(value, propType);
+            if (parsedValue == null) return null;
+
+            var constant = Expression.Constant(parsedValue, propType);
+            var convertedConstant = Expression.Convert(constant, propType);
+
+            return op switch
+            {
+                "=" or "==" => Expression.Equal(memberExpression, convertedConstant),
+                "!=" => Expression.NotEqual(memberExpression, convertedConstant),
+                ">" => Expression.GreaterThan(memberExpression, convertedConstant),
+                "<" => Expression.LessThan(memberExpression, convertedConstant),
+                ">=" => Expression.GreaterThanOrEqual(memberExpression, convertedConstant),
+                "<=" => Expression.LessThanOrEqual(memberExpression, convertedConstant),
+                _ => null
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Intenta parsear un valor string al tipo de dato especificado
+    /// </summary>
+    private static object? TryParseValue(string value, Type targetType)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        try
+        {
+            return underlyingType switch
+            {
+                Type t when t == typeof(int) => int.Parse(value),
+                Type t when t == typeof(long) => long.Parse(value),
+                Type t when t == typeof(decimal) => decimal.Parse(value),
+                Type t when t == typeof(double) => double.Parse(value),
+                Type t when t == typeof(DateTime) => DateTime.Parse(value),
+                Type t when t.IsEnum => Enum.Parse(t, value, true),
+                _ => null
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Aplica filtro simple basado en campo y valor únicos
+    /// </summary>
+    private static IQueryable<T> ApplySimpleFilter<T>(this IQueryable<T> query, string? field, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(field) || string.IsNullOrWhiteSpace(value))
+            return query;
+
+        var parameter = Expression.Parameter(typeof(T), "x");
+        var (memberExpression, propType) = BuildPropertyAccess<T>(parameter, field);
+        
+        if (memberExpression == null || propType == null)
+            return query;
+
+        Expression? condition = null;
+
+        // Para strings, usar Contains por defecto (o equals si empieza con '=')
+        if (propType == typeof(string))
+        {
+            var isExact = value.StartsWith("=");
+            var actualValue = isExact ? value.Substring(1) : value;
+            var constant = Expression.Constant(actualValue, typeof(string));
+
+            if (isExact)
+            {
+                condition = Expression.Call(memberExpression, 
+                    typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) })!,
+                    constant, Expression.Constant(StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                condition = Expression.Call(memberExpression, 
+                    typeof(string).GetMethod("Contains", new[] { typeof(string) })!, constant);
+            }
+        }
+        else
+        {
+            // Para tipos numéricos, intentar igualdad exacta
+            var parsedValue = TryParseValue(value, propType);
+            if (parsedValue != null)
+            {
+                var constant = Expression.Constant(parsedValue, propType);
+                condition = Expression.Equal(memberExpression, Expression.Convert(constant, propType));
+            }
+            else
+            {
+                // Fallback: convertir a string y usar Contains
+                var toStringMethod = propType.GetMethod("ToString", Type.EmptyTypes);
+                if (toStringMethod != null)
+                {
+                    var memberAsString = Expression.Call(memberExpression, toStringMethod);
+                    var constant = Expression.Constant(value, typeof(string));
+                    condition = Expression.Call(memberAsString, 
+                        typeof(string).GetMethod("Contains", new[] { typeof(string) })!, constant);
+                }
+            }
+        }
+
+        if (condition == null) return query;
+
+        var lambda = Expression.Lambda<Func<T, bool>>(condition, parameter);
+        return query.Where(lambda);
+    }
+
+    /// <summary>
+    /// Aplica ordenamiento dinámico por campo especificado
+    /// </summary>
+    /// <param name="query">Query base</param>
+    /// <param name="sortField">Campo por el que ordenar (soporta propiedades anidadas)</param>
+    /// <param name="desc">true para orden descendente, false para ascendente</param>
     public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string? sortField, bool desc)
     {
         if (string.IsNullOrWhiteSpace(sortField))
             return query;
 
-        var prop = typeof(T).GetProperty(sortField, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-        if (prop == null)
+        // Soportar propiedades anidadas
+        var parameter = Expression.Parameter(typeof(T), "x");
+        var (memberExpression, propType) = BuildPropertyAccess<T>(parameter, sortField);
+        
+        if (memberExpression == null || propType == null)
             return query;
 
-        var parameter = Expression.Parameter(typeof(T), "x");
-        var member = Expression.Property(parameter, prop);
-        var keySelector = Expression.Lambda(member, parameter);
-
+        var keySelector = Expression.Lambda(memberExpression, parameter);
         var methodName = desc ? "OrderByDescending" : "OrderBy";
-        var resultExp = Expression.Call(typeof(Queryable), methodName, new Type[] { typeof(T), prop.PropertyType }, query.Expression, Expression.Quote(keySelector));
+        
+        var resultExp = Expression.Call(typeof(Queryable), methodName, 
+            new Type[] { typeof(T), propType }, 
+            query.Expression, Expression.Quote(keySelector));
+            
         return query.Provider.CreateQuery<T>(resultExp);
     }
 
-    public static async Task<PagedResult<TDestination>> ApplyPagingAsync<TSource, TDestination>(this IQueryable<TSource> query, QueryParams queryParams, Func<TSource, TDestination> projector)
+    /// <summary>
+    /// Aplica paginación y proyección a una consulta
+    /// </summary>
+    /// <param name="query">Query base</param>
+    /// <param name="queryParams">Parámetros de paginación</param>
+    /// <param name="projector">Función de proyección de entidad a DTO</param>
+    public static async Task<PagedResult<TDestination>> ApplyPagingAsync<TSource, TDestination>(
+        this IQueryable<TSource> query, 
+        QueryParams queryParams, 
+        Func<TSource, TDestination> projector)
     {
-        // Enforce sensible limits on PageSize
+        // Aplicar límites sensatos al tamaño de página
         var pageSize = Math.Min(Math.Max(1, queryParams.PageSize), Math.Max(1, queryParams.MaxPageSize));
+        var page = Math.Max(1, queryParams.Page);
+        
         var total = await query.CountAsync();
-        var skip = (Math.Max(queryParams.Page, 1) - 1) * pageSize;
+        var skip = (page - 1) * pageSize;
+        
         var items = await query.Skip(skip).Take(pageSize).ToListAsync();
-        var projected = items.Select(projector);
+        var projected = items.Select(projector).ToList();
+        
         return new PagedResult<TDestination>
         {
             Items = projected,
             TotalCount = total,
-            Page = queryParams.Page,
+            Page = page,
             PageSize = pageSize
         };
     }

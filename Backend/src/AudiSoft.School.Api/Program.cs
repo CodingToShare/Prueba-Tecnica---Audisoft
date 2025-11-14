@@ -13,15 +13,21 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog early
+// Configure Serilog early with enhanced configuration
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("Logs/audisoft-log-.txt", rollingInterval: RollingInterval.Day)
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .Enrich.WithCorrelationId()
+    .Enrich.WithProperty("Application", "AudiSoft.School.Api")
+    .Enrich.WithProperty("Version", typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0")
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
+// Add early logging
+Log.Information("Iniciando AudiSoft School API...");
 
 // Add services to the container.
 
@@ -83,10 +89,26 @@ builder.Services.AddScoped<EstudianteService>();
 builder.Services.AddScoped<ProfesorService>();
 builder.Services.AddScoped<NotaService>();
 
+// Ensure ILogger is available for services
+builder.Services.AddLogging();
+
 // Note: Serilog is configured as the host logger. Keep AddLogging for compatibility.
 builder.Services.AddLogging();
 
 var app = builder.Build();
+
+// Add request logging middleware
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.FirstOrDefault());
+        diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+    };
+});
 
 // Register and use exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -108,4 +130,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// Log application startup completion
+Log.Information("AudiSoft School API iniciada correctamente en {Environment}", 
+    app.Environment.EnvironmentName);
+
+try
+{
+    Log.Information("Iniciando servidor web...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "La aplicación falló al iniciar");
+}
+finally
+{
+    Log.Information("Cerrando aplicación...");
+    Log.CloseAndFlush();
+}
