@@ -15,7 +15,6 @@ namespace AudiSoft.School.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Policy = "AdminOnly")]
 [SwaggerTag("Gestión completa de profesores - Solo administradores (CRUD, búsqueda, paginación)")]
 public class ProfesoresController : ControllerBase
 {
@@ -36,7 +35,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     /// <response code="403">Sin permisos para ver profesores</response>
     [HttpGet]
-    [Authorize(Policy = "ProfesorOrAdmin")]  // Override class-level policy for this endpoint
+    [Authorize(Policy = "ProfesorOrAdmin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
@@ -50,6 +49,7 @@ public class ProfesoresController : ControllerBase
     /// Búsqueda avanzada de profesores mediante expresión en QueryParams.Filter
     /// </summary>
     [HttpGet("search")]
+    [Authorize(Policy = "ProfesorOrAdmin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProfesorDto>>> Search([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
@@ -67,6 +67,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="200">Profesor encontrado</response>
     /// <response code="404">Profesor no encontrado</response>
     [HttpGet("{id}")]
+    [Authorize(Policy = "ProfesorOrAdmin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProfesorDto>> GetById(int id)
@@ -98,6 +99,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="201">Profesor creado exitosamente</response>
     /// <response code="400">Datos inválidos</response>
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProfesorDto>> Create([FromBody] CreateProfesorDto dto)
@@ -138,6 +140,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="400">Datos inválidos</response>
     /// <response code="404">Profesor no encontrado</response>
     [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -182,6 +185,7 @@ public class ProfesoresController : ControllerBase
     /// <response code="204">Profesor eliminado exitosamente</response>
     /// <response code="404">Profesor no encontrado</response>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
