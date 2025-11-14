@@ -47,7 +47,7 @@
             $log.debug('NotasService: Fetching notas', queryParams);
             
             var params = buildQueryParams(queryParams);
-            var url = '/api/v1/Notas';
+            var url = 'Notas';
 
             return apiService.get(url, params)
                 .then(function(response) {
@@ -72,7 +72,7 @@
         function getNotaById(id) {
             $log.debug('NotasService: Fetching nota by ID', id);
             
-            var url = '/api/v1/Notas/' + id;
+            var url = 'Notas/' + id;
 
             return apiService.get(url)
                 .then(function(response) {
@@ -96,7 +96,7 @@
             $log.debug('NotasService: Fetching notas for profesor', idProfesor);
             
             var params = buildQueryParams(queryParams);
-            var url = '/api/v1/Notas/profesor/' + idProfesor;
+            var url = 'Notas/profesor/' + idProfesor;
 
             return apiService.get(url, params)
                 .then(function(response) {
@@ -123,7 +123,7 @@
             $log.debug('NotasService: Fetching notas for estudiante', idEstudiante);
             
             var params = buildQueryParams(queryParams);
-            var url = '/api/v1/Notas/estudiante/' + idEstudiante;
+            var url = 'Notas/estudiante/' + idEstudiante;
 
             return apiService.get(url, params)
                 .then(function(response) {
@@ -164,7 +164,7 @@
                 idEstudiante: parseInt(data.idEstudiante, 10)
             };
 
-            var url = '/api/v1/Notas';
+            var url = 'Notas';
 
             return apiService.post(url, payload)
                 .then(function(response) {
@@ -210,7 +210,7 @@
                 idEstudiante: parseInt(data.idEstudiante, 10)
             };
 
-            var url = '/api/v1/Notas/' + id;
+            var url = 'Notas/' + id;
 
             return apiService.put(url, payload)
                 .then(function(response) {
@@ -239,7 +239,7 @@
         function deleteNota(id) {
             $log.debug('NotasService: Deleting nota', id);
             
-            var url = '/api/v1/Notas/' + id;
+            var url = 'Notas/' + id;
 
             return apiService.delete(url)
                 .then(function(response) {
