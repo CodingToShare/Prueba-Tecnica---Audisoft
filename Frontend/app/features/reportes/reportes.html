@@ -1,0 +1,141 @@
+<div class="container-fluid" ng-cloak>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h4 mb-0">
+            <i class="bi bi-graph-up-arrow me-2"></i>
+            Reportes de Notas
+        </h2>
+        <div class="d-flex gap-2">
+            <input type="date" class="form-control" style="width: 180px;" ng-model="vm.filters.from" placeholder="Desde"/>
+            <input type="date" class="form-control" style="width: 180px;" ng-model="vm.filters.to" placeholder="Hasta"/>
+            <button class="btn btn-outline-secondary" ng-click="vm.clearFilters()">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+            </button>
+            <button class="btn btn-primary" ng-click="vm.refresh()" ng-disabled="vm.loading">
+                <span ng-if="!vm.loading"><i class="bi bi-arrow-repeat me-1"></i> Actualizar</span>
+                <span ng-if="vm.loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <span ng-if="vm.loading">Cargando...</span>
+            </button>
+            <button class="btn btn-success" ng-click="vm.downloadCsv()" ng-disabled="vm.loading || !vm.summary || vm.summary.totalNotas===0">
+                <i class="bi bi-download me-1"></i> Exportar CSV
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Total de Notas</div>
+                            <div class="h4 mb-0">{{vm.summary.totalNotas || 0}}</div>
+                        </div>
+                        <i class="bi bi-collection text-primary" style="font-size:1.5rem"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Promedio General</div>
+                            <div class="h4 mb-0">{{vm.summary.promedioGeneral || 0 | number:2}}</div>
+                        </div>
+                        <i class="bi bi-speedometer2 text-success" style="font-size:1.5rem"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Top Promedios por Profesor</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profesor</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="g in vm.summary.promedioPorProfesor track by g.id">
+                                    <td>{{$index + 1}}</td>
+                                    <td>{{g.nombre}}</td>
+                                    <td class="text-end">{{g.total}}</td>
+                                    <td class="text-end">{{g.promedio | number:2}}</td>
+                                </tr>
+                                <tr ng-if="!vm.summary || !vm.summary.promedioPorProfesor || vm.summary.promedioPorProfesor.length===0">
+                                    <td colspan="4" class="text-center text-muted py-3">Sin datos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Top Promedios por Estudiante</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Estudiante</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="g in vm.summary.promedioPorEstudiante track by g.id">
+                                    <td>{{$index + 1}}</td>
+                                    <td>{{g.nombre}}</td>
+                                    <td class="text-end">{{g.total}}</td>
+                                    <td class="text-end">{{g.promedio | number:2}}</td>
+                                </tr>
+                                <tr ng-if="!vm.summary || !vm.summary.promedioPorEstudiante || vm.summary.promedioPorEstudiante.length===0">
+                                    <td colspan="4" class="text-center text-muted py-3">Sin datos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Distribución por Rangos</strong>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-lg-4" ng-repeat="r in vm.summary.distribucionPorRangos">
+                    <div class="mb-1 small text-muted">{{r.rango}} ({{r.conteo}})</div>
+                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width: {{ (vm.summary.totalNotas>0 ? (r.conteo / vm.summary.totalNotas * 100) : 0) | number:0}}%">
+                            {{ (vm.summary.totalNotas>0 ? (r.conteo / vm.summary.totalNotas * 100) : 0) | number:0}}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" ng-if="!vm.summary || !vm.summary.distribucionPorRangos || vm.summary.distribucionPorRangos.length===0">
+                    <div class="text-center text-muted py-3">Sin datos de distribución</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

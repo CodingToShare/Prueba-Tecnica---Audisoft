@@ -72,6 +72,14 @@
                             Notas
                         </a>
                     </li>
+
+                    <!-- Reportes - Todos los roles autenticados -->
+                    <li class="nav-item" ng-if="main.isAuthenticated()">
+                        <a class="nav-link" href="#!/reportes">
+                            <i class="bi bi-graph-up-arrow me-1"></i>
+                            Reportes
+                        </a>
+                    </li>
                 </ul>
                 
                 <!-- User Menu -->
@@ -149,6 +157,7 @@
     <script src="app/core/services/estudiantes.service.js"></script>
     <script src="app/core/services/profesores.service.js"></script>
     <script src="app/core/services/notas.service.js"></script>
+    <script src="app/core/services/reportes.service.js"></script>
     <script src="app/core/services/loading.service.js"></script>
     <script src="app/core/services/toast.service.js"></script>
 
@@ -183,6 +192,8 @@
         <script src="app/features/profesores/profesores.controller.js"></script>
         <!-- Feature scripts: Notas -->
         <script src="app/features/notas/notas.controller.js"></script>
+        <!-- Feature scripts: Reportes -->
+        <script src="app/features/reportes/reportes.controller.js"></script>
 
     <!-- Shared reusable components -->
     <script src="app/shared/components/as-table.directive.js"></script>

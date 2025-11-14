@@ -74,6 +74,18 @@
                 }
             })
 
+            // ===== REPORTES ROUTES =====
+            // Reportes de notas - Todos los roles autenticados (datos filtrados por servidor)
+            .when('/reportes', {
+                templateUrl: 'app/features/reportes/reportes.html',
+                controller: 'ReportesController',
+                controllerAs: 'vm',
+                access: {
+                    requiresLogin: true,
+                    allowedRoles: ['Admin', 'Profesor', 'Estudiante']
+                }
+            })
+
             // ===== UTILITY ROUTES =====
             // Acceso denegado
             .when('/unauthorized', {
