@@ -1,0 +1,111 @@
+### Authentication API Tests for AudiSoft School API
+### BASE URL
+@baseUrl = https://localhost:7205/api/v1
+@baseUrlHttp = http://localhost:5205/api/v1
+
+### Variables para almacenar tokens
+@accessToken = 
+
+### 1. Login with Admin credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "userName": "admin",
+    "password": "Admin123!",
+    "rememberMe": false
+}
+
+### 2. Login with Professor credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "userName": "prof1",
+    "password": "Profesor123!",
+    "rememberMe": false
+}
+
+### 3. Login with Student credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "userName": "est1",
+    "password": "Estudiante123!",
+    "rememberMe": true
+}
+
+### 4. Login with invalid credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "userName": "admin",
+    "password": "WrongPassword",
+    "rememberMe": false
+}
+
+### 5. Login with email instead of username
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "userName": "admin@audisoft.com",
+    "password": "Admin123!",
+    "rememberMe": false
+}
+
+### 6. Validate token
+POST {{baseUrl}}/auth/validate
+Content-Type: application/json
+
+{
+    "token": "{{accessToken}}"
+}
+
+### 7. Get current user info (requires authentication)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### 8. Logout (requires authentication)
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### 9. Test protected endpoint - Get Usuarios (Admin only)
+GET {{baseUrl}}/usuarios
+Authorization: Bearer {{accessToken}}
+
+### 10. Test protected endpoint - Get Roles (Admin/Profesor)
+GET {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+
+### 11. Test unauthorized access (no token)
+GET {{baseUrl}}/usuarios
+
+### 12. Test with invalid token
+GET {{baseUrl}}/usuarios
+Authorization: Bearer invalid-token-here
+
+### Sample Login Response Structure:
+# {
+#   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#   "tokenType": "Bearer",
+#   "expiresIn": 7200,
+#   "expiresAt": "2024-11-14T12:30:00Z",
+#   "user": {
+#     "id": 1,
+#     "userName": "admin",
+#     "email": "admin@audisoft.com",
+#     "roles": ["Admin"],
+#     "idProfesor": null,
+#     "idEstudiante": null,
+#     "nombreCompleto": null,
+#     "lastLoginAt": "2024-11-14T10:30:00Z"
+#   }
+# }
+
+### Default Test Credentials:
+# Admin: admin / Admin123!
+# Professors: prof1, prof2, prof3 / Profesor123!
+# Students: est1, est2, est3, est4 / Estudiante123!

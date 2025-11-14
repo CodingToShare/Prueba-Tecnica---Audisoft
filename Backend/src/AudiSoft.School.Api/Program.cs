@@ -1,4 +1,5 @@
 using AudiSoft.School.Api.Middleware;
+using AudiSoft.School.Application.Configuration;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Interfaces;
 using AudiSoft.School.Application.Mappings;
@@ -6,10 +7,15 @@ using AudiSoft.School.Application.Services;
 using AudiSoft.School.Application.Validators;
 using AudiSoft.School.Infrastructure.Persistence;
 using AudiSoft.School.Infrastructure.Repositories;
+using AudiSoft.School.Infrastructure.Services;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +47,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "AudiSoft School API",
         Version = "v1.0",
-        Description = "API REST para gestión de estudiantes, profesores y notas",
+        Description = "API REST para gestión de estudiantes, profesores y notas con autenticación JWT",
         Contact = new OpenApiContact
         {
             Name = "AudiSoft Team",
@@ -50,6 +56,32 @@ builder.Services.AddSwaggerGen(options =>
         License = new OpenApiLicense
         {
             Name = "MIT"
+        }
+    });
+
+    // Configuración de seguridad JWT para Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando Bearer scheme. Ejemplo: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
     });
 
@@ -72,6 +104,7 @@ builder.Services.AddScoped<IValidator<CreateNotaDto>, CreateNotaDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateNotaDto>, UpdateNotaDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateEstudianteDto>, UpdateEstudianteDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateProfesorDto>, UpdateProfesorDtoValidator>();
+builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestDtoValidator>();
 
 // Register DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -97,8 +130,84 @@ builder.Services.AddScoped<RolService>();
 // Ensure ILogger is available for services
 builder.Services.AddLogging();
 
-// Note: Serilog is configured as the host logger. Keep AddLogging for compatibility.
-builder.Services.AddLogging();
+// Register Auth Service
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Configure JWT
+builder.Services.Configure<JwtConfiguration>(
+    builder.Configuration.GetSection(JwtConfiguration.SectionName));
+
+// Configure JWT Authentication
+var jwtConfig = builder.Configuration.GetSection(JwtConfiguration.SectionName).Get<JwtConfiguration>();
+if (jwtConfig != null)
+{
+    jwtConfig.Validate(); // Validar configuración
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false; // Solo para desarrollo
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtConfig.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtConfig.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(jwtConfig.ClockSkewMinutes)
+        };
+
+        // Configurar logging para eventos de autenticación
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Log.Warning("JWT authentication failed: {Exception}", context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                var userId = context.Principal?.FindFirst("userId")?.Value;
+                Log.Debug("JWT token validated for user: {UserId}", userId);
+                return Task.CompletedTask;
+            }
+        };
+    });
+}
+else
+{
+    throw new InvalidOperationException("JWT configuration is missing or invalid");
+}
+
+// Configure Authorization
+builder.Services.AddAuthorization(options =>
+{
+    // Política por defecto: requiere autenticación
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    // Políticas específicas por rol
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
+
+    options.AddPolicy("ProfesorOnly", policy =>
+        policy.RequireRole("Profesor"));
+
+    options.AddPolicy("EstudianteOnly", policy =>
+        policy.RequireRole("Estudiante"));
+
+    options.AddPolicy("ProfesorOrAdmin", policy =>
+        policy.RequireRole("Profesor", "Admin"));
+});
 
 var app = builder.Build();
 
@@ -131,6 +240,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
