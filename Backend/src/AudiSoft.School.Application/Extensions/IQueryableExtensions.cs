@@ -62,7 +62,41 @@ public static class IQueryableExtensions
                     var prop = typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                     if (prop == null)
                         continue;
-
+                        // Support nested properties using dot notation: "Profesor.Nombre"
+                        var propInfo = typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                        Expression member = parameter;
+                        Type propType = typeof(T);
+                        if (propName.Contains('.'))
+                        {
+                            var parts = propName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                            Type currentType = typeof(T);
+                            Expression currentExpr = parameter;
+                            PropertyInfo? currentProp = null;
+                            bool failed = false;
+                            foreach (var part in parts)
+                            {
+                                currentProp = currentType.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                                if (currentProp == null)
+                                {
+                                    failed = true;
+                                    break;
+                                }
+                                currentExpr = Expression.Property(currentExpr, currentProp);
+                                currentType = currentProp.PropertyType;
+                            }
+                            if (failed)
+                                continue;
+                            member = currentExpr;
+                            propType = currentType;
+                        }
+                        else
+                        {
+                            var prop = propInfo ?? typeof(T).GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                            if (prop == null)
+                                continue;
+                            member = Expression.Property(parameter, prop);
+                            propType = prop.PropertyType;
+                        }
                     var member = Expression.Property(parameter, prop);
                     var propType = prop.PropertyType;
                     Expression? condition = null;
@@ -170,7 +204,42 @@ public static class IQueryableExtensions
 
         // Fallback to original simple field/value behavior
         if (string.IsNullOrWhiteSpace(field) || string.IsNullOrWhiteSpace(value))
-            return query;
+            // Support nested property for simple field/value fallback
+            PropertyInfo? propSimple = null;
+            Expression parameterSimple = Expression.Parameter(typeof(T), "x");
+            Expression memberSimpleExpr = parameterSimple;
+            var propTypeSimple = typeof(object);
+            if (field.Contains('.'))
+            {
+                var parts = field.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                Type currentType = typeof(T);
+                Expression currentExpr = parameterSimple;
+                PropertyInfo? currentProp = null;
+                bool failed = false;
+                foreach (var part in parts)
+                {
+                    currentProp = currentType.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    if (currentProp == null)
+                    {
+                        failed = true;
+                        break;
+                    }
+                    currentExpr = Expression.Property(currentExpr, currentProp);
+                    currentType = currentProp.PropertyType;
+                }
+                if (failed)
+                    return query;
+                memberSimpleExpr = currentExpr;
+                propTypeSimple = currentType;
+            }
+            else
+            {
+                propSimple = typeof(T).GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                if (propSimple == null)
+                    return query;
+                memberSimpleExpr = Expression.Property(parameterSimple, propSimple);
+                propTypeSimple = propSimple.PropertyType;
+            }
         var propSimple = typeof(T).GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
         if (propSimple == null)
             return query;
@@ -292,16 +361,18 @@ public static class IQueryableExtensions
 
     public static async Task<PagedResult<TDestination>> ApplyPagingAsync<TSource, TDestination>(this IQueryable<TSource> query, QueryParams queryParams, Func<TSource, TDestination> projector)
     {
+        // Enforce sensible limits on PageSize
+        var pageSize = Math.Min(Math.Max(1, queryParams.PageSize), Math.Max(1, queryParams.MaxPageSize));
         var total = await query.CountAsync();
-        var skip = (Math.Max(queryParams.Page, 1) - 1) * queryParams.PageSize;
-        var items = await query.Skip(skip).Take(queryParams.PageSize).ToListAsync();
+        var skip = (Math.Max(queryParams.Page, 1) - 1) * pageSize;
+        var items = await query.Skip(skip).Take(pageSize).ToListAsync();
         var projected = items.Select(projector);
         return new PagedResult<TDestination>
         {
             Items = projected,
             TotalCount = total,
             Page = queryParams.Page,
-            PageSize = queryParams.PageSize
+            PageSize = pageSize
         };
     }
 }

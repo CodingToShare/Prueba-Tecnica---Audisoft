@@ -7,6 +7,8 @@ public class QueryParams
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
+    // Tamaño máximo permitido por página. Se aplicará en ApplyPagingAsync para evitar peticiones excesivas.
+    public int MaxPageSize { get; set; } = 100;
 
     // Campo por el que filtrar (nombre de propiedad simple)
     public string? FilterField { get; set; }
