@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es" ng-app="audiSoftSchoolApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AudiSoft School - Sistema de Gestión Escolar</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="assets/css/app.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" ng-controller="MainController as main">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#!/">
+                <i class="bi bi-mortarboard-fill me-2"></i>
+                AudiSoft School
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Navigation Menu (will be populated based on user role) -->
+                <ul class="navbar-nav me-auto">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/dashboard">
+                            <i class="bi bi-house-fill me-1"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown" ng-if="main.isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" 
+                           aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{main.getCurrentUser().userName}}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <span class="dropdown-item-text">
+                                    <small class="text-muted">{{main.getCurrentUser().roles.join(', ')}}</small>
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" ng-click="main.logout()">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container-fluid py-4">
+        <!-- Alert Messages -->
+        <div class="alert-container">
+            <!-- Toast notifications will be injected here -->
+        </div>
+
+        <!-- Page Content -->
+        <div ng-view></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <span class="text-muted">
+                © 2024 AudiSoft School - Sistema de Gestión Escolar
+            </span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- AngularJS 1.8.3 (Latest stable 1.x) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js" integrity="sha512-KZmyTq3PLx9EZl0RHShHQuXtrvdJ+m35tuOiwlcZfs85fX4vboveQfUzQzH5esEqEl4l+A1yt+VRguSSqV6XD1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- AngularJS Route -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-route.min.js" integrity="sha512-2ngKHTC4LxAhItTiC8ecBJAt2wCs7CT9RNr2VhxHtLcKIrDCBqSwLWqczpbLQ9PL+yATS0+DEQe1E6a7PxdR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- AngularJS Resource (for REST API consumption) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-resource.min.js" integrity="sha512-oMnsejJOC5DMQR0Wca1prVgKp8g80bUqNTCUEYDZAUUgH8DWEWtpZ2b1ACpD6LYAW7+3j/1xkl8P9utRMAGJ7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <!-- Application Scripts -->
+    <!-- Main Module -->
+    <script src="app.module.js"></script>
+    
+    <!-- Core Services (will be added in future METAs) -->
+    <!-- <script src="app/core/services/api.service.js"></script> -->
+    <!-- <script src="app/core/auth/auth.service.js"></script> -->
+    <!-- <script src="app/core/interceptors/auth.interceptor.js"></script> -->
+    
+    <!-- Feature Modules (will be added in future METAs) -->
+    <!-- <script src="app/features/login/login.controller.js"></script> -->
+    
+</body>
+</html>
