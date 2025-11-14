@@ -82,12 +82,15 @@
             $log.debug('ProfesoresController: Activating');
             
             // Check permissions based on user role
-            var userRoles = authService.getRoles() || [];
-            vm.canCreate = userRoles.indexOf('Admin') >= 0;
-            vm.canEdit = userRoles.indexOf('Admin') >= 0;
-            vm.canDelete = userRoles.indexOf('Admin') >= 0;
+            vm.canCreate = authService.hasRole('Admin');
+            vm.canEdit = authService.hasRole('Admin');
+            vm.canDelete = authService.hasRole('Admin');
 
-            $log.info('ProfesoresController: Permissions', { canCreate: vm.canCreate, canEdit: vm.canEdit, canDelete: vm.canDelete });
+            $log.debug('ProfesoresController: Permissions', {
+                canCreate: vm.canCreate,
+                canEdit: vm.canEdit,
+                canDelete: vm.canDelete
+            });
 
             loadProfesores();
         }
