@@ -213,6 +213,7 @@ builder.Services.AddScoped<ProfesorService>();
 builder.Services.AddScoped<NotaService>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<RolService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // Ensure ILogger is available for services
 builder.Services.AddLogging();
@@ -296,17 +297,25 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Profesor", "Admin"));
 });
 
-// Configure CORS to allow requests from the frontend
+// Configure CORS to allow requests from the frontend (origins from configuration)
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        if (allowedOrigins.Length > 0)
         {
-            // Allow the specific origin of the frontend application
-            policy.WithOrigins("http://localhost:8080") 
-                  .AllowAnyHeader() // Allow all HTTP headers in the request
-                  .AllowAnyMethod(); // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-        });
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            // Fallback to permissive CORS in development if not configured
+            Log.Warning("Cors:AllowedOrigins is empty or missing. Falling back to AllowAnyOrigin (development only).");
+            policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+        }
+    });
 });
 
 var app = builder.Build();
