@@ -76,3 +76,15 @@ public class NotaDto
     /// </summary>
     public string? UpdatedBy { get; set; }
 }
+
+/// <summary>
+/// DTO para actualizar una Nota.
+/// Separar Create/Update ayuda a mantener contratos claros.
+/// </summary>
+public class UpdateNotaDto
+{
+    public string Nombre { get; set; } = null!;
+    public decimal Valor { get; set; }
+    public int IdProfesor { get; set; }
+    public int IdEstudiante { get; set; }
+}

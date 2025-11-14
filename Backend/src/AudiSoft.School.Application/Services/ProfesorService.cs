@@ -1,10 +1,13 @@
+using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
+using AudiSoft.School.Application.Extensions;
 using AudiSoft.School.Application.Interfaces;
 using AudiSoft.School.Application.Validators;
 using AudiSoft.School.Domain.Entities;
 using AudiSoft.School.Domain.Exceptions;
 using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace AudiSoft.School.Application.Services;
 
@@ -17,15 +20,18 @@ public class ProfesorService
     private readonly IProfesorRepository _repository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateProfesorDto> _validator;
+    private readonly IValidator<UpdateProfesorDto>? _updateValidator;
 
     public ProfesorService(
         IProfesorRepository repository,
         IMapper mapper,
-        IValidator<CreateProfesorDto> validator)
+        IValidator<CreateProfesorDto> validator,
+        IValidator<UpdateProfesorDto>? updateValidator = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _updateValidator = updateValidator;
     }
 
     /// <summary>
@@ -47,6 +53,14 @@ public class ProfesorService
     {
         var profesores = await _repository.GetAllAsync();
         return _mapper.Map<List<ProfesorDto>>(profesores);
+    }
+
+    public async Task<PagedResult<ProfesorDto>> GetPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Profesor>();
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Profesor, ProfesorDto>(queryParams, p => _mapper.Map<ProfesorDto>(p));
     }
 
     /// <summary>
@@ -78,14 +92,17 @@ public class ProfesorService
     /// <returns>DTO del profesor actualizado</returns>
     /// <exception cref="EntityNotFoundException">Si el profesor no existe</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<ProfesorDto> UpdateAsync(int id, CreateProfesorDto dto)
+    public async Task<ProfesorDto> UpdateAsync(int id, UpdateProfesorDto dto)
     {
         // Validar entrada
-        var validationResult = await _validator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
+        if (_updateValidator != null)
         {
-            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            }
         }
 
         var profesor = await _repository.GetByIdAsync(id);

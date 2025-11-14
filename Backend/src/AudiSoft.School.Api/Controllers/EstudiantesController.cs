@@ -1,3 +1,4 @@
+using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Services;
 using AudiSoft.School.Domain.Exceptions;
@@ -29,11 +30,25 @@ public class EstudiantesController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<EstudianteDto>>> GetAll()
+    public async Task<ActionResult<PagedResult<EstudianteDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
         _logger.LogInformation("Obteniendo todos los estudiantes");
-        var estudiantes = await _service.GetAllAsync();
-        return Ok(estudiantes);
+        var result = await _service.GetPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Búsqueda avanzada de estudiantes mediante expresión en QueryParams.Filter
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<EstudianteDto>>> Search([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
+    {
+        _logger.LogInformation("Buscando estudiantes con parámetros: {QueryParams}", queryParams);
+        var result = await _service.GetPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
     }
 
     /// <summary>
@@ -118,7 +133,7 @@ public class EstudiantesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EstudianteDto>> Update(int id, [FromBody] CreateEstudianteDto dto)
+    public async Task<ActionResult<EstudianteDto>> Update(int id, [FromBody] UpdateEstudianteDto dto)
     {
         if (dto == null)
         {

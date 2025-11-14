@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <ProjectReference Include="..\AudiSoft.School.Application\AudiSoft.School.Application.csproj" />
     <ProjectReference Include="..\AudiSoft.School.Infrastructure\AudiSoft.School.Infrastructure.csproj" />
   </ItemGroup>

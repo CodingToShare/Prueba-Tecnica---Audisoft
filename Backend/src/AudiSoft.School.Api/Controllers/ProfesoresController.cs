@@ -1,3 +1,4 @@
+using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Services;
 using AudiSoft.School.Domain.Exceptions;
@@ -29,11 +30,25 @@ public class ProfesoresController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ProfesorDto>>> GetAll()
+    public async Task<ActionResult<PagedResult<ProfesorDto>>> GetAll([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
     {
         _logger.LogInformation("Obteniendo todos los profesores");
-        var profesores = await _service.GetAllAsync();
-        return Ok(profesores);
+        var result = await _service.GetPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Búsqueda avanzada de profesores mediante expresión en QueryParams.Filter
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<ProfesorDto>>> Search([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
+    {
+        _logger.LogInformation("Buscando profesores con parámetros: {QueryParams}", queryParams);
+        var result = await _service.GetPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
     }
 
     /// <summary>
@@ -118,7 +133,7 @@ public class ProfesoresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ProfesorDto>> Update(int id, [FromBody] CreateProfesorDto dto)
+    public async Task<ActionResult<ProfesorDto>> Update(int id, [FromBody] UpdateProfesorDto dto)
     {
         if (dto == null)
         {

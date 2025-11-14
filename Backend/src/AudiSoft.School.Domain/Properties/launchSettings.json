@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "AudiSoft.School.Domain": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\santi\\Desktop\\Prueba Tecnica - Audisoft\\Backend\\src\\AudiSoft.School.Api\\AudiSoft.School.Api.csproj"
+    }
+  }
+}

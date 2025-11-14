@@ -1,6 +1,9 @@
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Interfaces;
 using AudiSoft.School.Application.Validators;
+using AudiSoft.School.Application.Common;
+using AudiSoft.School.Application.Extensions;
+using Microsoft.EntityFrameworkCore;
 using AudiSoft.School.Domain.Entities;
 using AudiSoft.School.Domain.Exceptions;
 using AutoMapper;
@@ -19,19 +22,22 @@ public class NotaService
     private readonly IProfesorRepository _profesorRepository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateNotaDto> _validator;
+    private readonly IValidator<UpdateNotaDto>? _updateValidator;
 
     public NotaService(
         INotaRepository repository,
         IEstudianteRepository estudianteRepository,
         IProfesorRepository profesorRepository,
         IMapper mapper,
-        IValidator<CreateNotaDto> validator)
+        IValidator<CreateNotaDto> validator,
+        IValidator<UpdateNotaDto>? updateValidator = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _estudianteRepository = estudianteRepository ?? throw new ArgumentNullException(nameof(estudianteRepository));
         _profesorRepository = profesorRepository ?? throw new ArgumentNullException(nameof(profesorRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _updateValidator = updateValidator;
     }
 
     /// <summary>
@@ -53,6 +59,42 @@ public class NotaService
     {
         var notas = await _repository.GetAllAsync();
         return _mapper.Map<List<NotaDto>>(notas);
+    }
+
+    /// <summary>
+    /// Obtiene notas con soporte de filtros, ordenamiento y paginación.
+    /// </summary>
+    public async Task<PagedResult<NotaDto>> GetPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        // Include related entities for projection
+        query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
+
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+
+        var paged = await query.ApplyPagingAsync<Nota, NotaDto>(queryParams, n => _mapper.Map<NotaDto>(n));
+        return paged;
+    }
+
+    public async Task<PagedResult<NotaDto>> GetByProfesorPagedAsync(int idProfesor, QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        query = query.Where(n => n.IdProfesor == idProfesor);
+        query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Nota, NotaDto>(queryParams, n => _mapper.Map<NotaDto>(n));
+    }
+
+    public async Task<PagedResult<NotaDto>> GetByEstudiantePagedAsync(int idEstudiante, QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        query = query.Where(n => n.IdEstudiante == idEstudiante);
+        query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Nota, NotaDto>(queryParams, n => _mapper.Map<NotaDto>(n));
     }
 
     /// <summary>
@@ -124,14 +166,17 @@ public class NotaService
     /// <returns>DTO de la nota actualizada</returns>
     /// <exception cref="EntityNotFoundException">Si la nota, profesor o estudiante no existen</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<NotaDto> UpdateAsync(int id, CreateNotaDto dto)
+    public async Task<NotaDto> UpdateAsync(int id, UpdateNotaDto dto)
     {
         // Validar entrada
-        var validationResult = await _validator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
+        if (_updateValidator != null)
         {
-            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            }
         }
 
         var nota = await _repository.GetByIdAsync(id);

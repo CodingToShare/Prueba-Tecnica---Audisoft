@@ -17,6 +17,6 @@ public class ProfesorRepository : Repository<Profesor>, IProfesorRepository
 
     public async Task<Profesor?> GetByNombreAsync(string nombre)
     {
-        return await _dbSet.FirstOrDefaultAsync(p => p.Nombre == nombre && !p.IsDeleted);
+        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.Nombre == nombre && !p.IsDeleted);
     }
 }

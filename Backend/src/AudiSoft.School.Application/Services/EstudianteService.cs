@@ -1,10 +1,13 @@
+using AudiSoft.School.Application.Common;
 using AudiSoft.School.Application.DTOs;
+using AudiSoft.School.Application.Extensions;
 using AudiSoft.School.Application.Interfaces;
 using AudiSoft.School.Application.Validators;
 using AudiSoft.School.Domain.Entities;
 using AudiSoft.School.Domain.Exceptions;
 using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace AudiSoft.School.Application.Services;
 
@@ -17,15 +20,18 @@ public class EstudianteService
     private readonly IEstudianteRepository _repository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateEstudianteDto> _validator;
+    private readonly IValidator<UpdateEstudianteDto>? _updateValidator;
 
     public EstudianteService(
         IEstudianteRepository repository,
         IMapper mapper,
-        IValidator<CreateEstudianteDto> validator)
+        IValidator<CreateEstudianteDto> validator,
+        IValidator<UpdateEstudianteDto>? updateValidator = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _updateValidator = updateValidator;
     }
 
     /// <summary>
@@ -47,6 +53,14 @@ public class EstudianteService
     {
         var estudiantes = await _repository.GetAllAsync();
         return _mapper.Map<List<EstudianteDto>>(estudiantes);
+    }
+
+    public async Task<PagedResult<EstudianteDto>> GetPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Estudiante>();
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Estudiante, EstudianteDto>(queryParams, e => _mapper.Map<EstudianteDto>(e));
     }
 
     /// <summary>
@@ -78,14 +92,17 @@ public class EstudianteService
     /// <returns>DTO del estudiante actualizado</returns>
     /// <exception cref="EntityNotFoundException">Si el estudiante no existe</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<EstudianteDto> UpdateAsync(int id, CreateEstudianteDto dto)
+    public async Task<EstudianteDto> UpdateAsync(int id, UpdateEstudianteDto dto)
     {
         // Validar entrada
-        var validationResult = await _validator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
+        if (_updateValidator != null)
         {
-            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new InvalidEntityStateException($"Validación fallida: {errors}");
+            }
         }
 
         var estudiante = await _repository.GetByIdAsync(id);

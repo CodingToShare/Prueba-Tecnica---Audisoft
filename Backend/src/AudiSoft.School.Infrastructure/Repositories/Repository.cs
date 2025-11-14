@@ -22,6 +22,15 @@ public class Repository<T> : IRepository<T> where T : class
     }
 
     /// <summary>
+    /// Expone un IQueryable para consultas avanzadas desde la capa de aplicación.
+    /// Por defecto se devuelve el DbSet; el llamador puede aplicar AsNoTracking().
+    /// </summary>
+    public IQueryable<T> Query()
+    {
+        return _dbSet.AsQueryable();
+    }
+
+    /// <summary>
     /// Obtiene una entidad por su ID.
     /// </summary>
     public async Task<T?> GetByIdAsync(int id)
@@ -34,7 +43,7 @@ public class Repository<T> : IRepository<T> where T : class
     /// </summary>
     public async Task<List<T>> GetAllAsync()
     {
-        return await _dbSet.ToListAsync();
+        return await _dbSet.AsNoTracking().ToListAsync();
     }
 
     /// <summary>
@@ -43,7 +52,7 @@ public class Repository<T> : IRepository<T> where T : class
     /// </summary>
     public async Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
-        return await _dbSet.Where(predicate).ToListAsync();
+        return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
     }
 
     /// <summary>

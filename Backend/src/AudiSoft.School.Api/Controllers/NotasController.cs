@@ -1,5 +1,6 @@
 using AudiSoft.School.Application.DTOs;
 using AudiSoft.School.Application.Services;
+using AudiSoft.School.Application.Common;
 using AudiSoft.School.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,11 +30,12 @@ public class NotasController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<NotaDto>>> GetAll()
+    public async Task<ActionResult<PagedResult<NotaDto>>> GetAll([FromQuery] QueryParams queryParams)
     {
         _logger.LogInformation("Obteniendo todas las notas");
-        var notas = await _service.GetAllAsync();
-        return Ok(notas);
+        var result = await _service.GetPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
     }
 
     /// <summary>
@@ -75,11 +77,12 @@ public class NotasController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     [HttpGet("profesor/{idProfesor}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<NotaDto>>> GetByProfesor(int idProfesor)
+    public async Task<ActionResult<PagedResult<NotaDto>>> GetByProfesor(int idProfesor, [FromQuery] QueryParams queryParams)
     {
         _logger.LogInformation("Obteniendo notas del profesor con ID {ProfesorId}", idProfesor);
-        var notas = await _service.GetByProfesorAsync(idProfesor);
-        return Ok(notas);
+        var result = await _service.GetByProfesorPagedAsync(idProfesor, queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
     }
 
     /// <summary>
@@ -90,11 +93,12 @@ public class NotasController : ControllerBase
     /// <response code="200">Operación exitosa</response>
     [HttpGet("estudiante/{idEstudiante}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<NotaDto>>> GetByEstudiante(int idEstudiante)
+    public async Task<ActionResult<PagedResult<NotaDto>>> GetByEstudiante(int idEstudiante, [FromQuery] QueryParams queryParams)
     {
         _logger.LogInformation("Obteniendo notas del estudiante con ID {EstudianteId}", idEstudiante);
-        var notas = await _service.GetByEstudianteAsync(idEstudiante);
-        return Ok(notas);
+        var result = await _service.GetByEstudiantePagedAsync(idEstudiante, queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
     }
 
     /// <summary>
@@ -154,7 +158,7 @@ public class NotasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<NotaDto>> Update(int id, [FromBody] CreateNotaDto dto)
+    public async Task<ActionResult<NotaDto>> Update(int id, [FromBody] UpdateNotaDto dto)
     {
         if (dto == null)
         {

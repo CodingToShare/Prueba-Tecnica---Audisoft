@@ -8,9 +8,20 @@ using AudiSoft.School.Infrastructure.Persistence;
 using AudiSoft.School.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog early
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/audisoft-log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -52,6 +63,9 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IValidator<CreateEstudianteDto>, CreateEstudianteDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateProfesorDto>, CreateProfesorDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateNotaDto>, CreateNotaDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateNotaDto>, UpdateNotaDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateEstudianteDto>, UpdateEstudianteDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateProfesorDto>, UpdateProfesorDtoValidator>();
 
 // Register DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -69,12 +83,8 @@ builder.Services.AddScoped<EstudianteService>();
 builder.Services.AddScoped<ProfesorService>();
 builder.Services.AddScoped<NotaService>();
 
-// Add Logging
-builder.Services.AddLogging(config =>
-{
-    config.AddConsole();
-    config.AddDebug();
-});
+// Note: Serilog is configured as the host logger. Keep AddLogging for compatibility.
+builder.Services.AddLogging();
 
 var app = builder.Build();
 

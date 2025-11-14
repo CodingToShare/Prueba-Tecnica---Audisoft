@@ -21,6 +21,7 @@ public class NotaRepository : Repository<Nota>, INotaRepository
             .Where(n => n.IdProfesor == idProfesor && !n.IsDeleted)
             .Include(n => n.Profesor)
             .Include(n => n.Estudiante)
+            .AsNoTracking()
             .ToListAsync();
     }
 
@@ -30,6 +31,7 @@ public class NotaRepository : Repository<Nota>, INotaRepository
             .Where(n => n.IdEstudiante == idEstudiante && !n.IsDeleted)
             .Include(n => n.Profesor)
             .Include(n => n.Estudiante)
+            .AsNoTracking()
             .ToListAsync();
     }
 

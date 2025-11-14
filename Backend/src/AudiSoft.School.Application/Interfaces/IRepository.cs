@@ -48,4 +48,10 @@ public interface IRepository<T> where T : class
     /// Verifica si una entidad existe por su ID.
     /// </summary>
     Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// Expone un IQueryable para consultas avanzadas (filtrado/ordenamiento/paginación)
+    /// desde la capa de aplicación. El caller puede aplicar AsNoTracking() si lo desea.
+    /// </summary>
+    IQueryable<T> Query();
 }
