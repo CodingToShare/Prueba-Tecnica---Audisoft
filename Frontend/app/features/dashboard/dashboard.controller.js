@@ -9,23 +9,16 @@
         .module('audiSoftSchoolApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$scope', 'routeAuthService', 'apiService', 'configService', 'authService', 'envConfigLoader'];
-    function DashboardController($scope, routeAuthService, apiService, configService, authService, envConfigLoader) {
+    DashboardController.$inject = ['$q', 'routeAuthService', 'apiService'];
+    function DashboardController($q, routeAuthService, apiService) {
         var vm = this;
 
         // Bindable properties
         vm.stats = {};
         vm.recentActivity = [];
         vm.lastLogin = null;
-        vm.apiStatus = 'Checking...';
-        vm.apiConfig = configService.getApiConfig();
-        vm.authInfo = {};
-        vm.envInfo = {};
-
-        // Bindable methods  
-        vm.testLogin = testLogin;
-        vm.testLogout = testLogout;
-        vm.testAuthenticatedRequest = testAuthenticatedRequest;
+        vm.latestNotas = [];
+        
 
         // Bindable methods
         vm.canViewStudents = canViewStudents;
@@ -33,6 +26,9 @@
         vm.canCreateStudent = canCreateStudent;
         vm.canCreateProfessor = canCreateProfessor;
         vm.canCreateNote = canCreateNote;
+        vm.isEstudiante = isEstudiante;
+        vm.isProfesor = isProfesor;
+        vm.isAdmin = isAdmin;
 
         // Initialize controller
         activate();
@@ -42,39 +38,45 @@
         function activate() {
             loadDashboardData();
             loadRecentActivity();
-            testApiConnection();
-            loadAuthInfo();
-            loadEnvInfo();
-        }
-
-        function testApiConnection() {
-            // Test API connectivity - this will likely return 401 (Unauthorized) which is expected
-            apiService.get('estudiantes')
-                .then(function(response) {
-                    vm.apiStatus = 'Connected ✓';
-                })
-                .catch(function(error) {
-                    if (error.status === 401) {
-                        vm.apiStatus = 'Connected (Auth Required) ✓';
-                    } else if (error.status === 0) {
-                        vm.apiStatus = 'Connection Failed ✗';
-                    } else {
-                        vm.apiStatus = 'Connected (Status: ' + error.status + ') ✓';
-                    }
-                });
+            loadLatestNotas();
         }
 
         function loadDashboardData() {
-            // TODO: Replace with real API calls in META 3
-            // Mock data for development
-            vm.stats = {
-                totalEstudiantes: 156,
-                totalProfesores: 24,
-                totalNotas: 342,
-                promedioGeneral: 78.5
-            };
-
             vm.lastLogin = new Date();
+
+            var paramsCount = { page: 1, pageSize: 1, maxPageSize: 1, sortField: 'id', sortDesc: true };
+            var paramsNotas = { page: 1, pageSize: 100, maxPageSize: 100, sortField: 'id', sortDesc: true };
+
+            var notasCountP = apiService.get('Notas', paramsCount)
+                .then(function(res) { return res.totalCount || (res.data && res.data.totalCount) || 0; })
+                .catch(function() { return 0; });
+
+            var estudiantesCountP = apiService.get('estudiantes', paramsCount)
+                .then(function(res) { return res.totalCount || (res.data && res.data.totalCount) || 0; })
+                .catch(function() { return 0; });
+
+            var profesoresCountP = apiService.get('profesores', paramsCount)
+                .then(function(res) { return res.totalCount || (res.data && res.data.totalCount) || 0; })
+                .catch(function() { return 0; });
+
+            var notasAvgP = apiService.get('Notas', paramsNotas)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    if (!items.length) return null;
+                    var sum = 0;
+                    for (var i = 0; i < items.length; i++) { sum += (items[i].valor || items[i].Valor || 0); }
+                    return +(sum / items.length).toFixed(1);
+                })
+                .catch(function() { return null; });
+
+            $q.all([notasCountP, estudiantesCountP, profesoresCountP, notasAvgP]).then(function(results) {
+                vm.stats = {
+                    totalNotas: results[0],
+                    totalEstudiantes: results[1],
+                    totalProfesores: results[2],
+                    promedioGeneral: results[3]
+                };
+            });
         }
 
         function loadRecentActivity() {
@@ -99,6 +101,25 @@
             ];
         }
 
+        function loadLatestNotas() {
+            var params = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
+            apiService.get('Notas', params)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    vm.latestNotas = items.map(function(n) {
+                        return {
+                            id: n.id || n.Id,
+                            nombre: n.nombre || n.Nombre,
+                            valor: n.valor || n.Valor,
+                            createdAt: n.createdAt || n.CreatedAt
+                        };
+                    });
+                })
+                .catch(function() {
+                    vm.latestNotas = [];
+                });
+        }
+
         // Permission methods
         function canViewStudents() {
             return routeAuthService.hasRole('Admin') || routeAuthService.hasRole('Profesor');
@@ -120,66 +141,16 @@
             return routeAuthService.hasRole('Admin') || routeAuthService.hasRole('Profesor');
         }
 
-        function loadAuthInfo() {
-            vm.authInfo = {
-                isAuthenticated: authService.isAuthenticated(),
-                currentUser: authService.getCurrentUser(),
-                token: authService.getToken() ? 'Present' : 'Not found',
-                role: authService.getRole(),
-                roles: authService.getRoles()
-            };
+        function isEstudiante() {
+            return routeAuthService.hasRole('Estudiante');
         }
 
-        function testLogin() {
-            // Uses seeded development credentials from backend seeder
-            authService.login('admin', 'Admin@123456')
-                .then(function(result) {
-                    vm.authInfo.loginTest = 'Success: ' + (result.user.userName || result.user.username);
-                    loadAuthInfo();
-                })
-                .catch(function(error) {
-                    vm.authInfo.loginTest = 'Failed: ' + (error && error.message ? error.message : 'Unknown error');
-                });
+        function isProfesor() {
+            return routeAuthService.hasRole('Profesor');
         }
 
-        function testLogout() {
-            authService.logout()
-                .then(function() {
-                    vm.authInfo.logoutTest = 'Success';
-                    loadAuthInfo();
-                })
-                .catch(function(error) {
-                    vm.authInfo.logoutTest = 'Failed: ' + error.message;
-                });
-        }
-
-        function testAuthenticatedRequest() {
-            // Test that interceptor adds Authorization header automatically
-            apiService.get('estudiantes')
-                .then(function(response) {
-                    vm.authInfo.interceptorTest = 'Success: Request with auto-token injection';
-                })
-                .catch(function(error) {
-                    if (error.status === 401) {
-                        vm.authInfo.interceptorTest = 'Expected 401: Interceptor working, needs auth';
-                    } else if (error.status === 0) {
-                        vm.authInfo.interceptorTest = 'Connection issue: Backend not accessible';
-                    } else {
-                        vm.authInfo.interceptorTest = 'Status ' + error.status + ': Interceptor functioning';
-                    }
-                });
-        }
-
-        function loadEnvInfo() {
-            vm.envInfo = {
-                configLoaded: envConfigLoader.isConfigLoaded(),
-                environment: configService.getEnvironment(),
-                envFile: envConfigLoader.getEnvironmentFile(),
-                apiBaseUrl: configService.getApiBaseUrl(),
-                appName: configService.getAppInfo().name,
-                appVersion: configService.getAppInfo().version,
-                debugMode: configService.get('DEBUG_MODE', false)
-            };
+        function isAdmin() {
+            return routeAuthService.hasRole('Admin');
         }
     }
 

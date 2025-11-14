@@ -628,3 +628,6 @@ footer span {
         opacity: 1;
     }
 }
+
+/* Prevent mustache flicker before Angular compiles */
+[ng-cloak] { display: none !important; }
