@@ -1,48 +1,67 @@
 <!-- Page Not Found -->
-<div class="container-fluid">
-    <div class="row justify-content-center">
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
         <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm text-center">
-                <div class="card-body p-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
                     <!-- 404 Icon -->
                     <div class="mb-4">
-                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                        <i class="bi bi-exclamation-triangle" style="font-size: 5rem; color: #ffc107;"></i>
                     </div>
 
-                    <!-- Error Message -->
-                    <h1 class="display-1 text-primary">404</h1>
+                    <!-- Error Code -->
+                    <h1 class="display-3 fw-bold text-primary mb-2">404</h1>
+                    
+                    <!-- Error Title -->
                     <h2 class="h4 text-dark mb-3">Página No Encontrada</h2>
+                    
+                    <!-- Error Message -->
                     <p class="text-muted mb-4">
                         La página que estás buscando no existe o ha sido movida. 
-                        Verifica la URL o regresa al dashboard.
+                        Verifica la URL e intenta nuevamente.
                     </p>
 
-                    <!-- Navigation Info -->
-                    <div class="alert alert-light" role="alert">
+                    <!-- URL Info -->
+                    <div class="alert alert-light border-2 mb-4" role="alert">
                         <small class="text-muted">
-                            <strong>URL solicitada:</strong> {{$location.path()}}
+                            <strong>URL solicitada:</strong><br/>
+                            <code style="word-break: break-all;">{{$location.path()}}</code>
                         </small>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="d-grid gap-2 d-md-block">
-                        <a href="#!/dashboard" class="btn btn-primary">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="#!/dashboard" class="btn btn-primary btn-lg">
                             <i class="bi bi-house-fill me-2"></i>
                             Ir al Dashboard
                         </a>
-                        <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                        <button class="btn btn-outline-primary btn-lg" onclick="window.history.back()">
                             <i class="bi bi-arrow-left me-2"></i>
                             Volver Atrás
                         </button>
                     </div>
 
                     <!-- Help Links -->
-                    <div class="mt-4">
-                        <small class="text-muted">
-                            <a href="#!/dashboard" class="text-decoration-none">Dashboard</a> |
-                            <a href="#!/estudiantes" class="text-decoration-none">Estudiantes</a> |
-                            <a href="#!/notas" class="text-decoration-none">Notas</a>
-                        </small>
+                    <div class="mt-5 pt-4 border-top">
+                        <p class="mb-3 text-muted fw-bold">Enlaces rápidos:</p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="#!/dashboard" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-house-fill me-1"></i>
+                                Dashboard
+                            </a>
+                            <a href="#!/estudiantes" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-people-fill me-1"></i>
+                                Estudiantes
+                            </a>
+                            <a href="#!/profesores" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-person-workspace me-1"></i>
+                                Profesores
+                            </a>
+                            <a href="#!/notas" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-file-earmark-text me-1"></i>
+                                Notas
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

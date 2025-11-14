@@ -1,0 +1,462 @@
+(function() {
+    'use strict';
+
+    /**
+     * Notas Controller
+     * Manages grades/notes view with CRUD operations filtered by user role
+     * Admin: CRUD total, Profesor: ver/editar solo suyas, Estudiante: solo lectura de sus notas
+     */
+    angular
+        .module('audiSoftSchoolApp')
+        .controller('NotasController', NotasController);
+
+    NotasController.$inject = ['$scope', '$location', 'authService', 'notasService', 'estudiantesService', 
+                               'profesoresService', 'configService', '$log'];
+    function NotasController($scope, $location, authService, notasService, estudiantesService, 
+                             profesoresService, configService, $log) {
+        var vm = this;
+
+        // UI State
+        vm.isLoading = false;
+        vm.error = null;
+        vm.success = null;
+        vm.showModal = false;
+        vm.isEditMode = false;
+        vm.showDeleteConfirm = false;
+        vm.isDeleting = false;
+        vm.notaToDelete = null;
+
+        // Data
+        vm.notas = [];
+        vm.totalCount = 0;
+        vm.currentNota = null;
+        vm.profesores = [];
+        vm.estudiantes = [];
+        vm.userRole = null;
+        vm.currentUserId = null;
+
+        // Pagination
+        vm.currentPage = 1;
+        vm.pageSize = configService.getPaginationConfig().defaultPageSize;
+        vm.totalPages = 0;
+        vm.pageSizes = configService.getPaginationConfig().pageSizes;
+
+        // Filtering & Sorting
+        vm.searchFilters = {
+            nombre: '',
+            idProfesor: '',
+            idEstudiante: '',
+            minValor: '',
+            maxValor: ''
+        };
+        vm.orderBy = 'nombre';
+        vm.orderDirection = 'asc';
+        vm.availableSortFields = [
+            { value: 'nombre', label: 'Nombre' },
+            { value: 'valor', label: 'Valor' },
+            { value: 'createdAt', label: 'Fecha Creación' },
+            { value: 'id', label: 'ID' }
+        ];
+
+        // User Permissions
+        vm.canCreate = false;
+        vm.canEdit = false;
+        vm.canDelete = false;
+        vm.canViewAll = false;
+
+        // Expose Math object to template
+        vm.Math = Math;
+
+        // Bindable Methods
+        vm.loadNotas = loadNotas;
+        vm.openCreateModal = openCreateModal;
+        vm.openEditModal = openEditModal;
+        vm.saveNota = saveNota;
+        vm.deleteNota = deleteNota;
+        vm.openDeleteConfirm = openDeleteConfirm;
+        vm.closeDeleteConfirm = closeDeleteConfirm;
+        vm.confirmDelete = confirmDelete;
+        vm.closeModal = closeModal;
+        vm.applyFilters = applyFilters;
+        vm.clearFilters = clearFilters;
+        vm.goToPage = goToPage;
+        vm.changePageSize = changePageSize;
+        vm.toggleSortOrder = toggleSortOrder;
+
+        // Initialize
+        activate();
+
+        ////////////////
+
+        /**
+         * Initialize controller
+         */
+        function activate() {
+            $log.debug('NotasController: Activating');
+            
+            // Get current user info
+            var user = authService.getUser();
+            vm.userRole = user && user.roles ? user.roles[0] : null;
+            vm.currentUserId = user && user.userId ? user.userId : null;
+
+            $log.debug('NotasController: User role =', vm.userRole, 'ID =', vm.currentUserId);
+
+            // Check permissions based on user role
+            vm.canViewAll = authService.hasRole('Admin');
+            vm.canCreate = authService.hasRole('Admin') || authService.hasRole('Profesor');
+            vm.canEdit = authService.hasRole('Admin') || authService.hasRole('Profesor');
+            vm.canDelete = authService.hasRole('Admin') || authService.hasRole('Profesor');
+
+            $log.debug('NotasController: Permissions', {
+                canCreate: vm.canCreate,
+                canEdit: vm.canEdit,
+                canDelete: vm.canDelete,
+                canViewAll: vm.canViewAll
+            });
+
+            // Load reference data
+            loadReferenceData();
+            loadNotas();
+        }
+
+        /**
+         * Load profesores and estudiantes for dropdowns
+         */
+        function loadReferenceData() {
+            $log.debug('NotasController: Loading reference data');
+
+            // Load profesores
+            profesoresService.getProfesores({
+                page: 1,
+                pageSize: 1000,
+                orderBy: 'nombre',
+                orderDirection: 'asc'
+            })
+                .then(function(result) {
+                    vm.profesores = result.data || result.items || result;
+                    $log.debug('NotasController: Loaded ' + vm.profesores.length + ' profesores');
+                })
+                .catch(function(error) {
+                    $log.error('NotasController: Error loading profesores', error);
+                    vm.profesores = [];
+                });
+
+            // Load estudiantes
+            estudiantesService.getEstudiantes({
+                page: 1,
+                pageSize: 1000,
+                orderBy: 'nombre',
+                orderDirection: 'asc'
+            })
+                .then(function(result) {
+                    var items = result.data || result.items || result;
+                    // Extract estudiante info
+                    vm.estudiantes = items.map(function(est) {
+                        return {
+                            id: est.id,
+                            nombre: est.nombreSinGrado || est.nombre,
+                            grado: est.grado
+                        };
+                    });
+                    $log.debug('NotasController: Loaded ' + vm.estudiantes.length + ' estudiantes');
+                })
+                .catch(function(error) {
+                    $log.error('NotasController: Error loading estudiantes', error);
+                    vm.estudiantes = [];
+                });
+        }
+
+        /**
+         * Load notas with current filters and pagination
+         */
+        function loadNotas() {
+            vm.isLoading = true;
+            vm.error = null;
+
+            var queryParams = {
+                page: vm.currentPage,
+                pageSize: vm.pageSize,
+                filter: buildActiveFilters(),
+                orderBy: vm.orderBy,
+                orderDirection: vm.orderDirection
+            };
+
+            notasService.getNotas(queryParams)
+                .then(function(result) {
+                    vm.notas = result.data || result.items || result;
+                    vm.totalCount = result.totalCount || 0;
+                    vm.totalPages = result.totalPages || Math.ceil(vm.totalCount / vm.pageSize);
+
+                    $log.info('NotasController: Fetched ' + vm.notas.length + ' notas de ' + vm.totalCount + ' total');
+                    
+                    vm.isLoading = false;
+                })
+                .catch(function(error) {
+                    vm.isLoading = false;
+                    vm.error = {
+                        message: error && error.message ? error.message : 'Error cargando notas',
+                        status: error && error.status ? error.status : null
+                    };
+                    $log.error('NotasController: Error loading notas', error);
+                });
+        }
+
+        /**
+         * Open modal for creating new nota
+         */
+        function openCreateModal() {
+            if (!vm.canCreate) {
+                vm.error = { message: 'No tienes permisos para crear notas' };
+                return;
+            }
+
+            vm.isEditMode = false;
+            vm.currentNota = {
+                nombre: '',
+                valor: '',
+                idProfesor: '',
+                idEstudiante: ''
+            };
+            vm.showModal = true;
+            vm.error = null;
+
+            $log.debug('NotasController: Opening create modal');
+        }
+
+        /**
+         * Open modal for editing existing nota
+         */
+        function openEditModal(nota) {
+            if (!vm.canEdit) {
+                vm.error = { message: 'No tienes permisos para editar notas' };
+                return;
+            }
+
+            // Check if user can edit this nota (only own notes for Profesor)
+            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentUserId) {
+                vm.error = { message: 'Solo puedes editar tus propias notas' };
+                return;
+            }
+
+            vm.isEditMode = true;
+            vm.currentNota = angular.copy(nota);
+            vm.showModal = true;
+            vm.error = null;
+
+            $log.debug('NotasController: Opening edit modal for nota', nota.id);
+        }
+
+        /**
+         * Save nota (create or update)
+         */
+        function saveNota() {
+            if (!vm.currentNota || !vm.currentNota.nombre || vm.currentNota.valor === '' || 
+                !vm.currentNota.idProfesor || !vm.currentNota.idEstudiante) {
+                vm.error = { message: 'Todos los campos son requeridos' };
+                return;
+            }
+
+            // Validate nota name (letters, numbers, spaces, hyphens)
+            var nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$/;
+            if (!nameRegex.test(vm.currentNota.nombre)) {
+                vm.error = { message: 'El nombre de la nota contiene caracteres inválidos' };
+                return;
+            }
+
+            // Validate valor (0-100, max 2 decimals)
+            var valor = parseFloat(vm.currentNota.valor);
+            if (isNaN(valor) || valor < 0 || valor > 100) {
+                vm.error = { message: 'El valor debe estar entre 0 y 100' };
+                return;
+            }
+
+            vm.isLoading = true;
+            vm.error = null;
+
+            var promise = vm.isEditMode 
+                ? notasService.updateNota(vm.currentNota.id, vm.currentNota)
+                : notasService.createNota(vm.currentNota);
+
+            promise
+                .then(function(result) {
+                    vm.success = { 
+                        message: vm.isEditMode ? 'Nota actualizada exitosamente' : 'Nota creada exitosamente'
+                    };
+                    closeModal();
+                    loadNotas();
+
+                    // Clear success message after 3 seconds
+                    setTimeout(function() {
+                        $scope.$apply(function() {
+                            vm.success = null;
+                        });
+                    }, 3000);
+                })
+                .catch(function(error) {
+                    vm.isLoading = false;
+                    vm.error = {
+                        message: error && error.message ? error.message : 'Error guardando nota',
+                        status: error && error.status ? error.status : null
+                    };
+                    $log.error('NotasController: Error saving nota', error);
+                });
+        }
+
+        /**
+         * Delete nota (calls confirmation modal first)
+         */
+        function deleteNota(nota) {
+            openDeleteConfirm(nota);
+        }
+
+        /**
+         * Open delete confirmation modal
+         */
+        function openDeleteConfirm(nota) {
+            if (!vm.canDelete) {
+                vm.error = { message: 'No tienes permisos para eliminar notas' };
+                return;
+            }
+
+            // Check if user can delete this nota (only own notes for Profesor)
+            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentUserId) {
+                vm.error = { message: 'Solo puedes eliminar tus propias notas' };
+                return;
+            }
+
+            vm.notaToDelete = nota;
+            vm.showDeleteConfirm = true;
+        }
+
+        /**
+         * Close delete confirmation modal
+         */
+        function closeDeleteConfirm() {
+            vm.showDeleteConfirm = false;
+            vm.notaToDelete = null;
+            vm.isDeleting = false;
+        }
+
+        /**
+         * Confirm and execute delete
+         */
+        function confirmDelete() {
+            if (!vm.notaToDelete || vm.isDeleting) {
+                return;
+            }
+
+            vm.isDeleting = true;
+            vm.error = null;
+
+            notasService.deleteNota(vm.notaToDelete.id)
+                .then(function() {
+                    vm.success = { message: 'Nota eliminada exitosamente' };
+                    closeDeleteConfirm();
+                    loadNotas();
+
+                    // Clear success message after 3 seconds
+                    setTimeout(function() {
+                        $scope.$apply(function() {
+                            vm.success = null;
+                        });
+                    }, 3000);
+                })
+                .catch(function(error) {
+                    vm.isDeleting = false;
+                    vm.error = {
+                        message: error && error.message ? error.message : 'Error eliminando nota',
+                        status: error && error.status ? error.status : null
+                    };
+                    $log.error('NotasController: Error deleting nota', error);
+                });
+        }
+
+        /**
+         * Close modal and reset form
+         */
+        function closeModal() {
+            vm.showModal = false;
+            vm.isEditMode = false;
+            vm.currentNota = null;
+            vm.error = null;
+        }
+
+        /**
+         * Build active filters for API request
+         */
+        function buildActiveFilters() {
+            var filters = {};
+
+            if (vm.searchFilters.nombre) {
+                filters.nombre = vm.searchFilters.nombre;
+            }
+
+            if (vm.searchFilters.idProfesor) {
+                filters.idProfesor = parseInt(vm.searchFilters.idProfesor, 10);
+            }
+
+            if (vm.searchFilters.idEstudiante) {
+                filters.idEstudiante = parseInt(vm.searchFilters.idEstudiante, 10);
+            }
+
+            if (vm.searchFilters.minValor !== '') {
+                filters.minValor = parseFloat(vm.searchFilters.minValor);
+            }
+
+            if (vm.searchFilters.maxValor !== '') {
+                filters.maxValor = parseFloat(vm.searchFilters.maxValor);
+            }
+
+            return notasService.buildFilterQuery(filters);
+        }
+
+        /**
+         * Apply filters and reload data
+         */
+        function applyFilters() {
+            vm.currentPage = 1;
+            loadNotas();
+        }
+
+        /**
+         * Clear all filters
+         */
+        function clearFilters() {
+            vm.searchFilters = {
+                nombre: '',
+                idProfesor: '',
+                idEstudiante: '',
+                minValor: '',
+                maxValor: ''
+            };
+            applyFilters();
+        }
+
+        /**
+         * Navigate to specific page
+         */
+        function goToPage(page) {
+            if (page >= 1 && page <= vm.totalPages) {
+                vm.currentPage = page;
+                loadNotas();
+            }
+        }
+
+        /**
+         * Change page size
+         */
+        function changePageSize() {
+            vm.currentPage = 1;
+            loadNotas();
+        }
+
+        /**
+         * Toggle sort order direction
+         */
+        function toggleSortOrder() {
+            vm.orderDirection = vm.orderDirection === 'asc' ? 'desc' : 'asc';
+            loadNotas();
+        }
+    }
+
+})();

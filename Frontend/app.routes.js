@@ -63,33 +63,11 @@
             })
 
             // ===== NOTAS ROUTES =====
-            // Lista de notas - Filtrado por rol
+            // Lista de notas con CRUD inline - Todos los roles autenticados
             .when('/notas', {
-                templateUrl: 'app/features/notas/notas-list.html',
-                controller: 'NotasListController',
-                controllerAs: 'notasList',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin', 'Profesor', 'Estudiante']
-                }
-            })
-            
-            // Crear nota - Admin y Profesor
-            .when('/notas/new', {
-                templateUrl: 'app/features/notas/nota-form.html',
-                controller: 'NotaFormController',
-                controllerAs: 'notaForm',
-                access: {
-                    requiresLogin: true,
-                    allowedRoles: ['Admin', 'Profesor']
-                }
-            })
-            
-            // Ver/Editar nota - Permisos por rol y ownership
-            .when('/notas/:id', {
-                templateUrl: 'app/features/notas/nota-detail.html',
-                controller: 'NotaDetailController',
-                controllerAs: 'notaDetail',
+                templateUrl: 'app/features/notas/notas.html',
+                controller: 'NotasController',
+                controllerAs: 'vm',
                 access: {
                     requiresLogin: true,
                     allowedRoles: ['Admin', 'Profesor', 'Estudiante']
