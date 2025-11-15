@@ -102,119 +102,39 @@
         </div>
     </div>
 
-    <!-- Profesores Table -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h6 class="mb-0">
-                <i class="bi bi-list-ul me-2"></i>
-                Listado de Profesores ({{ vm.totalCount }} total)
-            </h6>
-        </div>
-        <div class="table-responsive" ng-if="vm.profesores.length > 0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 60px;">ID</th>
-                        <th>Nombre</th>
-                        <th>Fecha Creación</th>
-                        <th style="width: 120px; text-align: center;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="profesor in vm.profesores">
-                        <td><code>{{ profesor.id }}</code></td>
-                        <td>
-                            <strong>{{ profesor.nombre }}</strong>
-                        </td>
-                        <td>
-                            <small class="text-muted">{{ profesor.createdAt | date:'short' }}</small>
-                        </td>
-                        <td style="text-align: center;">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-outline-primary" 
-                                        ng-click="vm.openEditModal(profesor)"
-                                        ng-if="vm.canEdit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Editar profesor">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                                <button class="btn btn-outline-danger" 
-                                        ng-click="vm.openDeleteConfirm(profesor)"
-                                        ng-if="vm.canDelete"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Eliminar profesor">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Empty State -->
-        <div class="card-body text-center text-muted" ng-if="vm.profesores.length === 0 && !vm.isLoading">
-            <i class="bi bi-inbox display-1 mb-3 d-block"></i>
-            <p>No se encontraron profesores</p>
-            <p class="small">Intenta ajustar los filtros o crea uno nuevo</p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="card-footer bg-light" ng-if="vm.totalPages > 1">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <label class="form-label mb-0">
-                        Elementos por página:
-                        <select class="form-select d-inline-block w-auto" 
-                                ng-model="vm.pageSize"
-                                ng-change="vm.changePageSize()"
-                                ng-options="size for size in vm.pageSizes">
-                        </select>
-                    </label>
-                </div>
-                <div class="col-md-6">
-                    <nav aria-label="Page navigation" class="float-end">
-                        <ul class="pagination mb-0 justify-content-end">
-                            <!-- Previous Page -->
-                            <li class="page-item" ng-class="{'disabled': vm.currentPage === 1}">
-                                <a class="page-link" ng-click="vm.goToPage(vm.currentPage - 1)"
-                                   ng-if="vm.currentPage > 1">
-                                    <i class="bi bi-chevron-left"></i> Anterior
-                                </a>
-                                <span class="page-link" ng-if="vm.currentPage === 1">
-                                    <i class="bi bi-chevron-left"></i> Anterior
-                                </span>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <li class="page-item" ng-repeat="page in [] | range:1:(vm.totalPages + 1)"
-                                ng-class="{'active': page === vm.currentPage}"
-                                ng-if="page >= vm.currentPage - 2 && page <= vm.currentPage + 2">
-                                <a class="page-link" ng-click="vm.goToPage(page)"
-                                   ng-if="page !== vm.currentPage">{{ page }}</a>
-                                <span class="page-link" ng-if="page === vm.currentPage">
-                                    {{ page }} <span class="visually-hidden">(current)</span>
-                                </span>
-                            </li>
-
-                            <!-- Next Page -->
-                            <li class="page-item" ng-class="{'disabled': vm.currentPage === vm.totalPages}">
-                                <a class="page-link" ng-click="vm.goToPage(vm.currentPage + 1)"
-                                   ng-if="vm.currentPage < vm.totalPages">
-                                    Siguiente <i class="bi bi-chevron-right"></i>
-                                </a>
-                                <span class="page-link" ng-if="vm.currentPage === vm.totalPages">
-                                    Siguiente <i class="bi bi-chevron-right"></i>
-                                </span>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-            <div class="small text-muted text-center mt-2">
-                Mostrando {{ (vm.currentPage - 1) * vm.pageSize + 1 }} a {{ vm.Math.min(vm.currentPage * vm.pageSize, vm.totalCount) }} de {{ vm.totalCount }} profesores
-            </div>
-        </div>
+    <!-- Profesores Table (reutilizable) -->
+    <div class="mb-3">
+        <as-table
+            items="vm.profesores"
+            columns="vm.tableColumns"
+            total="vm.totalCount"
+            page="vm.currentPage"
+            page-size="vm.pageSize"
+            page-sizes="vm.pageSizes"
+            order-by="vm.orderBy"
+            order-direction="vm.orderDirection"
+            loading="vm.isLoading"
+            on-page-change="vm.goToPage(page)"
+            on-page-size-change="vm.changePageSize()"
+            on-sort="vm.setSort(field)"
+            empty-message="No se encontraron profesores">
+            <actions>
+                <button class="btn btn-outline-primary" 
+                        ng-click="vm.openEditModal(vm.currentRow)"
+                        ng-if="vm.canEdit"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Editar profesor">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger" 
+                        ng-click="vm.openDeleteConfirm(vm.currentRow)"
+                        ng-if="vm.canDelete"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Eliminar profesor">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </actions>
+        </as-table>
     </div>
 
     <!-- Create/Edit Modal -->

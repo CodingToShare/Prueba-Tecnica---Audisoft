@@ -51,6 +51,13 @@
         vm.canEdit = false;
         vm.canDelete = false;
 
+        // Table columns configuration for reusable table component
+        vm.tableColumns = [
+            { field: 'id', label: 'ID', width: '60px', sortable: true, type: 'code' },
+            { field: 'nombre', label: 'Nombre', sortable: true },
+            { field: 'createdAt', label: 'Fecha Creación', sortable: true, get: function(row){ return $scope.$eval("row.createdAt | date:'short'", { row: row }); }, type: 'small' }
+        ];
+
         // Expose Math object to template
         vm.Math = Math;
 
@@ -69,6 +76,7 @@
         vm.goToPage = goToPage;
         vm.changePageSize = changePageSize;
         vm.toggleSortOrder = toggleSortOrder;
+        vm.setSort = setSort;
 
         // Initialize
         activate();
@@ -337,6 +345,19 @@
          */
         function changePageSize() {
             vm.currentPage = 1;
+            loadProfesores();
+        }
+
+        /**
+         * Set sort field and direction
+         */
+        function setSort(field) {
+            if (vm.orderBy === field) {
+                vm.orderDirection = vm.orderDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                vm.orderBy = field;
+                vm.orderDirection = 'asc';
+            }
             loadProfesores();
         }
 

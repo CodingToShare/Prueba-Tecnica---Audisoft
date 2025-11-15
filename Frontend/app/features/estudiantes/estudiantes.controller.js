@@ -67,6 +67,14 @@
         vm.canEdit = false;
         vm.canDelete = false;
 
+        // Table columns configuration for reusable table component
+        vm.tableColumns = [
+            { field: 'id', label: 'ID', width: '60px', sortable: true, type: 'code' },
+            { field: 'nombreSinGrado', label: 'Nombre', sortable: true },
+            { field: 'grado', label: 'Grado', sortable: false, type: 'badge', badgeClass: 'bg-info', visible: true },
+            { field: 'createdAt', label: 'Fecha Creación', sortable: true, get: function(row){ return $scope.$eval("row.createdAt | date:'short'", { row: row }); }, type: 'small' }
+        ];
+
         // Bindable Methods
         vm.loadEstudiantes = loadEstudiantes;
         vm.openCreateModal = openCreateModal;
@@ -82,6 +90,7 @@
         vm.goToPage = goToPage;
         vm.changePageSize = changePageSize;
         vm.toggleSortOrder = toggleSortOrder;
+        vm.setSort = setSort;
 
         // Initialize
         activate();
@@ -403,6 +412,19 @@
          */
         function changePageSize() {
             vm.currentPage = 1;
+            loadEstudiantes();
+        }
+
+        /**
+         * Set sort field and direction
+         */
+        function setSort(field) {
+            if (vm.orderBy === field) {
+                vm.orderDirection = vm.orderDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                vm.orderBy = field;
+                vm.orderDirection = 'asc';
+            }
             loadEstudiantes();
         }
 

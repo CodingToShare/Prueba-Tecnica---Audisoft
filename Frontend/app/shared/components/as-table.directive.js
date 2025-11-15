@@ -45,8 +45,8 @@
                 '        </tr>' +
                 '      </thead>' +
                 '      <tbody>' +
-                '        <tr ng-repeat="row in items track by $index">' +
-                '          <td ng-repeat="col in columns | filter:{ visible: undefined } track by $index" ng-init="$parent.$parent.$parent.currentRow = row">' +
+                '        <tr ng-repeat="row in items track by $index" ng-init="$parent.$parent.$parent.currentRow = row">' +
+                '          <td ng-repeat="col in columns | filter:{ visible: undefined } track by $index">' +
                 '            <span ng-switch="col.type">' +
                 '              <span ng-switch-when="badge" class="badge" ng-class="col.badgeClass || \'bg-secondary\'">{{ getValue(row, col) }}</span>' +
                 '              <small ng-switch-when="small" class="text-muted">{{ getValue(row, col) }}</small>' +
