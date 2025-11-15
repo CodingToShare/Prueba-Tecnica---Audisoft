@@ -244,15 +244,15 @@
             vm.isEditMode = true;
             vm.currentEstudiante = angular.copy(estudiante);
             
-            // Extract grado from nombre if present
-            // Format: "Nombre - 9°" => grado = "9°"
-            var gradoMatch = vm.currentEstudiante.nombre.match(/-\s*(\d+°?)/);
-            if (gradoMatch && gradoMatch[1]) {
-                vm.currentEstudiante.grado = gradoMatch[1];
-                // Clean up nombre to show only the name without grado
-                vm.currentEstudiante.nombre = vm.currentEstudiante.nombre.replace(/-\s*\d+°?/, '').trim();
-            } else {
+            // The grado should already be extracted during load
+            // If it's not available, set it to empty string
+            if (!vm.currentEstudiante.grado) {
                 vm.currentEstudiante.grado = '';
+            }
+            
+            // Use nombreSinGrado if available, otherwise use nombre
+            if (vm.currentEstudiante.nombreSinGrado) {
+                vm.currentEstudiante.nombre = vm.currentEstudiante.nombreSinGrado;
             }
             
             vm.showModal = true;
