@@ -60,8 +60,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-primary" style="background-color: rgba(13, 110, 253, 0.85) !important;">
-                    <a href="#!/estudiantes" class="text-white text-decoration-none d-block fw-bold">
+                <div class="card-footer" style="background-color: #0d6efd; padding: 1rem;">
+                    <a href="#!/estudiantes" class="text-white text-decoration-none d-block fw-bold" style="font-size: 1rem;">
                         Ver todos <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
@@ -82,8 +82,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-success" style="background-color: rgba(25, 135, 84, 0.85) !important;">
-                    <a href="#!/profesores" class="text-white text-decoration-none d-block fw-bold">
+                <div class="card-footer" style="background-color: #198754; padding: 1rem;">
+                    <a href="#!/profesores" class="text-white text-decoration-none d-block fw-bold" style="font-size: 1rem;">
                         Ver todos <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
@@ -104,11 +104,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-info d-flex justify-content-between align-items-center" style="background-color: rgba(23, 162, 184, 0.85) !important;">
-                    <a href="#!/notas" class="text-white text-decoration-none fw-bold">
+                <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: #17a2b8; padding: 1rem;">
+                    <a href="#!/notas" class="text-white text-decoration-none fw-bold" style="font-size: 1rem;">
                         Ver todas <i class="bi bi-arrow-right"></i>
                     </a>
-                    <small class="text-white-50">
+                    <small class="text-white" style="font-size: 0.85rem;">
                         {{ dashboard.isAdmin() ? 'Total del sistema' : (dashboard.isProfesor() ? 'Notas asignadas por ti' : 'Solo tus notas') }}
                     </small>
                 </div>

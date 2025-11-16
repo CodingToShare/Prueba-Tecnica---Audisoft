@@ -45,7 +45,7 @@
                 '        </tr>' +
                 '      </thead>' +
                 '      <tbody>' +
-                '        <tr ng-repeat="row in items track by $index" ng-init="$parent.$parent.tableRow = row">' +
+                '        <tr ng-repeat="row in items track by $index">' +
                 '          <td ng-repeat="col in columns | filter:{ visible: undefined } track by $index">' +
                 '            <span ng-switch="col.type">' +
                 '              <span ng-switch-when="badge" class="badge" ng-class="col.badgeClass || \'bg-secondary\'">{{ getValue(row, col) }}</span>' +
@@ -54,7 +54,7 @@
                 '              <span ng-switch-default>{{ getValue(row, col) }}</span>' +
                 '            </span>' +
                 '          </td>' +
-                '          <td ng-if="hasActions" style="text-align: center;">' +
+                '          <td ng-if="hasActions" style="text-align: center;" ng-init="currentRow = row">' +
                 '            <div class="btn-group btn-group-sm" role="group" ng-transclude="actions"></div>' +
                 '          </td>' +
                 '        </tr>' +

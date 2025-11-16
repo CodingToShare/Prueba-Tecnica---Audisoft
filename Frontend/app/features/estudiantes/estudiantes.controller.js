@@ -140,15 +140,17 @@
                     vm.estudiantes = result.data || [];
                     
                     // Extract grado from nombre for each estudiante
-                    // Format: "Nombre Completo - 9°" => grado = "9°"
+                    // Format: "Nombre Completo - 9°" => grado = "9°" or "Nombre - 9" => grado = "9°"
                     vm.estudiantes.forEach(function(estudiante) {
-                        var gradoMatch = estudiante.nombre.match(/-\s*(\d+°?)/);
+                        var gradoMatch = estudiante.nombre.match(/-\s*(\d+)°?/);
                         if (gradoMatch && gradoMatch[1]) {
-                            estudiante.grado = gradoMatch[1];
+                            var gradoNum = gradoMatch[1];
+                            // Normalize: add ° if not present
+                            estudiante.grado = gradoNum + '°';
                             // Extract the pure nombre without grado
                             estudiante.nombreSinGrado = estudiante.nombre.replace(/-\s*\d+°?/, '').trim();
                         } else {
-                            estudiante.grado = 'N/A';
+                            estudiante.grado = '';
                             estudiante.nombreSinGrado = estudiante.nombre;
                         }
                     });
@@ -244,9 +246,13 @@
             vm.isEditMode = true;
             vm.currentEstudiante = angular.copy(estudiante);
             
-            // The grado should already be extracted during load
-            // If it's not available, set it to empty string
-            if (!vm.currentEstudiante.grado) {
+            // Ensure grado is properly formatted with ° symbol
+            if (vm.currentEstudiante.grado) {
+                // If grado doesn't have °, add it
+                if (vm.currentEstudiante.grado.indexOf('°') === -1) {
+                    vm.currentEstudiante.grado = vm.currentEstudiante.grado + '°';
+                }
+            } else {
                 vm.currentEstudiante.grado = '';
             }
             
