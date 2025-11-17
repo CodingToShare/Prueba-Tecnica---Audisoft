@@ -243,17 +243,30 @@
                 return;
             }
 
+            // Validate that estudiante object exists
+            if (!estudiante) {
+                vm.error = { message: 'Error: No se pudo cargar los datos del estudiante' };
+                $log.error('EstudiantesController: openEditModal called with undefined estudiante');
+                return;
+            }
+
             vm.isEditMode = true;
             vm.currentEstudiante = angular.copy(estudiante);
             
-            // Ensure grado is properly formatted with ° symbol
-            if (vm.currentEstudiante.grado) {
-                // If grado doesn't have °, add it
+            // Extract grado from nombre if not present in object
+            if (!vm.currentEstudiante.grado) {
+                var gradoMatch = vm.currentEstudiante.nombre.match(/-\s*(\d+)°?/);
+                if (gradoMatch && gradoMatch[1]) {
+                    vm.currentEstudiante.grado = gradoMatch[1] + '°';
+                    vm.currentEstudiante.nombreSinGrado = vm.currentEstudiante.nombre.replace(/-\s*\d+°?/, '').trim();
+                } else {
+                    vm.currentEstudiante.grado = '';
+                }
+            } else {
+                // Ensure grado is properly formatted with ° symbol
                 if (vm.currentEstudiante.grado.indexOf('°') === -1) {
                     vm.currentEstudiante.grado = vm.currentEstudiante.grado + '°';
                 }
-            } else {
-                vm.currentEstudiante.grado = '';
             }
             
             // Use nombreSinGrado if available, otherwise use nombre
