@@ -67,9 +67,10 @@ public class ProfesorService
     /// Crea un nuevo profesor.
     /// </summary>
     /// <param name="dto">DTO con datos del profesor</param>
+    /// <param name="createdBy">Usuario que crea el profesor</param>
     /// <returns>DTO del profesor creado</returns>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<ProfesorDto> CreateAsync(CreateProfesorDto dto)
+    public async Task<ProfesorDto> CreateAsync(CreateProfesorDto dto, string? createdBy = null)
     {
         // Validar entrada
         var validationResult = await _validator.ValidateAsync(dto);
@@ -79,7 +80,11 @@ public class ProfesorService
             throw new InvalidEntityStateException($"Validación fallida: {errors}");
         }
 
-        var profesor = new Profesor { Nombre = dto.Nombre };
+        var profesor = new Profesor 
+        { 
+            Nombre = dto.Nombre,
+            CreatedBy = createdBy
+        };
         var created = await _repository.AddAsync(profesor);
         return _mapper.Map<ProfesorDto>(created);
     }
@@ -89,10 +94,11 @@ public class ProfesorService
     /// </summary>
     /// <param name="id">ID del profesor</param>
     /// <param name="dto">DTO con datos actualizados</param>
+    /// <param name="updatedBy">Usuario que actualiza el profesor</param>
     /// <returns>DTO del profesor actualizado</returns>
     /// <exception cref="EntityNotFoundException">Si el profesor no existe</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<ProfesorDto> UpdateAsync(int id, UpdateProfesorDto dto)
+    public async Task<ProfesorDto> UpdateAsync(int id, UpdateProfesorDto dto, string? updatedBy = null)
     {
         // Validar entrada
         if (_updateValidator != null)
@@ -111,6 +117,7 @@ public class ProfesorService
 
         profesor.Nombre = dto.Nombre;
         profesor.UpdatedAt = DateTime.UtcNow;
+        profesor.UpdatedBy = updatedBy;
         
         var updated = await _repository.UpdateAsync(profesor);
         return _mapper.Map<ProfesorDto>(updated);
@@ -120,8 +127,9 @@ public class ProfesorService
     /// Elimina (marca como eliminado) un profesor.
     /// </summary>
     /// <param name="id">ID del profesor</param>
+    /// <param name="deletedBy">Usuario que elimina el profesor</param>
     /// <exception cref="EntityNotFoundException">Si el profesor no existe</exception>
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, string? deletedBy = null)
     {
         var profesor = await _repository.GetByIdAsync(id);
         if (profesor == null)
@@ -130,6 +138,7 @@ public class ProfesorService
         // Soft delete
         profesor.IsDeleted = true;
         profesor.DeletedAt = DateTime.UtcNow;
+        profesor.DeletedBy = deletedBy;
         await _repository.UpdateAsync(profesor);
     }
 }

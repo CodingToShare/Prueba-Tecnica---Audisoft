@@ -114,7 +114,8 @@ public class ProfesoresController : ControllerBase
         
         try
         {
-            var profesor = await _service.CreateAsync(dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var profesor = await _service.CreateAsync(dto, userName);
             _logger.LogInformation("Profesor creado exitosamente con ID {ProfesorId}", profesor.Id);
             return CreatedAtAction(nameof(GetById), new { id = profesor.Id }, profesor);
         }
@@ -156,7 +157,8 @@ public class ProfesoresController : ControllerBase
         
         try
         {
-            var profesor = await _service.UpdateAsync(id, dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var profesor = await _service.UpdateAsync(id, dto, userName);
             _logger.LogInformation("Profesor con ID {ProfesorId} actualizado exitosamente", id);
             return Ok(profesor);
         }
@@ -194,7 +196,8 @@ public class ProfesoresController : ControllerBase
         
         try
         {
-            await _service.DeleteAsync(id);
+            var userName = User.GetUserName() ?? "Unknown";
+            await _service.DeleteAsync(id, userName);
             _logger.LogInformation("Profesor con ID {ProfesorId} eliminado exitosamente", id);
             return NoContent();
         }

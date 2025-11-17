@@ -123,10 +123,11 @@ public class NotaService
     /// Crea una nueva nota validando que existan el profesor y estudiante.
     /// </summary>
     /// <param name="dto">DTO con datos de la nota</param>
+    /// <param name="createdBy">Usuario que crea la nota</param>
     /// <returns>DTO de la nota creada</returns>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
     /// <exception cref="EntityNotFoundException">Si el profesor o estudiante no existen</exception>
-    public async Task<NotaDto> CreateAsync(CreateNotaDto dto)
+    public async Task<NotaDto> CreateAsync(CreateNotaDto dto, string? createdBy = null)
     {
         // Validar entrada
         var validationResult = await _validator.ValidateAsync(dto);
@@ -151,7 +152,8 @@ public class NotaService
             Nombre = dto.Nombre,
             Valor = dto.Valor,
             IdProfesor = dto.IdProfesor,
-            IdEstudiante = dto.IdEstudiante
+            IdEstudiante = dto.IdEstudiante,
+            CreatedBy = createdBy
         };
 
         var created = await _repository.AddAsync(nota);
@@ -163,10 +165,11 @@ public class NotaService
     /// </summary>
     /// <param name="id">ID de la nota</param>
     /// <param name="dto">DTO con datos actualizados</param>
+    /// <param name="updatedBy">Usuario que actualiza la nota</param>
     /// <returns>DTO de la nota actualizada</returns>
     /// <exception cref="EntityNotFoundException">Si la nota, profesor o estudiante no existen</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<NotaDto> UpdateAsync(int id, UpdateNotaDto dto)
+    public async Task<NotaDto> UpdateAsync(int id, UpdateNotaDto dto, string? updatedBy = null)
     {
         // Validar entrada
         if (_updateValidator != null)
@@ -198,6 +201,7 @@ public class NotaService
         nota.IdProfesor = dto.IdProfesor;
         nota.IdEstudiante = dto.IdEstudiante;
         nota.UpdatedAt = DateTime.UtcNow;
+        nota.UpdatedBy = updatedBy;
 
         var updated = await _repository.UpdateAsync(nota);
         return _mapper.Map<NotaDto>(updated);
@@ -207,8 +211,9 @@ public class NotaService
     /// Elimina (marca como eliminado) una nota.
     /// </summary>
     /// <param name="id">ID de la nota</param>
+    /// <param name="deletedBy">Usuario que elimina la nota</param>
     /// <exception cref="EntityNotFoundException">Si la nota no existe</exception>
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, string? deletedBy = null)
     {
         var nota = await _repository.GetByIdAsync(id);
         if (nota == null)
@@ -217,6 +222,7 @@ public class NotaService
         // Soft delete
         nota.IsDeleted = true;
         nota.DeletedAt = DateTime.UtcNow;
+        nota.DeletedBy = deletedBy;
         await _repository.UpdateAsync(nota);
     }
 }

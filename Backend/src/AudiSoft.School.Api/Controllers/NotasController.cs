@@ -161,7 +161,8 @@ public class NotasController : ControllerBase
         
         try
         {
-            var nota = await _service.CreateAsync(dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var nota = await _service.CreateAsync(dto, userName);
             _logger.LogInformation("Nota creada exitosamente con ID {NotaId}", nota.Id);
             return CreatedAtAction(nameof(GetById), new { id = nota.Id }, nota);
         }
@@ -220,7 +221,8 @@ public class NotasController : ControllerBase
         
         try
         {
-            var nota = await _service.UpdateAsync(id, dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var nota = await _service.UpdateAsync(id, dto, userName);
             _logger.LogInformation("Nota con ID {NotaId} actualizada exitosamente", id);
             return Ok(nota);
         }
@@ -270,7 +272,8 @@ public class NotasController : ControllerBase
         
         try
         {
-            await _service.DeleteAsync(id);
+            var userName = User.GetUserName() ?? "Unknown";
+            await _service.DeleteAsync(id, userName);
             _logger.LogInformation("Nota con ID {NotaId} eliminada exitosamente", id);
             return NoContent();
         }
