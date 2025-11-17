@@ -60,9 +60,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer" style="background-color: #0d6efd; padding: 1rem; border-top: 2px solid #ffffff;">
-                    <a href="#!/estudiantes" class="text-decoration-none d-block fw-bold" style="font-size: 1.2rem; letter-spacing: 0.5px; color: #FFD700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                        Ver todos <i class="bi bi-arrow-right"></i>
+                <div class="card-footer" style="background-color: #0d6efd; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
+                    <a href="#!/estudiantes" class="text-decoration-none d-flex align-items-center justify-content-between fw-bold" 
+                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; padding: 0.5rem 0; transition: all 0.2s ease;"
+                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
+                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                        <span>Ver todos</span>
+                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
                     </a>
                 </div>
             </div>
@@ -82,9 +86,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer" style="background-color: #198754; padding: 1rem; border-top: 2px solid #ffffff;">
-                    <a href="#!/profesores" class="text-decoration-none d-block fw-bold" style="font-size: 1.2rem; letter-spacing: 0.5px; color: #FFD700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                        Ver todos <i class="bi bi-arrow-right"></i>
+                <div class="card-footer" style="background-color: #198754; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
+                    <a href="#!/profesores" class="text-decoration-none d-flex align-items-center justify-content-between fw-bold" 
+                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; padding: 0.5rem 0; transition: all 0.2s ease;"
+                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
+                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                        <span>Ver todos</span>
+                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
                     </a>
                 </div>
             </div>
@@ -104,11 +112,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: #17a2b8; padding: 1rem; border-top: 2px solid #ffffff;">
-                    <a href="#!/notas" class="text-decoration-none fw-bold" style="font-size: 1.2rem; letter-spacing: 0.5px; color: #FFD700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                        Ver todas <i class="bi bi-arrow-right"></i>
+                <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: #17a2b8; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
+                    <a href="#!/notas" class="text-decoration-none d-flex align-items-center fw-bold" 
+                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; flex: 1; transition: all 0.2s ease;"
+                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
+                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                        <span>Ver todas</span>
+                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
                     </a>
-                    <small class="text-white" style="font-size: 0.85rem;">
+                    <small class="text-white" style="font-size: 0.75rem; text-align: right; margin-left: 1rem;">
                         {{ dashboard.isAdmin() ? 'Total del sistema' : (dashboard.isProfesor() ? 'Notas asignadas por ti' : 'Solo tus notas') }}
                     </small>
                 </div>
@@ -129,8 +141,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-warning bg-opacity-75" style="border-top: 2px solid #ffffff; padding: 1rem;">
-                    <small class="fw-semibold" style="font-size: 0.95rem; color: #1a1a1a; text-shadow: 0 1px 1px rgba(255,255,255,0.5);">
+                <div class="card-footer bg-warning bg-opacity-85" style="border-top: 3px solid #FFD700; padding: 0.75rem 1rem; transition: all 0.3s ease;">
+                    <small class="fw-semibold d-block" style="font-size: 0.95rem; color: #1a1a1a;">
                         {{ dashboard.isAdmin() ? 'Promedio general del sistema' : (dashboard.isProfesor() ? 'Promedio de tus notas' : 'Promedio de tus notas') }}
                     </small>
                 </div>
