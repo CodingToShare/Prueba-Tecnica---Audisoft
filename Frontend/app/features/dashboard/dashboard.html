@@ -3,39 +3,13 @@
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <h1 class="h3 mb-0">Dashboard</h1>
-                <!-- Latest Notes -->
-                <div class="row mb-4" ng-if="dashboard.latestNotas.length > 0">
-                    <div class="col">
-                        <div class="card shadow-sm">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-clock-history me-2"></i>
-                                    {{ dashboard.isAdmin() ? 'Últimas notas del sistema' : (dashboard.isProfesor() ? 'Últimas notas asignadas por ti' : 'Tus últimas notas') }}
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="list-group list-group-flush">
-                                    <div class="list-group-item d-flex justify-content-between align-items-start" 
-                                         ng-repeat="n in dashboard.latestNotas track by n.id">
-                                        <div class="ms-2 me-auto">
-                                            <div class="fw-bold">{{n.nombre}}</div>
-                                            <small class="text-muted">{{n.createdAt | date:'dd/MM HH:mm'}}</small>
-                                        </div>
-                                        <span class="badge bg-info rounded-pill">{{n.valor | number:1}}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                    <h1 class="h3 mb-1">Dashboard</h1>
                     <p class="text-muted mb-0">Bienvenido al Sistema de Gestión Escolar</p>
                 </div>
                 <div class="text-end">
-                    <small class="text-muted">
+                    <small class="text-muted d-block">
                         <i class="bi bi-clock me-1"></i>
                         Último acceso: {{dashboard.lastLogin | date:'dd/MM/yyyy HH:mm'}}
                     </small>
@@ -60,13 +34,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer" style="background-color: #0d6efd; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
-                    <a href="#!/estudiantes" class="text-decoration-none d-flex align-items-center justify-content-between fw-bold" 
-                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; padding: 0.5rem 0; transition: all 0.2s ease;"
-                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
-                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                <div class="card-footer bg-primary">
+                    <a href="#!/estudiantes" class="text-decoration-none text-white fw-bold">
                         <span>Ver todos</span>
-                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
+                        <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                 </div>
             </div>
@@ -86,13 +57,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer" style="background-color: #198754; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
-                    <a href="#!/profesores" class="text-decoration-none d-flex align-items-center justify-content-between fw-bold" 
-                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; padding: 0.5rem 0; transition: all 0.2s ease;"
-                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
-                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                <div class="card-footer bg-success">
+                    <a href="#!/profesores" class="text-decoration-none text-white fw-bold">
                         <span>Ver todos</span>
-                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
+                        <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                 </div>
             </div>
@@ -112,17 +80,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: #17a2b8; padding: 0.75rem 1rem; border-top: 3px solid #FFD700; transition: all 0.3s ease;">
-                    <a href="#!/notas" class="text-decoration-none d-flex align-items-center fw-bold" 
-                       style="font-size: 1.1rem; color: #FFD700; cursor: pointer; flex: 1; transition: all 0.2s ease;"
-                       onmouseover="this.style.transform='translateX(5px)'; this.style.textShadow='0 2px 4px rgba(0,0,0,0.6)';"
-                       onmouseout="this.style.transform='translateX(0)'; this.style.textShadow='0 1px 2px rgba(0,0,0,0.5)';">
+                <div class="card-footer bg-info">
+                    <a href="#!/notas" class="text-decoration-none text-white fw-bold">
                         <span>Ver todas</span>
-                        <i class="bi bi-arrow-right" style="margin-left: 8px; transition: all 0.2s ease;"></i>
+                        <i class="bi bi-arrow-right ms-2"></i>
                     </a>
-                    <small class="text-white" style="font-size: 0.75rem; text-align: right; margin-left: 1rem;">
-                        {{ dashboard.isAdmin() ? 'Total del sistema' : (dashboard.isProfesor() ? 'Notas asignadas por ti' : 'Solo tus notas') }}
-                    </small>
                 </div>
             </div>
         </div>
@@ -141,8 +103,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-warning bg-opacity-85" style="border-top: 3px solid #FFD700; padding: 0.75rem 1rem; transition: all 0.3s ease;">
-                    <small class="fw-semibold d-block" style="font-size: 0.95rem; color: #1a1a1a;">
+                <div class="card-footer bg-warning bg-opacity-85">
+                    <small class="text-dark">
                         {{ dashboard.isAdmin() ? 'Promedio general del sistema' : (dashboard.isProfesor() ? 'Promedio de tus notas' : 'Promedio de tus notas') }}
                     </small>
                 </div>
