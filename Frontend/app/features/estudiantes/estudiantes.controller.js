@@ -186,11 +186,11 @@
             }
             
             // If grado filter is selected, add it to the search
-            // Grado is stored in nombre as "- 9°", so we search for the pattern
+            // Grado is stored in nombre as "- 9" (without ° symbol in database)
             if (vm.searchFilters.grado && vm.searchFilters.grado.trim()) {
-                // If nombre filter is already set, we need to use AND logic
-                // Backend filter syntax: "field:value; field:value" for AND
-                var gradoPattern = '- ' + vm.searchFilters.grado.trim();
+                // Remove ° symbol from grado for database matching
+                var gradoSolo = vm.searchFilters.grado.trim().replace(/°/g, '');
+                var gradoPattern = '- ' + gradoSolo;
                 if (filters.nombre) {
                     filters.nombre = filters.nombre + ' ' + gradoPattern;
                 } else {
