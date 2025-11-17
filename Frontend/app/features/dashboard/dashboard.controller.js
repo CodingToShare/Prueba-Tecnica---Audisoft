@@ -83,7 +83,7 @@
             vm.recentActivity = [];
             
             // Load latest notas
-            var notasParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var notasParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
             var notasPromise = apiService.get('Notas', notasParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -99,7 +99,7 @@
                 .catch(function() { return []; });
 
             // Load latest estudiantes
-            var estudiantesParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var estudiantesParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
             var estudiantesPromise = apiService.get('estudiantes', estudiantesParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -115,7 +115,7 @@
                 .catch(function() { return []; });
 
             // Load latest profesores
-            var profesoresParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var profesoresParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
             var profesoresPromise = apiService.get('profesores', profesoresParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -143,8 +143,8 @@
                         return new Date(b.date) - new Date(a.date);
                     });
                     
-                    // Keep only the 10 most recent
-                    vm.recentActivity = allActivities.slice(0, 10);
+                    // Keep only the 5 most recent
+                    vm.recentActivity = allActivities.slice(0, 5);
                 });
         }
 
