@@ -15,6 +15,7 @@ Backend/
 │   └── AudiSoft.School.Infrastructure/ # 🔧 Capa de Infraestructura
 ├── tests/
 │   └── AudiSoft.School.Tests/         # 🧪 Pruebas Unitarias e Integración
+├── Dockerfile                          # 🐳 Multi-stage .NET 8.0 build
 └── scripts/
     ├── 01_InitialCreate.sql           # 📄 Script inicial de base de datos
     └── 02_CreateTables_And_Seed.sql   # 📄 Script de tablas y datos iniciales
@@ -29,15 +30,58 @@ Backend/
 
 ## 🚀 Requisitos Previos
 
-### Sistema Operativo
-- Windows 10/11, macOS, o Linux
+### Para Docker (Recomendado - Sin instalar .NET ni SQL Server) ⭐
+- **Docker Desktop** (Windows/macOS) o **Docker Engine** (Linux)
+- **docker-compose** (incluido en Docker Desktop)
+- El stack se levanta con: `docker-compose up -d`
 
-### Software Requerido
+### Para Desarrollo Local
+- **Sistema Operativo**: Windows 10/11, macOS, o Linux
 - **.NET 8.0 SDK** (versión 8.0.100 o superior)
 - **SQL Server** (LocalDB, Express, o completo)
 - **Git** (para clonar el repositorio)
 
 ## 📥 Instalación desde Cero
+
+### Quick Start con Docker (TODO-EN-UNO)
+
+Si ya tienes Docker instalado, ejecuta:
+
+```bash
+# Desde la raíz del proyecto
+cd ..
+
+# Editar .env con contraseña fuerte
+nano .env
+# SQL_SA_PASSWORD=TuContraseñaFuerte123!
+
+# Construir imágenes
+docker-compose build
+
+# Levantar servicios (Backend + Frontend + SQL Server)
+docker-compose up -d
+
+# Verificar que están en ejecución
+docker-compose ps
+
+# Acceder
+# Backend API: http://localhost:5281
+# Frontend: http://localhost:8080 (login con admin/Admin@123456)
+```
+
+**Para detener:**
+```bash
+docker-compose down
+```
+
+**Para ver logs del backend:**
+```bash
+docker-compose logs -f backend
+```
+
+---
+
+### Instalación Local (Sin Docker)
 
 ### 1. Instalar .NET 8 SDK
 
@@ -203,20 +247,38 @@ Editar el archivo correspondiente según tu entorno:
 
 ## ▶️ Ejecución
 
-### 1. Restaurar Dependencias
+### Ejecución con Docker
+
+```bash
+# Desde la raíz del proyecto
+docker-compose up -d backend
+
+# Ver logs
+docker-compose logs -f backend
+
+# Acceder a Swagger
+# http://localhost:5281
+
+# Ver estado
+docker-compose ps
+```
+
+### Ejecución Local
+
+#### 1. Restaurar Dependencias
 
 ```bash
 # Desde la carpeta Backend/
 dotnet restore
 ```
 
-### 2. Compilar el Proyecto
+#### 2. Compilar el Proyecto
 
 ```bash
 dotnet build
 ```
 
-### 3. Ejecutar la Aplicación
+#### 3. Ejecutar la Aplicación
 
 ```bash
 # Navegar al proyecto API
@@ -225,17 +287,26 @@ cd src/AudiSoft.School.Api
 # Ejecutar en modo desarrollo
 dotnet run
 
-# O ejecutar con hot reload
+# O con hot reload
 dotnet watch run
 ```
 
-### 4. Verificar que Funciona
+#### 4. Verificar que Funciona
 
 La aplicación estará disponible en:
 - **Swagger UI**: http://localhost:5000 o https://localhost:5001
 - **API Base**: http://localhost:5000/api/v1
 
 ## 🧪 Ejecutar Pruebas
+
+### Pruebas en Docker
+
+```bash
+# Desde la raíz del proyecto
+docker-compose exec backend dotnet test
+```
+
+### Pruebas Local
 
 ```bash
 # Desde la carpeta Backend/
@@ -389,7 +460,7 @@ GET /api/v1/Estudiantes?Page=1&PageSize=10&SortField=Nombre&SortDesc=false
 - **.NET 8.0** - Framework principal
 - **ASP.NET Core** - Web API
 - **Entity Framework Core 8.0** - ORM
-- **SQL Server** - Base de datos
+- **SQL Server 2022** - Base de datos
 - **JWT Bearer** - Autenticación
 - **FluentValidation** - Validación de datos
 - **AutoMapper** - Mapeo de objetos
@@ -397,6 +468,8 @@ GET /api/v1/Estudiantes?Page=1&PageSize=10&SortField=Nombre&SortDesc=false
 - **Swagger/OpenAPI** - Documentación API
 - **xUnit** - Testing framework
 - **FluentAssertions** - Assertions para testing
+- **Docker** - Containerización multi-stage
+- **Docker Compose** - Orquestación 3-servicios (API, Frontend, DB)
 
 ## 📁 Estructura de Archivos
 
@@ -421,6 +494,7 @@ Backend/
 │       └── Migrations/           # Migraciones de base de datos
 ├── 🧪 tests/
 │   └── AudiSoft.School.Tests/    # Pruebas unitarias e integración
+├── 🐳 Dockerfile                 # Multi-stage .NET 8 → aspnet 8 (53% optimización)
 ├── 📄 scripts/                   # Scripts SQL
 └── 📋 README.md                  # Este archivo
 

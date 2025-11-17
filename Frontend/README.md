@@ -11,6 +11,8 @@ Frontend/
 ├── app.routes.js                     # Rutas, protección por rol y redirecciones
 ├── .env                              # Config por defecto (producción)
 ├── .env.development                  # Config en desarrollo (se carga automáticamente en localhost)
+├── server.js                         # Servidor Express para servir frontend en Docker
+├── Dockerfile                        # 🐳 Multi-stage Node 20 → Node 20-Alpine (62% optimización)
 ├── assets/
 │   └── css/app.css                   # Estilos y utilidades (btns, toasts, overlay)
 └── app/
@@ -47,34 +49,33 @@ Frontend/
                 └── reportes/                           # Resumen de notas y exportación CSV
 ```
 
-## 🚀 Requisitos (entorno limpio)
+## 🚀 Requisitos
 
-La app es 100% estática (no requiere build). Necesita únicamente un servidor HTTP simple para servir `index.html` y permitir que la app cargue `.env` por HTTP (no funciona con `file://`).
+La app es 100% estática (no requiere build). Necesita un servidor HTTP para servir `index.html` y permitir cargar `.env` por HTTP (no funciona con `file://`).
 
-Elige una de estas opciones (todas multiplataforma):
+### Opción 1: Docker (Recomendado - TODO-EN-UNO) ⭐
 
-- Opción A: Docker (sin instalar Node/Python)
-- Opción B: Python 3 (http.server)
-- Opción C: Node.js (http-server o serve)
-- Opción D: VS Code Extension “Live Server”
+En la raíz del proyecto:
+```bash
+docker-compose up -d frontend
+```
+Acceso: `http://localhost:8080`
 
-### Opción A — Docker (recomendado si no tienes nada instalado)
-
-1) Instala Docker Desktop (Windows/macOS) o Docker Engine (Linux):
-     - https://docs.docker.com/get-docker/
-
-2) Sirve el Frontend con Nginx:
-
+### Opción 2: Docker + Servir solo Frontend
 ```bash
 cd Frontend
 docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
 ```
 
-3) Abre: http://localhost:8080
+### Opción 3: Servidor HTTP Local
 
-Nota: Nginx sirve archivos que empiezan con punto (como `.env.development`), necesario para la carga de configuración.
+Elige una de estas opciones (todas multiplataforma):
 
-### Opción B — Python 3
+- **Python 3** (http.server)
+- **Node.js** (http-server o serve)
+- **VS Code Extension** "Live Server"
+
+### Python 3
 
 ```bash
 # Linux/macOS (Python 3 suele venir preinstalado)
@@ -88,7 +89,7 @@ py -3 -m http.server 8080
 
 Abre: http://localhost:8080
 
-### Opción C — Node.js
+### Node.js
 
 1) Instalar Node.js:
 
@@ -115,7 +116,7 @@ Abre: http://localhost:8080
 
 Importante: asegúrate de que el servidor estático no bloquee dotfiles (archivos que empiezan por `.`). `http-server` los sirve por defecto; si usas otro, revisa su flag equivalente.
 
-### Opción D — VS Code Live Server
+### VS Code Live Server
 
 1) Instala la extensión “Live Server”.
 2) Click derecho en `index.html` → “Open with Live Server”.
@@ -216,26 +217,89 @@ Las contraseñas se codifican con **SHA256 + Salt: `AudiSoft_School_Salt_2024`**
 
 ## 🏃‍♂️ Puesta en Marcha Rápida
 
-1) Levanta el backend (ver README del Backend). Por defecto expone `http://localhost:5281/api/v1` y CORS para `http://localhost:8080`.
-2) Sirve el frontend con una de las opciones A-D en el puerto 8080.
-3) Abre `http://localhost:8080`, inicia sesión con un usuario de prueba.
-4) Navega por Dashboard, Notas (CRUD), Estudiantes/Profesores y Reportes.
+### Con Docker (Recomendado)
+
+Desde la raíz del proyecto:
+```bash
+# Editar .env con contraseña fuerte
+nano .env
+
+# Levantar todo (Backend + Frontend + SQL Server)
+docker-compose up -d
+
+# Acceder
+# Frontend: http://localhost:8080
+# Backend (Swagger): http://localhost:5281
+```
+
+### Local (Sin Docker)
+
+1. Levanta el backend (ver README del Backend). Por defecto: `http://localhost:5281/api/v1` con CORS para `http://localhost:8080`
+2. Sirve el frontend con una de las opciones anteriores en puerto 8080
+3. Abre `http://localhost:8080` e inicia sesión con un usuario de prueba
+4. Navega por Dashboard, Notas (CRUD), Estudiantes/Profesores y Reportes
 
 ## 🔧 Solución de Problemas
 
-- La app no carga `.env.development`:
-    - Asegúrate de servir el directorio con un servidor HTTP que permita dotfiles.
-    - Comprueba en la pestaña “Network” del navegador que `/.env.development` devuelve 200.
+- **La app no carga `.env.development`**:
+    - Asegúrate de servir el directorio con un servidor HTTP que permita dotfiles
+    - En Docker: verificado automáticamente (Express y Nginx sirven dotfiles)
+    - Comprueba en la pestaña "Network" del navegador que `/.env.development` devuelve 200
 
-- 401/403 en llamadas:
-    - Revisa que el login haya funcionado (existe `audisoft_token`).
-    - Verifica que el backend esté corriendo y la hora del sistema sea correcta (exp del token).
+- **401/403 en llamadas**:
+    - Revisa que el login haya funcionado (existe `audisoft_token`)
+    - Verifica que el backend esté corriendo y la hora del sistema sea correcta
 
-- CORS bloquea solicitudes:
-    - Agrega el origen del frontend en `Cors:AllowedOrigins` del backend y reinicia la API.
+- **CORS bloquea solicitudes**:
+    - En Docker: configurado automáticamente en `.env` (`CORS_ALLOWED_ORIGINS`)
+    - Local: agrega el origen en `Cors:AllowedOrigins` del backend
 
-- Reportes vacíos:
-    - Verifica que existan notas en el periodo; ajusta filtros `from/to`.
+- **Reportes vacíos**:
+    - Verifica que existan notas en el periodo
+    - Ajusta filtros `from/to`
+
+- **Frontend no responde en Docker**:
+    ```bash
+    docker-compose logs -f frontend
+    docker-compose restart frontend
+    ```
+
+## 🐳 Docker & Docker Compose
+
+### Dockerfile (Frontend)
+
+- **Multi-stage build**: Node 20 (builder) → Node 20-Alpine (runtime)
+- **Optimización**: 62% reducción de tamaño (400MB → 150MB)
+- **Security**: Usuario no-root (`nodejs:1001`)
+- **Express.js**: Servidor Node para servir archivos estáticos
+- **Health checks**: Curl endpoint `/health`
+
+### Levantar solo el Frontend en Docker
+
+```bash
+# Opción 1: Usar docker-compose
+cd ..
+docker-compose up -d frontend
+
+# Opción 2: Usar nginx directamente
+cd Frontend
+docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
+```
+
+### Parámetros de Configuración en Docker
+
+El `.env` del proyecto raíz configura:
+```dotenv
+FRONTEND_PORT=8080
+NODE_ENV=production
+API_BASE_URL_PRODUCTION=http://backend:5281/api/v1
+```
+
+### Logs en Docker
+
+```bash
+docker-compose logs -f frontend
+```
 
 ---
 

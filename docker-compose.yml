@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: audisoft-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrongPassword123!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - audisoft-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourStrongPassword123!", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (.NET 8)
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: audisoft-backend
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:5281
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=AudiSoftSchool;User Id=sa;Password=YourStrongPassword123!;Encrypt=false;TrustServerCertificate=true;"
+      JWT_SECRET: "your-super-secret-jwt-key-min-32-characters-long"
+      JWT_ISSUER: "audisoft-backend"
+      JWT_AUDIENCE: "audisoft-frontend"
+    ports:
+      - "5281:5281"
+    networks:
+      - audisoft-network
+    volumes:
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5281/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend (AngularJS + Node.js)
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: audisoft-frontend
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      API_BASE_URL_PRODUCTION: http://backend:5281/api/v1
+      DEBUG_MODE: "false"
+    ports:
+      - "8080:8080"
+    networks:
+      - audisoft-network
+    volumes:
+      - frontend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  audisoft-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
+    driver: local
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local

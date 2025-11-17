@@ -1,0 +1,53 @@
+# Backend .dockerignore
+
+# Build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.so
+*.dylib
+
+# IDE and tools
+.vs/
+.vscode/
+*.code-workspace
+*.sln.iml
+.idea/
+.rider/
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+
+# Node modules (if any npm packages)
+node_modules/
+npm-debug.log
+
+# Logs
+logs/
+*.log
+
+# Environment files (use Docker secrets instead)
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files and coverage
+**/test/
+**/tests/
+*.test.cs
+coverage/
+.coverage
+
+# Temporary files
+.tmp/
+temp/

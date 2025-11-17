@@ -67,82 +67,99 @@ Las contraseñas se codifican con **SHA256 + Salt: `AudiSoft_School_Salt_2024`**
 
 ## 🚀 Quick Start (entorno limpio, multiplataforma)
 
-### 1) Base de datos
+### Opción 1: Docker Compose (Recomendado) ⭐ - **TODO-EN-UNO**
 
-#### Opción A: Docker SQL Server
+Levanta Backend + Frontend + SQL Server con un solo comando:
 
+```bash
+# 1) Editar .env (cambiar SQL_SA_PASSWORD a una contraseña fuerte)
+nano .env
+# Editar: SQL_SA_PASSWORD=TuContraseñaFuerte123!
+
+# 2) Construir imágenes
+docker-compose build
+
+# 3) Levantar servicios (se inician en paralelo)
+docker-compose up -d
+
+# 4) Verificar estado
+docker-compose ps
+
+# 5) Ver logs
+docker-compose logs -f  # O solo un servicio: docker-compose logs -f backend
+
+# 6) Acceder a la app
+# Frontend:  http://localhost:8080
+# Backend:   http://localhost:5281
+# SQL Server: localhost:1433
+```
+
+**Parar servicios:**
+```bash
+docker-compose down
+```
+
+**Limpiar todo (volúmenes incluidos):**
+```bash
+docker-compose down -v
+```
+
+### Opción 2: Local - Desarrollo Tradicional
+
+#### 1) Base de datos
+
+**Opción A: Docker SQL Server**
 ```bash
 docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
   -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-#### Opción B: SQL Server LocalDB (Windows)
-
+**Opción B: SQL Server LocalDB (Windows)**
 ```powershell
 # Ya viene con Visual Studio o SQL Server Developer Edition
-# Verificar estado:
-sqllocaldb info
 sqllocaldb start MSSQLLocalDB
 ```
 
-### 2) Backend (.NET 8)
+#### 2) Backend (.NET 8)
 
 ```bash
 cd Backend
-
-# Restaurar paquetes
 dotnet restore
 
-# Ejecutar script SQL único (setup BD completo)
-# Windows LocalDB:
+# Ejecutar script SQL (setup BD)
 cd scripts
 sqlcmd -S "(localdb)\MSSQLLocalDB" -i 01_CreateTables_And_Seed.sql
 cd ..
-
-# O Docker SQL Server:
-# sqlcmd -S localhost,1433 -U sa -P "YourStrong@Passw0rd" -i scripts/01_CreateTables_And_Seed.sql
-
-# Ajustar configuración (si usas Docker SQL Server):
-# Editar src/AudiSoft.School.Api/appsettings.Development.json:
-#   "ConnectionStrings": { 
-#     "DefaultConnection": "Server=localhost,1433;Database=AudiSoftSchoolDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true"
-#   }
-#   "Cors": { "AllowedOrigins": [ "http://localhost:8080" ] }
 
 # Ejecutar API
 cd src/AudiSoft.School.Api
 dotnet run
 ```
 
-La API expone Swagger en `http://localhost:5281` (o el puerto configurado).
+La API estará en `http://localhost:5281` (Swagger incluido).
 
-### 3) Frontend (SPA estática)
+#### 3) Frontend (SPA estática)
 
-Elige una opción:
-
-#### Docker (nginx) - Recomendado ⭐
+**Docker (nginx)**
 ```bash
 cd Frontend
 docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
 ```
 
-#### Python 3
+**Python 3**
 ```bash
 cd Frontend
 python3 -m http.server 8080
 ```
 
-#### Node.js (http-server)
+**Node.js**
 ```bash
 npm install -g http-server
 cd Frontend
 http-server -p 8080 --cors
 ```
 
-#### VS Code Live Server
-Click derecho en `index.html` → "Open with Live Server".
-
-### 4) Probar la app
+#### 4) Probar la app
 
 - Abre `http://localhost:8080`
 - Inicia sesión con: `admin` / `Admin@123456`
