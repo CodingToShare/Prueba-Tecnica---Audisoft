@@ -80,25 +80,72 @@
         }
 
         function loadRecentActivity() {
-            // TODO: Replace with real API calls in META 3
-            // Mock recent activity data
-            vm.recentActivity = [
-                {
-                    title: 'Nueva nota registrada',
-                    description: 'Matemáticas - Juan Pérez: 95 puntos',
-                    date: new Date(Date.now() - 1000 * 60 * 30) // 30 minutes ago
-                },
-                {
-                    title: 'Estudiante creado',
-                    description: 'María González agregada al sistema',
-                    date: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
-                },
-                {
-                    title: 'Nota actualizada',
-                    description: 'Historia - Carlos Ruiz: 88 puntos',
-                    date: new Date(Date.now() - 1000 * 60 * 60 * 4) // 4 hours ago
-                }
-            ];
+            vm.recentActivity = [];
+            
+            // Load latest notas
+            var notasParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var notasPromise = apiService.get('Notas', notasParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(n) {
+                        return {
+                            title: 'Nueva nota registrada',
+                            description: (n.nombre || n.Nombre || '') + ': ' + (n.valor || n.Valor || 0) + ' puntos',
+                            date: new Date(n.createdAt || n.CreatedAt),
+                            type: 'nota'
+                        };
+                    });
+                })
+                .catch(function() { return []; });
+
+            // Load latest estudiantes
+            var estudiantesParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var estudiantesPromise = apiService.get('estudiantes', estudiantesParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(e) {
+                        return {
+                            title: 'Estudiante creado',
+                            description: (e.nombre || e.Nombre || '') + ' agregado al sistema',
+                            date: new Date(e.createdAt || e.CreatedAt),
+                            type: 'estudiante'
+                        };
+                    });
+                })
+                .catch(function() { return []; });
+
+            // Load latest profesores
+            var profesoresParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'CreatedAt', sortDesc: true };
+            var profesoresPromise = apiService.get('profesores', profesoresParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(p) {
+                        return {
+                            title: 'Profesor creado',
+                            description: (p.nombre || p.Nombre || '') + ' agregado al sistema',
+                            date: new Date(p.createdAt || p.CreatedAt),
+                            type: 'profesor'
+                        };
+                    });
+                })
+                .catch(function() { return []; });
+
+            // Combine all activities and sort by date (newest first)
+            $q.all([notasPromise, estudiantesPromise, profesoresPromise])
+                .then(function(results) {
+                    var allActivities = [];
+                    allActivities = allActivities.concat(results[0]); // notas
+                    allActivities = allActivities.concat(results[1]); // estudiantes
+                    allActivities = allActivities.concat(results[2]); // profesores
+                    
+                    // Sort by date descending (newest first)
+                    allActivities.sort(function(a, b) {
+                        return new Date(b.date) - new Date(a.date);
+                    });
+                    
+                    // Keep only the 10 most recent
+                    vm.recentActivity = allActivities.slice(0, 10);
+                });
         }
 
         function loadLatestNotas() {
