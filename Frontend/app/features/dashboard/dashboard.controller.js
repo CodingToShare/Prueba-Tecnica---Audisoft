@@ -82,48 +82,63 @@
         function loadRecentActivity() {
             vm.recentActivity = [];
             
-            // Load latest notas
-            var notasParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
+            // Load latest notas (created or updated)
+            var notasParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
             var notasPromise = apiService.get('Notas', notasParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(n) {
+                        // Check if it was created or updated
+                        var createdAt = new Date(n.createdAt || n.CreatedAt);
+                        var updatedAt = new Date(n.updatedAt || n.UpdatedAt);
+                        var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000; // Less than 5 seconds difference = created
+                        
                         return {
-                            title: 'Nueva nota registrada',
+                            title: isNew ? 'Nueva nota registrada' : 'Nota actualizada',
                             description: (n.nombre || n.Nombre || '') + ': ' + (n.valor || n.Valor || 0) + ' puntos',
-                            date: new Date(n.createdAt || n.CreatedAt),
+                            date: updatedAt,
                             type: 'nota'
                         };
                     });
                 })
                 .catch(function() { return []; });
 
-            // Load latest estudiantes
-            var estudiantesParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
+            // Load latest estudiantes (created or updated)
+            var estudiantesParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
             var estudiantesPromise = apiService.get('estudiantes', estudiantesParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(e) {
+                        // Check if it was created or updated
+                        var createdAt = new Date(e.createdAt || e.CreatedAt);
+                        var updatedAt = new Date(e.updatedAt || e.UpdatedAt);
+                        var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
+                        
                         return {
-                            title: 'Estudiante creado',
-                            description: (e.nombre || e.Nombre || '') + ' agregado al sistema',
-                            date: new Date(e.createdAt || e.CreatedAt),
+                            title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
+                            description: (e.nombre || e.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            date: updatedAt,
                             type: 'estudiante'
                         };
                     });
                 })
                 .catch(function() { return []; });
 
-            // Load latest profesores
-            var profesoresParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
+            // Load latest profesores (created or updated)
+            var profesoresParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
             var profesoresPromise = apiService.get('profesores', profesoresParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(p) {
+                        // Check if it was created or updated
+                        var createdAt = new Date(p.createdAt || p.CreatedAt);
+                        var updatedAt = new Date(p.updatedAt || p.UpdatedAt);
+                        var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
+                        
                         return {
-                            title: 'Profesor creado',
-                            description: (p.nombre || p.Nombre || '') + ' agregado al sistema',
-                            date: new Date(p.createdAt || p.CreatedAt),
+                            title: isNew ? 'Profesor creado' : 'Profesor actualizado',
+                            description: (p.nombre || p.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            date: updatedAt,
                             type: 'profesor'
                         };
                     });

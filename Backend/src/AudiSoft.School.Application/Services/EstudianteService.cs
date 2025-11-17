@@ -71,11 +71,12 @@ public class EstudianteService
     /// Crea un nuevo estudiante.
     /// </summary>
     /// <param name="dto">DTO con datos del estudiante</param>
+    /// <param name="createdBy">Usuario que crea el estudiante</param>
     /// <returns>DTO del estudiante creado</returns>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<EstudianteDto> CreateAsync(CreateEstudianteDto dto)
+    public async Task<EstudianteDto> CreateAsync(CreateEstudianteDto dto, string? createdBy = null)
     {
-        _logger.LogInformation("Iniciando creación de estudiante con nombre: {Nombre}", dto.Nombre);
+        _logger.LogInformation("Iniciando creación de estudiante con nombre: {Nombre} por usuario: {CreatedBy}", dto.Nombre, createdBy);
 
         // Validar entrada
         var validationResult = await _validator.ValidateAsync(dto);
@@ -91,7 +92,11 @@ public class EstudianteService
 
         try
         {
-            var estudiante = new Estudiante { Nombre = dto.Nombre };
+            var estudiante = new Estudiante 
+            { 
+                Nombre = dto.Nombre,
+                CreatedBy = createdBy
+            };
             var created = await _repository.AddAsync(estudiante);
             
             _logger.LogInformation("Estudiante creado exitosamente con ID: {EstudianteId} y nombre: {Nombre}", 
@@ -111,10 +116,11 @@ public class EstudianteService
     /// </summary>
     /// <param name="id">ID del estudiante</param>
     /// <param name="dto">DTO con datos actualizados</param>
+    /// <param name="updatedBy">Usuario que actualiza el estudiante</param>
     /// <returns>DTO del estudiante actualizado</returns>
     /// <exception cref="EntityNotFoundException">Si el estudiante no existe</exception>
     /// <exception cref="ValidationException">Si los datos no son válidos</exception>
-    public async Task<EstudianteDto> UpdateAsync(int id, UpdateEstudianteDto dto)
+    public async Task<EstudianteDto> UpdateAsync(int id, UpdateEstudianteDto dto, string? updatedBy = null)
     {
         // Validar entrada
         if (_updateValidator != null)
@@ -133,6 +139,7 @@ public class EstudianteService
 
         estudiante.Nombre = dto.Nombre;
         estudiante.UpdatedAt = DateTime.UtcNow;
+        estudiante.UpdatedBy = updatedBy;
         
         var updated = await _repository.UpdateAsync(estudiante);
         return _mapper.Map<EstudianteDto>(updated);
@@ -142,10 +149,11 @@ public class EstudianteService
     /// Elimina (marca como eliminado) un estudiante.
     /// </summary>
     /// <param name="id">ID del estudiante</param>
+    /// <param name="deletedBy">Usuario que elimina el estudiante</param>
     /// <exception cref="EntityNotFoundException">Si el estudiante no existe</exception>
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, string? deletedBy = null)
     {
-        _logger.LogInformation("Iniciando eliminación de estudiante con ID: {EstudianteId}", id);
+        _logger.LogInformation("Iniciando eliminación de estudiante con ID: {EstudianteId} por usuario: {DeletedBy}", id, deletedBy);
 
         var estudiante = await _repository.GetByIdAsync(id);
         if (estudiante == null)
@@ -159,6 +167,7 @@ public class EstudianteService
             // Soft delete
             estudiante.IsDeleted = true;
             estudiante.DeletedAt = DateTime.UtcNow;
+            estudiante.DeletedBy = deletedBy;
             await _repository.UpdateAsync(estudiante);
 
             _logger.LogInformation("Estudiante con ID: {EstudianteId} y nombre: {Nombre} marcado como eliminado exitosamente", 

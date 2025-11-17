@@ -150,7 +150,8 @@ public partial class EstudiantesController : ControllerBase
         
         try
         {
-            var estudiante = await _service.CreateAsync(dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var estudiante = await _service.CreateAsync(dto, userName);
             _logger.LogInformation("Estudiante creado exitosamente con ID {EstudianteId}", estudiante.Id);
             return CreatedAtAction(nameof(GetById), new { id = estudiante.Id }, estudiante);
         }
@@ -195,7 +196,8 @@ public partial class EstudiantesController : ControllerBase
         
         try
         {
-            var estudiante = await _service.UpdateAsync(id, dto);
+            var userName = User.GetUserName() ?? "Unknown";
+            var estudiante = await _service.UpdateAsync(id, dto, userName);
             _logger.LogInformation("Estudiante con ID {EstudianteId} actualizado exitosamente", id);
             return Ok(estudiante);
         }
@@ -236,7 +238,8 @@ public partial class EstudiantesController : ControllerBase
         
         try
         {
-            await _service.DeleteAsync(id);
+            var userName = User.GetUserName() ?? "Unknown";
+            await _service.DeleteAsync(id, userName);
             _logger.LogInformation("Estudiante con ID {EstudianteId} eliminado exitosamente", id);
             return NoContent();
         }
