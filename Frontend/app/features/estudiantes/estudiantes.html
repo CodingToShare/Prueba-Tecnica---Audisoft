@@ -131,14 +131,14 @@
             empty-message="No se encontraron estudiantes">
             <actions>
                 <button class="btn btn-outline-primary" 
-                        ng-click="vm.openEditModal(row)"
+                        ng-click="vm.openEditModal($parent.$parent.currentRow)"
                         ng-if="vm.canEdit"
                         data-bs-toggle="tooltip"
                         data-bs-title="Editar estudiante">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-outline-danger" 
-                        ng-click="vm.openDeleteConfirm(row)"
+                        ng-click="vm.openDeleteConfirm($parent.$parent.currentRow)"
                         ng-if="vm.canDelete"
                         data-bs-toggle="tooltip"
                         data-bs-title="Eliminar estudiante">
