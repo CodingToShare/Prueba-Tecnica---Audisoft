@@ -43,9 +43,9 @@
             
             // Pagination Configuration
             pagination: {
-                defaultPageSize: envConfig.PAGINATION_DEFAULT_PAGE_SIZE || 20,
+                defaultPageSize: envConfig.PAGINATION_DEFAULT_PAGE_SIZE || 5,
                 maxPageSize: envConfig.PAGINATION_MAX_PAGE_SIZE || 100,
-                pageSizes: envConfig.PAGINATION_PAGE_SIZES || [10, 20, 50, 100]
+                pageSizes: envConfig.PAGINATION_PAGE_SIZES || [5, 10, 20, 50, 100]
             },
             
             // UI Configuration
