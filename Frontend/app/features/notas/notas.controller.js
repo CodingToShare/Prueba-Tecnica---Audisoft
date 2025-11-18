@@ -24,7 +24,7 @@
         vm.isEditMode = false;
         vm.showDeleteConfirm = false;
         vm.isDeleting = false;
-        vm.notaToDelete = null;
+        vm.notaToDelete = { id: null, nombre: null, valor: null };
 
         // Data
         vm.notas = [];
