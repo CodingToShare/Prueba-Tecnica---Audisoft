@@ -68,6 +68,19 @@ public class EstudianteService
     }
 
     /// <summary>
+    /// Obtiene estudiantes eliminados (soft delete) para auditoría.
+    /// </summary>
+    public async Task<PagedResult<EstudianteDto>> GetDeletedPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Estudiante>();
+        // Mostrar solo eliminados
+        query = query.Where(e => e.IsDeleted);
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Estudiante, EstudianteDto>(queryParams, e => _mapper.Map<EstudianteDto>(e));
+    }
+
+    /// <summary>
     /// Crea un nuevo estudiante.
     /// </summary>
     /// <param name="dto">DTO con datos del estudiante</param>

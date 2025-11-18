@@ -179,8 +179,15 @@
                              ng-repeat="activity in dashboard.recentActivity track by $index">
                             <div class="ms-2 me-auto flex-grow-1">
                                 <div class="fw-bold d-flex align-items-center gap-2">
+                                    <span ng-if="activity.title.includes('eliminado')">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </span>
                                     {{activity.title}}
-                                    <span class="badge bg-info text-dark" ng-if="activity.actionBy">
+                                    <span class="badge" ng-class="{
+                                        'bg-info text-dark': activity.title.includes('creado') || activity.title.includes('registrada'),
+                                        'bg-warning text-dark': activity.title.includes('actualizado'),
+                                        'bg-danger text-white': activity.title.includes('eliminado')
+                                    }" ng-if="activity.actionBy">
                                         <i class="bi bi-person me-1"></i>{{activity.actionBy}}
                                     </span>
                                 </div>

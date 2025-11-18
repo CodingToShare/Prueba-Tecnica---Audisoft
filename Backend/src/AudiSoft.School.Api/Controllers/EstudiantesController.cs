@@ -62,6 +62,23 @@ public partial class EstudiantesController : ControllerBase
     }
 
     /// <summary>
+    /// Obtiene estudiantes eliminados (soft delete) para auditoría.
+    /// Solo Admin puede acceder.
+    /// </summary>
+    [HttpGet("deleted")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PagedResult<EstudianteDto>>> GetDeleted([FromQuery] AudiSoft.School.Application.Common.QueryParams queryParams)
+    {
+        _logger.LogInformation("Obteniendo estudiantes eliminados para auditoría");
+        var result = await _service.GetDeletedPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Búsqueda avanzada de estudiantes mediante expresión en QueryParams.Filter.
     /// Solo Admin y Profesores pueden buscar estudiantes.
     /// </summary>

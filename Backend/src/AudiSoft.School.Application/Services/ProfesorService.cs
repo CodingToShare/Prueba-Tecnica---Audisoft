@@ -64,6 +64,19 @@ public class ProfesorService
     }
 
     /// <summary>
+    /// Obtiene profesores eliminados (soft delete) para auditoría.
+    /// </summary>
+    public async Task<PagedResult<ProfesorDto>> GetDeletedPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Profesor>();
+        // Mostrar solo eliminados
+        query = query.Where(p => p.IsDeleted);
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Profesor, ProfesorDto>(queryParams, p => _mapper.Map<ProfesorDto>(p));
+    }
+
+    /// <summary>
     /// Crea un nuevo profesor.
     /// </summary>
     /// <param name="dto">DTO con datos del profesor</param>

@@ -82,17 +82,16 @@
         function loadRecentActivity() {
             vm.recentActivity = [];
             
-            // Load latest notas (created or updated)
+            // Load latest notas (created, updated, or deleted)
             var notasParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var notasPromise = apiService.get('Notas', notasParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(n) {
-                        // Check if it was created or updated
                         var createdAt = new Date(n.createdAt || n.CreatedAt);
                         var updatedAt = new Date(n.updatedAt || n.UpdatedAt);
-                        var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000; // Less than 5 seconds difference = created
-                        var actionBy = isNew ? (n.createdBy || n.CreatedBy || 'Sistema') : (n.updatedBy || n.UpdatedBy || 'Sistema');
+                        var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
+                        var actionBy = (n.updatedBy || n.UpdatedBy) || (n.createdBy || n.CreatedBy) || 'Sistema';
                         
                         return {
                             title: isNew ? 'Nueva nota registrada' : 'Nota actualizada',
@@ -103,19 +102,43 @@
                         };
                     });
                 })
-                .catch(function() { return []; });
+                .catch(function(err) { 
+                    console.error('Error cargando Notas:', err);
+                    return []; 
+                });
 
-            // Load latest estudiantes (created or updated)
+            // Load latest deleted notas
+            var notasDeletedPromise = apiService.get('Notas/deleted', notasParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(n) {
+                        var updatedAt = new Date(n.updatedAt || n.UpdatedAt);
+                        var actionBy = (n.deletedBy || n.DeletedBy) || 'Sistema';
+                        
+                        return {
+                            title: 'Nota eliminada',
+                            description: (n.nombre || n.Nombre || '') + ': ' + (n.valor || n.Valor || 0) + ' puntos',
+                            actionBy: actionBy,
+                            date: updatedAt,
+                            type: 'nota'
+                        };
+                    });
+                })
+                .catch(function(err) { 
+                    console.error('Error cargando Notas eliminadas:', err);
+                    return []; 
+                });
+
+            // Load latest estudiantes (created, updated, or deleted)
             var estudiantesParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var estudiantesPromise = apiService.get('estudiantes', estudiantesParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(e) {
-                        // Check if it was created or updated
                         var createdAt = new Date(e.createdAt || e.CreatedAt);
                         var updatedAt = new Date(e.updatedAt || e.UpdatedAt);
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
-                        var actionBy = isNew ? (e.createdBy || e.CreatedBy || 'Sistema') : (e.updatedBy || e.UpdatedBy || 'Sistema');
+                        var actionBy = (e.updatedBy || e.UpdatedBy) || (e.createdBy || e.CreatedBy) || 'Sistema';
                         
                         return {
                             title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
@@ -126,19 +149,43 @@
                         };
                     });
                 })
-                .catch(function() { return []; });
+                .catch(function(err) { 
+                    console.error('Error cargando Estudiantes:', err);
+                    return []; 
+                });
 
-            // Load latest profesores (created or updated)
+            // Load latest deleted estudiantes
+            var estudiantesDeletedPromise = apiService.get('estudiantes/deleted', estudiantesParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(e) {
+                        var updatedAt = new Date(e.updatedAt || e.UpdatedAt);
+                        var actionBy = (e.deletedBy || e.DeletedBy) || 'Sistema';
+                        
+                        return {
+                            title: 'Estudiante eliminado',
+                            description: (e.nombre || e.Nombre || ''),
+                            actionBy: actionBy,
+                            date: updatedAt,
+                            type: 'estudiante'
+                        };
+                    });
+                })
+                .catch(function(err) { 
+                    console.error('Error cargando Estudiantes eliminados:', err);
+                    return []; 
+                });
+
+            // Load latest profesores (created, updated, or deleted)
             var profesoresParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var profesoresPromise = apiService.get('profesores', profesoresParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
                     return items.map(function(p) {
-                        // Check if it was created or updated
                         var createdAt = new Date(p.createdAt || p.CreatedAt);
                         var updatedAt = new Date(p.updatedAt || p.UpdatedAt);
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
-                        var actionBy = isNew ? (p.createdBy || p.CreatedBy || 'Sistema') : (p.updatedBy || p.UpdatedBy || 'Sistema');
+                        var actionBy = (p.updatedBy || p.UpdatedBy) || (p.createdBy || p.CreatedBy) || 'Sistema';
                         
                         return {
                             title: isNew ? 'Profesor creado' : 'Profesor actualizado',
@@ -149,15 +196,43 @@
                         };
                     });
                 })
-                .catch(function() { return []; });
+                .catch(function(err) { 
+                    console.error('Error cargando Profesores:', err);
+                    return []; 
+                });
+
+            // Load latest deleted profesores
+            var profesoresDeletedPromise = apiService.get('profesores/deleted', profesoresParams)
+                .then(function(res) {
+                    var items = (res.data && (res.data.items || res.data.Items)) || [];
+                    return items.map(function(p) {
+                        var updatedAt = new Date(p.updatedAt || p.UpdatedAt);
+                        var actionBy = (p.deletedBy || p.DeletedBy) || 'Sistema';
+                        
+                        return {
+                            title: 'Profesor eliminado',
+                            description: (p.nombre || p.Nombre || ''),
+                            actionBy: actionBy,
+                            date: updatedAt,
+                            type: 'profesor'
+                        };
+                    });
+                })
+                .catch(function(err) { 
+                    console.error('Error cargando Profesores eliminados:', err);
+                    return []; 
+                });
 
             // Combine all activities and sort by date (newest first)
-            $q.all([notasPromise, estudiantesPromise, profesoresPromise])
+            $q.all([notasPromise, notasDeletedPromise, estudiantesPromise, estudiantesDeletedPromise, profesoresPromise, profesoresDeletedPromise])
                 .then(function(results) {
                     var allActivities = [];
                     allActivities = allActivities.concat(results[0]); // notas
-                    allActivities = allActivities.concat(results[1]); // estudiantes
-                    allActivities = allActivities.concat(results[2]); // profesores
+                    allActivities = allActivities.concat(results[1]); // notas eliminadas
+                    allActivities = allActivities.concat(results[2]); // estudiantes
+                    allActivities = allActivities.concat(results[3]); // estudiantes eliminados
+                    allActivities = allActivities.concat(results[4]); // profesores
+                    allActivities = allActivities.concat(results[5]); // profesores eliminados
                     
                     // Sort by date descending (newest first)
                     allActivities.sort(function(a, b) {

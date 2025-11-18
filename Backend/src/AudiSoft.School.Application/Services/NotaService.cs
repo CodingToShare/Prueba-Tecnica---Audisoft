@@ -98,6 +98,20 @@ public class NotaService
     }
 
     /// <summary>
+    /// Obtiene notas eliminadas (soft delete) para auditoría.
+    /// </summary>
+    public async Task<PagedResult<NotaDto>> GetDeletedPagedAsync(QueryParams queryParams)
+    {
+        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        // Mostrar solo eliminadas
+        query = query.Where(n => n.IsDeleted);
+        query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
+        query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
+        query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
+        return await query.ApplyPagingAsync<Nota, NotaDto>(queryParams, n => _mapper.Map<NotaDto>(n));
+    }
+
+    /// <summary>
     /// Obtiene todas las notas de un profesor específico.
     /// </summary>
     /// <param name="idProfesor">ID del profesor</param>

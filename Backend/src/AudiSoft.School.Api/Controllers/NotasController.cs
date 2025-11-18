@@ -50,6 +50,23 @@ public class NotasController : ControllerBase
     }
 
     /// <summary>
+    /// Obtiene notas eliminadas (soft delete) para auditoría.
+    /// Solo Admin puede acceder.
+    /// </summary>
+    [HttpGet("deleted")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PagedResult<NotaDto>>> GetDeleted([FromQuery] QueryParams queryParams)
+    {
+        _logger.LogInformation("Obteniendo notas eliminadas para auditoría");
+        var result = await _service.GetDeletedPagedAsync(queryParams);
+        Response.Headers["X-Total-Count"] = result.TotalCount.ToString();
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Obtiene una nota por su ID.
     /// Validaciones: Admin (todas), Profesor (sus notas), Estudiante (sus notas)
     /// </summary>
