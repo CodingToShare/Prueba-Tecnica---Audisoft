@@ -108,7 +108,7 @@
                     <select class="form-select" ng-model="vm.searchFilters.idEstudiante">
                         <option value="">-- Todos los estudiantes --</option>
                         <option ng-repeat="est in vm.estudiantes" value="{{ est.id }}">
-                            {{ est.nombre }} <span ng-if="est.grado" class="text-muted">({{ est.grado }})</span>
+                            {{ est.nombre }} <span ng-if="est.grado" class="text-muted">(Grado {{ est.grado.replace('°','') }})</span>
                         </option>
                     </select>
                 </div>
@@ -275,9 +275,9 @@
                 <!-- Estudiante -->
                 <div class="mb-3">
                     <label for="idEstudiante" class="form-label">Estudiante <span class="text-danger">*</span></label>
-                    <select class="form-select" id="idEstudiante" name="idEstudiante"
+                        <select class="form-select" id="idEstudiante" name="idEstudiante"
                             ng-model="vm.currentNota.idEstudiante"
-                            ng-options="est.id as est.nombre for est in vm.estudiantes"
+                            ng-options="est.id as (est.nombre + (est.grado ? ' (Grado ' + est.grado.replace('°','') + ')' : '')) for est in vm.estudiantes"
                             required
                             ng-class="{'is-invalid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid, 'is-valid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$valid}">
                         <option value="">-- Seleccionar estudiante --</option>
@@ -463,26 +463,6 @@
 .form-label.text-danger::after {
     content: ' *';
     color: #dc3545;
-}
-
-</style>
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1050;
-    overflow: auto;
-}
-
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1040;
 }
 
 /* Modal responsive styles */
