@@ -120,14 +120,14 @@
             empty-message="No se encontraron profesores">
             <actions>
                 <button class="btn btn-outline-primary" 
-                        ng-click="vm.openEditModal(currentRow)"
+                        ng-click="vm.openEditModal($parent.$parent.currentRow)"
                         ng-if="vm.canEdit"
                         data-bs-toggle="tooltip"
                         data-bs-title="Editar profesor">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-outline-danger" 
-                        ng-click="vm.openDeleteConfirm(currentRow)"
+                        ng-click="vm.openDeleteConfirm($parent.$parent.currentRow)"
                         ng-if="vm.canDelete"
                         data-bs-toggle="tooltip"
                         data-bs-title="Eliminar profesor">
