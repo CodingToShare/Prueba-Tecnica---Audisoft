@@ -9,7 +9,8 @@
         </div>
         <div class="col-md-4 text-end">
                 <button class="btn btn-primary" ng-click="vm.openCreateModal()" ng-if="vm.canCreate" 
-                    ng-disabled="vm.isLoading">
+                    ng-disabled="vm.isLoading"
+                    aria-label="Crear nuevo profesor">
                 <i class="bi bi-plus-circle me-2"></i>
                 Nuevo Profesor
             </button>
@@ -22,7 +23,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-circle me-2"></i>
                 <strong>Error:</strong> {{ vm.error.message }}
-                <button type="button" class="btn-close" ng-click="vm.error = null"></button>
+                <button type="button" class="btn-close" ng-click="vm.error = null" aria-label="Cerrar mensaje de error"></button>
             </div>
         </div>
     </div>
@@ -32,7 +33,7 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ vm.success.message }}
-                <button type="button" class="btn-close" ng-click="vm.success = null"></button>
+                <button type="button" class="btn-close" ng-click="vm.success = null" aria-label="Cerrar mensaje de éxito"></button>
             </div>
         </div>
     </div>
@@ -58,10 +59,11 @@
 
                 <!-- Sort Field -->
                 <div class="col-md-3">
-                    <label class="form-label">Ordenar por</label>
-                    <select class="form-select" ng-model="vm.orderBy" 
+                    <label for="sortField" class="form-label">Ordenar por</label>
+                    <select id="sortField" class="form-select" ng-model="vm.orderBy" 
                             ng-change="vm.loadProfesores()"
-                            ng-options="field.value as field.label for field in vm.availableSortFields">
+                            ng-options="field.value as field.label for field in vm.availableSortFields"
+                            aria-label="Ordenar por campo">
                     </select>
                 </div>
 
@@ -70,7 +72,8 @@
                     <label class="form-label">Dirección</label>
                     <button class="btn w-100" 
                             ng-class="{'btn-outline-primary': vm.orderDirection === 'asc', 'btn-primary': vm.orderDirection === 'desc'}"
-                            ng-click="vm.toggleSortOrder()">
+                            ng-click="vm.toggleSortOrder()"
+                            aria-label="Cambiar dirección de ordenamiento">
                         <i class="bi" ng-class="{'bi-sort-up': vm.orderDirection === 'asc', 'bi-sort-down': vm.orderDirection === 'desc'}"></i>
                         {{ vm.orderDirection === 'asc' ? 'Ascendente' : 'Descendente' }}
                     </button>
@@ -80,11 +83,11 @@
             <!-- Action Buttons -->
             <div class="row mt-3">
                 <div class="col-12">
-                    <button class="btn btn-sm btn-primary me-2" ng-click="vm.applyFilters()">
+                    <button class="btn btn-sm btn-primary me-2" ng-click="vm.applyFilters()" aria-label="Buscar profesores">
                         <i class="bi bi-search me-1"></i>
                         Buscar
                     </button>
-                    <button class="btn btn-sm btn-secondary" ng-click="vm.clearFilters()">
+                    <button class="btn btn-sm btn-secondary" ng-click="vm.clearFilters()" aria-label="Limpiar filtros de búsqueda">
                         <i class="bi bi-arrow-counterclockwise me-1"></i>
                         Limpiar Filtros
                     </button>
@@ -123,14 +126,16 @@
                         ng-click="vm.openEditModal($parent.$parent.currentRow)"
                         ng-if="vm.canEdit"
                         data-bs-toggle="tooltip"
-                        data-bs-title="Editar profesor">
+                        data-bs-title="Editar profesor"
+                        aria-label="Editar profesor">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-outline-danger" 
                         ng-click="vm.openDeleteConfirm($parent.$parent.currentRow)"
                         ng-if="vm.canDelete"
                         data-bs-toggle="tooltip"
-                        data-bs-title="Eliminar profesor">
+                        data-bs-title="Eliminar profesor"
+                        aria-label="Eliminar profesor">
                     <i class="bi bi-trash-fill"></i>
                 </button>
             </actions>
@@ -138,8 +143,7 @@
     </div>
 
     <!-- Create/Edit Modal -->
-    <div class="modal" id="profesorModal" tabindex="-1" ng-show="vm.showModal" 
-         style="display: block; background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal" id="profesorModal" tabindex="-1" ng-show="vm.showModal" class="modal-backdrop">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Header -->
@@ -148,11 +152,11 @@
                         <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-pencil-square': vm.isEditMode}"></i>
                         {{ vm.isEditMode ? 'Editar Profesor' : 'Nuevo Profesor' }}
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeModal()"></button>
+                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeModal()" aria-label="Cerrar modal"></button>
                 </div>
 
                 <!-- Body -->
-                <div class="modal-body">
+                <div class="modal-body modal-body-scrollable">
                     <!-- Error in Modal -->
                     <div ng-if="vm.error" class="alert alert-danger" role="alert">
                         <i class="bi bi-exclamation-circle me-2"></i>
@@ -163,8 +167,8 @@
                     <form ng-submit="vm.saveProfesor()" name="profesorForm" novalidate>
                         <!-- ID (Read-only for edit) -->
                         <div class="mb-3" ng-if="vm.isEditMode">
-                            <label class="form-label">ID</label>
-                            <input type="text" class="form-control" ng-model="vm.currentProfesor.id" readonly>
+                            <label for="profesorId" class="form-label">ID</label>
+                            <input type="text" id="profesorId" class="form-control" ng-model="vm.currentProfesor.id" readonly aria-label="ID del profesor (solo lectura)">
                         </div>
 
                         <!-- Nombre -->
@@ -284,8 +288,7 @@
     <div class="modal-backdrop fade" ng-show="vm.showModal" ng-class="{'show': vm.showModal}"></div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal" id="deleteConfirmModal" tabindex="-1" ng-show="vm.showDeleteConfirm" 
-         style="display: block; background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal" id="deleteConfirmModal" tabindex="-1" ng-show="vm.showDeleteConfirm" class="modal-backdrop">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-danger">
                 <!-- Header -->
@@ -294,11 +297,11 @@
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         Confirmar Eliminación
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeDeleteConfirm()"></button>
+                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeDeleteConfirm()" aria-label="Cerrar confirmación"></button>
                 </div>
 
                 <!-- Body -->
-                <div class="modal-body">
+                <div class="modal-body modal-body-scrollable">
                     <p class="mb-0">
                         <strong>¿Estás seguro de que deseas eliminar al profesor?</strong>
                     </p>
@@ -368,6 +371,12 @@
     width: 100%;
     height: 100%;
     z-index: 1050;
+    display: none;
+}
+
+.modal[ng-show="vm.showModal"],
+.modal[ng-show="vm.showDeleteConfirm"] {
+    display: block;
 }
 
 .modal-backdrop {
@@ -378,5 +387,11 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1040;
+}
+
+/* Modal scrollable body for long content */
+.modal-body-scrollable {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 </style>

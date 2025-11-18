@@ -209,7 +209,7 @@
 
     <!-- Create/Edit Modal -->
     <as-modal title="{{ vm.isEditMode ? 'Editar Nota' : 'Nueva Nota' }}" visible="vm.showModal" variant="primary" on-close="vm.closeModal()">
-        <div class="modal-body">
+        <div class="modal-body modal-body-scrollable">
             <!-- Error in Modal -->
             <div ng-if="vm.error" class="alert alert-danger" role="alert">
                 <i class="bi bi-exclamation-circle me-2"></i>
@@ -391,7 +391,7 @@
 
     <!-- Delete Confirmation Modal -->
     <as-modal title="Confirmar Eliminación" visible="vm.showDeleteConfirm" variant="danger" on-close="vm.closeDeleteConfirm()">
-        <div class="modal-body">
+        <div class="modal-body modal-body-scrollable">
             <p class="mb-0"><strong>¿Estás seguro de que deseas eliminar esta nota?</strong></p>
             <div class="mt-3 p-3 bg-light rounded border-start border-danger border-4">
                 <div class="mb-2">
@@ -508,5 +508,11 @@
         font-size: 0.9rem;
         padding: 0.5rem 0.375rem;
     }
+}
+
+/* Modal scrollable body for long content */
+.modal-body-scrollable {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 </style>
