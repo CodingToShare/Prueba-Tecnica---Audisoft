@@ -37,26 +37,37 @@
 
         function activate() {
             loadDashboardData();
-            loadRecentActivity();
-            loadLatestNotas();
+            // Only load recent activity and latest notes for Admin (non-admin users don't have access to /deleted endpoints)
+            if (vm.isAdmin()) {
+                loadRecentActivity();
+                loadLatestNotas();
+            }
         }
 
         function loadDashboardData() {
             vm.lastLogin = new Date();
 
-            var paramsCount = { page: 1, pageSize: 1, maxPageSize: 1, sortField: 'id', sortDesc: true };
-            var paramsNotas = { page: 1, pageSize: 100, maxPageSize: 100, sortField: 'id', sortDesc: true };
-
-            var notasCountP = apiService.get('Notas', paramsCount)
+            // Use Reportes endpoint for summary data - it applies role-based filtering automatically
+            // Admin sees all data; Profesor/Estudiante see their filtered data
+            var reportParams = { page: 1, pageSize: 1, maxPageSize: 1 };
+            
+            var reportP = apiService.get('Reportes/notas/resumen', reportParams)
                 .then(function(res) { 
-                    console.log('Notas count response:', res);
-                    return res.totalCount || 0; 
+                    console.log('Reportes summary response:', res);
+                    var summary = res.data || {};
+                    return {
+                        totalNotas: summary.totalNotas || 0,
+                        promedioGeneral: summary.promedioGeneral || null
+                    };
                 })
                 .catch(function(err) { 
-                    console.error('Error getting Notas count:', err);
-                    return 0; 
+                    console.error('Error getting Reportes summary:', err);
+                    return { totalNotas: 0, promedioGeneral: null }; 
                 });
 
+            // Get student count (for Admin/Profesor view)
+            var paramsCount = { page: 1, pageSize: 1, maxPageSize: 1, sortField: 'id', sortDesc: true };
+            
             var estudiantesCountP = apiService.get('estudiantes', paramsCount)
                 .then(function(res) { 
                     console.log('Estudiantes count response:', res);
@@ -67,6 +78,7 @@
                     return 0; 
                 });
 
+            // Get profesor count (for Admin view)
             var profesoresCountP = apiService.get('profesores', paramsCount)
                 .then(function(res) { 
                     console.log('Profesores count response:', res);
@@ -77,23 +89,17 @@
                     return 0; 
                 });
 
-            var notasAvgP = apiService.get('Notas', paramsNotas)
-                .then(function(res) {
-                    var items = res.data && res.data.items ? res.data.items : [];
-                    if (!items.length) return null;
-                    var sum = 0;
-                    for (var i = 0; i < items.length; i++) { sum += (items[i].valor || 0); }
-                    return +(sum / items.length).toFixed(1);
-                })
-                .catch(function() { return null; });
-
-            $q.all([notasCountP, estudiantesCountP, profesoresCountP, notasAvgP]).then(function(results) {
-                console.log('Dashboard stats - Notas:', results[0], 'Estudiantes:', results[1], 'Profesores:', results[2], 'Promedio:', results[3]);
+            $q.all([reportP, estudiantesCountP, profesoresCountP]).then(function(results) {
+                var reportData = results[0];
+                var totalEstudiantes = results[1];
+                var totalProfesores = results[2];
+                
+                console.log('Dashboard stats - Notas:', reportData.totalNotas, 'Estudiantes:', totalEstudiantes, 'Profesores:', totalProfesores, 'Promedio:', reportData.promedioGeneral);
                 vm.stats = {
-                    totalNotas: results[0],
-                    totalEstudiantes: results[1],
-                    totalProfesores: results[2],
-                    promedioGeneral: results[3]
+                    totalNotas: reportData.totalNotas,
+                    totalEstudiantes: totalEstudiantes,
+                    totalProfesores: totalProfesores,
+                    promedioGeneral: reportData.promedioGeneral
                 };
             });
         }

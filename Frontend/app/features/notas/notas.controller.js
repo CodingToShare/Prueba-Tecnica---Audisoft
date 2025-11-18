@@ -109,8 +109,10 @@
             var user = authService.getCurrentUser();
             vm.userRole = user && user.roles ? user.roles[0] : null;
             vm.currentUserId = user && user.id ? user.id : null;
+            // For Profesor role, get the idProfesor to compare with nota.idProfesor
+            vm.currentProfesorId = user && user.idProfesor ? user.idProfesor : null;
 
-            $log.debug('NotasController: User role =', vm.userRole, 'ID =', vm.currentUserId);
+            $log.debug('NotasController: User role =', vm.userRole, 'ID =', vm.currentUserId, 'ProfesorID =', vm.currentProfesorId);
 
             // Check permissions based on user role
             vm.canViewAll = authService.hasRole('Admin');
@@ -262,7 +264,7 @@
             }
 
             // Check if user can edit this nota (only own notes for Profesor)
-            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentUserId) {
+            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentProfesorId) {
                 vm.error = { message: 'Solo puedes editar tus propias notas' };
                 return;
             }
@@ -344,14 +346,22 @@
             }
 
             // Check if user can delete this nota (only own notes for Profesor)
-            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentUserId) {
+            if (vm.userRole === 'Profesor' && nota.idProfesor !== vm.currentProfesorId) {
                 vm.error = { message: 'Solo puedes eliminar tus propias notas' };
                 return;
             }
 
             // Get the complete nota object from vm.notas to ensure all fields are present
-            var fullNota = (vm.notas || []).find(function(n) { return n.id === nota.id; });
-            vm.notaToDelete = fullNota || nota;
+            // Use nota.id to find the complete object with all properties (including valor)
+            var notaId = nota.id;
+            var fullNota = (vm.notas || []).find(function(n) { 
+                return n.id === notaId; 
+            });
+            
+            // Ensure we have all fields, especially valor
+            vm.notaToDelete = fullNota ? angular.copy(fullNota) : angular.copy(nota);
+            
+            $log.debug('NotasController: Delete confirm - notaToDelete:', vm.notaToDelete);
             vm.showDeleteConfirm = true;
         }
 

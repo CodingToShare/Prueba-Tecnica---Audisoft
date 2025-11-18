@@ -20,12 +20,16 @@
 
                         <!-- User Info -->
                         <div class="alert alert-info mb-4" role="alert">
-                            <small class="d-block mb-2">
-                                <strong>Usuario actual:</strong> {{unauth.getCurrentUser().userName}}
-                            </small>
-                            <small class="d-block">
-                                <strong>Roles:</strong> {{unauth.getCurrentUser().roles.join(', ')}}
-                            </small>
+                            <div class="text-start">
+                                <div class="mb-2">
+                                    <strong>Usuario actual:</strong>
+                                    <span>{{unauth.getCurrentUser().userName}}</span>
+                                </div>
+                                <div>
+                                    <strong>Roles:</strong>
+                                    <span>{{unauth.getCurrentUser().roles.join(', ')}}</span>
+                                </div>
+                            </div>
                         </div>
 
                         <p class="small text-muted mb-4">
