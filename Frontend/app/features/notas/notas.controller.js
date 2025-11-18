@@ -270,7 +270,9 @@
         /**
          * Save nota (create or update)
          */
-        function saveNota(form) {
+        function saveNota() {
+            // Access the form from $scope
+            var form = $scope.notaForm;
             if (form && form.$invalid) {
                 form.$setSubmitted();
                 vm.error = { message: 'Revisa los errores del formulario' };

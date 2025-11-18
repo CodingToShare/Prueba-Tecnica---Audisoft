@@ -212,7 +212,7 @@
             </div>
 
             <!-- Form -->
-            <form ng-submit="vm.saveNota(notaForm)" name="notaForm" novalidate>
+            <form ng-submit="vm.saveNota()" name="notaForm" novalidate>
                 <div ng-if="vm.isEditMode" class="mb-3">
                     <label class="form-label">ID</label>
                     <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly>
@@ -354,7 +354,7 @@
 
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" ng-click="vm.closeModal()" ng-disabled="vm.isLoading">Cancelar</button>
-            <button type="submit" class="btn btn-primary" ng-click="vm.saveNota(notaForm)" form="notaForm" ng-disabled="vm.isLoading">
+            <button type="submit" class="btn btn-primary" ng-click="vm.saveNota()" form="notaForm" ng-disabled="vm.isLoading">
                 <span ng-if="!vm.isLoading">
                     <i class="bi" ng-class="{'bi-plus-circle': !vm.isEditMode, 'bi-check-circle': vm.isEditMode}"></i>
                     {{ vm.isEditMode ? 'Actualizar' : 'Crear' }}
