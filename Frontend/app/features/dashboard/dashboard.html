@@ -175,25 +175,31 @@
                 </div>
                 <div class="card-body">
                     <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex justify-content-between align-items-start" 
-                             ng-repeat="activity in dashboard.recentActivity track by $index">
-                            <div class="ms-2 me-auto flex-grow-1">
-                                <div class="fw-bold d-flex align-items-center gap-2">
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3" 
+                             ng-repeat="activity in dashboard.recentActivity track by $index"
+                             style="border-left: 3px solid #0d6efd; padding-left: 15px;">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-2">
                                     <span ng-if="activity.title.includes('eliminado')">
-                                        <i class="bi bi-trash text-danger"></i>
+                                        <i class="bi bi-trash text-danger" style="font-size: 1.1rem;"></i>
                                     </span>
-                                    {{activity.title}}
-                                    <span class="badge" ng-class="{
-                                        'bg-info text-dark': activity.title.includes('creado') || activity.title.includes('registrada'),
-                                        'bg-warning text-dark': activity.title.includes('actualizado'),
-                                        'bg-danger text-white': activity.title.includes('eliminado')
-                                    }" ng-if="activity.actionBy">
-                                        <i class="bi bi-person me-1"></i>{{activity.actionBy}}
+                                    <span ng-if="activity.title.includes('creado')" class="text-success">
+                                        <i class="bi bi-plus-circle-fill" style="font-size: 1.1rem;"></i>
                                     </span>
+                                    <span ng-if="activity.title.includes('actualizado')">
+                                        <i class="bi bi-pencil-fill text-warning" style="font-size: 1.1rem;"></i>
+                                    </span>
+                                    <strong class="text-dark">{{activity.title}}</strong>
                                 </div>
-                                <small class="text-muted d-block mt-1">{{activity.description}}</small>
+                                <p class="mb-2 text-muted small">{{activity.description}}</p>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="badge bg-primary text-white" ng-if="activity.actionBy" style="font-size: 0.85rem; padding: 6px 12px;">
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        <strong>{{activity.actionBy}}</strong>
+                                    </span>
+                                    <small class="text-muted">{{activity.date | date:'dd/MM/yyyy HH:mm'}}</small>
+                                </div>
                             </div>
-                            <small class="text-muted ms-2 text-nowrap">{{activity.date | date:'dd/MM HH:mm'}}</small>
                         </div>
                     </div>
                 </div>
