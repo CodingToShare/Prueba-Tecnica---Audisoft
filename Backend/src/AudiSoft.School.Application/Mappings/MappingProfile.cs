@@ -46,13 +46,19 @@ public class MappingProfile : Profile
     /// <summary>
     /// Extrae el grado del nombre del estudiante.
     /// Formato esperado: "Nombre - Grado°"
+    /// Devuelve: "9°"
     /// </summary>
     private string? ExtractGrado(string nombre)
     {
         if (string.IsNullOrEmpty(nombre)) return null;
         
-        var match = System.Text.RegularExpressions.Regex.Match(nombre, @"-\s*(\d+°?)");
-        return match.Success ? match.Groups[1].Value : null;
+        var match = System.Text.RegularExpressions.Regex.Match(nombre, @"-\s*(\d+)°?");
+        if (match.Success)
+        {
+            var numero = match.Groups[1].Value;
+            return numero + "°"; // Siempre devolver con el símbolo °
+        }
+        return null;
     }
 
     /// <summary>
