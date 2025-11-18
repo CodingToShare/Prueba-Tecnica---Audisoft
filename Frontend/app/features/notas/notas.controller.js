@@ -349,7 +349,9 @@
                 return;
             }
 
-            vm.notaToDelete = nota;
+            // Get the complete nota object from vm.notas to ensure all fields are present
+            var fullNota = (vm.notas || []).find(function(n) { return n.id === nota.id; });
+            vm.notaToDelete = fullNota || nota;
             vm.showDeleteConfirm = true;
         }
 
@@ -358,7 +360,7 @@
          */
         function closeDeleteConfirm() {
             vm.showDeleteConfirm = false;
-            vm.notaToDelete = null;
+            vm.notaToDelete = { id: null, nombre: null, valor: null };
             vm.isDeleting = false;
         }
 

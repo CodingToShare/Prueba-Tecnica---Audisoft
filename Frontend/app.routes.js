@@ -101,6 +101,8 @@
             // Error 404
             .when('/not-found', {
                 templateUrl: 'app/shared/views/not-found.html',
+                controller: 'NotFoundController',
+                controllerAs: 'vm',
                 access: {
                     requiresLogin: false,
                     allowedRoles: []
