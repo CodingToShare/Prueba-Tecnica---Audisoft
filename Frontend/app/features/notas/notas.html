@@ -271,6 +271,84 @@
                     label-field="nombre"
                     error-required="Selecciona un estudiante">
                 </as-input>
+
+                <!-- Audit Fields (Read-only) -->
+                <div ng-if="vm.isEditMode" class="alert alert-light border mt-4">
+                    <h6 class="mb-3">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Información de Auditoría
+                    </h6>
+                    
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small mb-1">Creado:</label>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span ng-if="vm.currentNota.createdAt">
+                                        {{ vm.currentNota.createdAt | date:'short' }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.createdAt">N/A</span>
+                                </small>
+                            </div>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    <span ng-if="vm.currentNota.createdBy" class="badge bg-info">
+                                        {{ vm.currentNota.createdBy }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.createdBy">N/A</span>
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small mb-1">Actualizado:</label>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span ng-if="vm.currentNota.updatedAt">
+                                        {{ vm.currentNota.updatedAt | date:'short' }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.updatedAt">N/A</span>
+                                </small>
+                            </div>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    <span ng-if="vm.currentNota.updatedBy" class="badge bg-warning">
+                                        {{ vm.currentNota.updatedBy }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.updatedBy">N/A</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ng-if="vm.currentNota.isDeleted" class="row">
+                        <div class="col-md-12">
+                            <label class="form-label text-muted small mb-1">Eliminado:</label>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span ng-if="vm.currentNota.deletedAt">
+                                        {{ vm.currentNota.deletedAt | date:'short' }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.deletedAt">N/A</span>
+                                </small>
+                            </div>
+                            <div class="form-text">
+                                <small>
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    <span ng-if="vm.currentNota.deletedBy" class="badge bg-danger">
+                                        {{ vm.currentNota.deletedBy }}
+                                    </span>
+                                    <span ng-if="!vm.currentNota.deletedBy">N/A</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 

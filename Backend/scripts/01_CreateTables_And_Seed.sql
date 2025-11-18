@@ -348,6 +348,7 @@ GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251112_InitialCreate', '8.0.0');
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251114022538_AddUserRoleEntities', '8.0.0');
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ('20251118_AddDeletedByColumn', '8.0.0');
 GO
 
 -- =============================================
