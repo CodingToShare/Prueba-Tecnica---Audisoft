@@ -48,16 +48,34 @@
             var paramsNotas = { page: 1, pageSize: 100, maxPageSize: 100, sortField: 'id', sortDesc: true };
 
             var notasCountP = apiService.get('Notas', paramsCount)
-                .then(function(res) { return res.totalCount || 0; })
-                .catch(function() { return 0; });
+                .then(function(res) { 
+                    console.log('Notas count response:', res);
+                    return res.totalCount || 0; 
+                })
+                .catch(function(err) { 
+                    console.error('Error getting Notas count:', err);
+                    return 0; 
+                });
 
             var estudiantesCountP = apiService.get('estudiantes', paramsCount)
-                .then(function(res) { return res.totalCount || 0; })
-                .catch(function() { return 0; });
+                .then(function(res) { 
+                    console.log('Estudiantes count response:', res);
+                    return res.totalCount || 0; 
+                })
+                .catch(function(err) { 
+                    console.error('Error getting Estudiantes count:', err);
+                    return 0; 
+                });
 
             var profesoresCountP = apiService.get('profesores', paramsCount)
-                .then(function(res) { return res.totalCount || 0; })
-                .catch(function() { return 0; });
+                .then(function(res) { 
+                    console.log('Profesores count response:', res);
+                    return res.totalCount || 0; 
+                })
+                .catch(function(err) { 
+                    console.error('Error getting Profesores count:', err);
+                    return 0; 
+                });
 
             var notasAvgP = apiService.get('Notas', paramsNotas)
                 .then(function(res) {
@@ -70,6 +88,7 @@
                 .catch(function() { return null; });
 
             $q.all([notasCountP, estudiantesCountP, profesoresCountP, notasAvgP]).then(function(results) {
+                console.log('Dashboard stats - Notas:', results[0], 'Estudiantes:', results[1], 'Profesores:', results[2], 'Promedio:', results[3]);
                 vm.stats = {
                     totalNotas: results[0],
                     totalEstudiantes: results[1],

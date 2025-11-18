@@ -307,13 +307,17 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(allowedOrigins)
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("X-Total-Count", "X-Page", "X-PageSize");
         }
         else
         {
             // Fallback to permissive CORS in development if not configured
             Log.Warning("Cors:AllowedOrigins is empty or missing. Falling back to AllowAnyOrigin (development only).");
-            policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            policy.AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowAnyOrigin()
+                  .WithExposedHeaders("X-Total-Count", "X-Page", "X-PageSize");
         }
     });
 });

@@ -206,6 +206,9 @@
                 headersObj = response.headers || {};
             }
             
+            // Debug: Log all headers to find the correct casing
+            console.log('DEBUG - Response headers:', headersObj);
+            
             // Extract pagination headers if present
             var result = {
                 data: response.data,
@@ -213,10 +216,25 @@
                 headers: headersObj
             };
 
-            // Add pagination info if available (X-Total-Count header)
-            var totalCount = headersObj['x-total-count'] || headersObj['X-Total-Count'];
+            // Add pagination info if available (X-Total-Count header) - check various casings
+            var totalCount = headersObj['x-total-count'] || headersObj['X-Total-Count'] || headersObj['X-Total-Count '];
+            
+            // If still not found, try to find any header containing 'count'
+            if (!totalCount) {
+                for (var key in headersObj) {
+                    if (key.toLowerCase().indexOf('total') !== -1 || key.toLowerCase().indexOf('count') !== -1) {
+                        console.log('Found count header:', key, '=', headersObj[key]);
+                        totalCount = headersObj[key];
+                        break;
+                    }
+                }
+            }
+            
             if (totalCount) {
                 result.totalCount = parseInt(totalCount, 10);
+                console.log('Set totalCount to:', result.totalCount);
+            } else {
+                console.log('No totalCount found in headers');
             }
 
             return result;
