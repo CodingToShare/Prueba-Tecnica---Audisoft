@@ -80,17 +80,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware para MIME types
+// Middleware para MIME types y Cache Control optimizado
 app.use((req, res, next) => {
+  // Para archivos con query string (versioning), cachear agresivamente
+  const hasVersionParam = /[?&]v=\d+/.test(req.url);
+  
   if (req.url.endsWith('.js')) {
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    // Con versioning: cache por 1 año. Sin versioning: no cachear
+    res.setHeader('Cache-Control', hasVersionParam ? 'public, max-age=31536000, immutable' : 'public, max-age=0, must-revalidate');
   } else if (req.url.endsWith('.css')) {
     res.setHeader('Content-Type', 'text/css; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    // Con versioning: cache por 1 año. Sin versioning: no cachear
+    res.setHeader('Cache-Control', hasVersionParam ? 'public, max-age=31536000, immutable' : 'public, max-age=0, must-revalidate');
   } else if (req.url.endsWith('.html')) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    // HTML siempre: no cachear para evitar problemas con SPA
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
   }
   next();
 });
