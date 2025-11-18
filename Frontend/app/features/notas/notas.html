@@ -218,59 +218,70 @@
                     <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly>
                 </div>
 
-                <as-input 
-                    label="Nombre" 
-                    name="nombre"
-                    type="text" 
-                    model="vm.currentNota.nombre" 
-                    required="true" 
-                    minlength="3"
-                    maxlength="200"
-                    pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s\-0-9]+$"
-                    placeholder="Nombre o descripción de la nota" 
-                    help="Máx. 200 caracteres." 
-                    error-required="El nombre es obligatorio"
-                    error-minlength="Debe tener al menos 3 caracteres"
-                    error-maxlength="Debe tener como máximo 200 caracteres"
-                    error-pattern="Solo letras, números, espacios y guiones">
-                </as-input>
-                <as-input 
-                    label="Valor" 
-                    name="valor"
-                    type="number" 
-                    model="vm.currentNota.valor" 
-                    required="true" 
-                    min="0" 
-                    max="100" 
-                    step="0.01" 
-                    placeholder="0.00" 
-                    help="Entre 0 y 100 con máximo 2 decimales." 
-                    error-required="El valor es obligatorio"
-                    error-min="El valor mínimo es 0"
-                    error-max="El valor máximo es 100">
-                </as-input>
-                <as-input 
-                    label="Profesor" 
-                    name="idProfesor"
-                    type="select" 
-                    model="vm.currentNota.idProfesor" 
-                    required="true" 
-                    options="vm.profesores" 
-                    value-field="id" 
-                    label-field="nombre"
-                    error-required="Selecciona un profesor">
-                </as-input>
-                <as-input 
-                    label="Estudiante" 
-                    name="idEstudiante"
-                    type="select" 
-                    model="vm.currentNota.idEstudiante" 
-                    required="true" 
-                    options="vm.estudiantes" 
-                    value-field="id" 
-                    label-field="nombre"
-                    error-required="Selecciona un estudiante">
-                </as-input>
+                <!-- Nombre -->
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="nombre" name="nombre"
+                           ng-model="vm.currentNota.nombre"
+                           placeholder="Nombre o descripción de la nota"
+                           required
+                           minlength="3"
+                           maxlength="200"
+                           pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$">
+                    <small class="form-text text-muted">Máx. 200 caracteres.</small>
+                    <div ng-if="notaForm.nombre.$touched && notaForm.nombre.$invalid" class="invalid-feedback d-block">
+                        <div ng-if="notaForm.nombre.$error.required">El nombre es obligatorio</div>
+                        <div ng-if="notaForm.nombre.$error.minlength">Debe tener al menos 3 caracteres</div>
+                        <div ng-if="notaForm.nombre.$error.maxlength">Debe tener como máximo 200 caracteres</div>
+                        <div ng-if="notaForm.nombre.$error.pattern">Solo letras, números, espacios y guiones</div>
+                    </div>
+                </div>
+
+                <!-- Valor -->
+                <div class="mb-3">
+                    <label for="valor" class="form-label">Valor <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="valor" name="valor"
+                           ng-model="vm.currentNota.valor"
+                           placeholder="0.00"
+                           required
+                           min="0"
+                           max="100"
+                           step="0.01">
+                    <small class="form-text text-muted">Entre 0 y 100 con máximo 2 decimales.</small>
+                    <div ng-if="notaForm.valor.$touched && notaForm.valor.$invalid" class="invalid-feedback d-block">
+                        <div ng-if="notaForm.valor.$error.required">El valor es obligatorio</div>
+                        <div ng-if="notaForm.valor.$error.min">El valor mínimo es 0</div>
+                        <div ng-if="notaForm.valor.$error.max">El valor máximo es 100</div>
+                    </div>
+                </div>
+
+                <!-- Profesor -->
+                <div class="mb-3">
+                    <label for="idProfesor" class="form-label">Profesor <span class="text-danger">*</span></label>
+                    <select class="form-select" id="idProfesor" name="idProfesor"
+                            ng-model="vm.currentNota.idProfesor"
+                            ng-options="prof.id as prof.nombre for prof in vm.profesores"
+                            required>
+                        <option value="">-- Seleccionar profesor --</option>
+                    </select>
+                    <div ng-if="notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid" class="invalid-feedback d-block">
+                        <div ng-if="notaForm.idProfesor.$error.required">Debes seleccionar un profesor</div>
+                    </div>
+                </div>
+
+                <!-- Estudiante -->
+                <div class="mb-3">
+                    <label for="idEstudiante" class="form-label">Estudiante <span class="text-danger">*</span></label>
+                    <select class="form-select" id="idEstudiante" name="idEstudiante"
+                            ng-model="vm.currentNota.idEstudiante"
+                            ng-options="est.id as est.nombre for est in vm.estudiantes"
+                            required>
+                        <option value="">-- Seleccionar estudiante --</option>
+                    </select>
+                    <div ng-if="notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid" class="invalid-feedback d-block">
+                        <div ng-if="notaForm.idEstudiante.$error.required">Debes seleccionar un estudiante</div>
+                    </div>
+                </div>
 
                 <!-- Audit Fields (Read-only) -->
                 <div ng-if="vm.isEditMode" class="alert alert-light border mt-4">
