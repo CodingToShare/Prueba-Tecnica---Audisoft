@@ -61,10 +61,10 @@
 
             var notasAvgP = apiService.get('Notas', paramsNotas)
                 .then(function(res) {
-                    var items = res.data && res.data.Items ? res.data.Items : [];
+                    var items = res.data && res.data.items ? res.data.items : [];
                     if (!items.length) return null;
                     var sum = 0;
-                    for (var i = 0; i < items.length; i++) { sum += (items[i].Valor || 0); }
+                    for (var i = 0; i < items.length; i++) { sum += (items[i].valor || 0); }
                     return +(sum / items.length).toFixed(1);
                 })
                 .catch(function() { return null; });
@@ -91,22 +91,22 @@
                     console.log('DEBUG - Notas Response:', res);
                     console.log('DEBUG - Notas res.data:', res.data);
                     console.log('DEBUG - Notas res.data keys:', Object.keys(res.data || {}));
-                    // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
-                    var items = res.data && res.data.Items ? res.data.Items : [];
+                    // La API retorna res.data.items (minúscula, no Items)
+                    var items = res.data && res.data.items ? res.data.items : [];
                     console.log('DEBUG - Notas Items count:', items.length);
                     console.log('DEBUG - Notas Items:', items);
                     
                     return items.map(function(n) {
-                        var createdAt = new Date(n.CreatedAt || new Date());
-                        var updatedAt = n.UpdatedAt ? new Date(n.UpdatedAt) : createdAt;
+                        var createdAt = new Date(n.createdAt || new Date());
+                        var updatedAt = n.updatedAt ? new Date(n.updatedAt) : createdAt;
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
-                        var user = n.UpdatedBy || n.CreatedBy || 'Sistema';
+                        var user = n.updatedBy || n.createdBy || 'Sistema';
                         
-                        console.log('DEBUG - Nota ID:', n.Id, 'Nombre:', n.Nombre, 'UpdatedBy:', n.UpdatedBy, 'CreatedBy:', n.CreatedBy, 'User final:', user);
+                        console.log('DEBUG - Nota ID:', n.id, 'Nombre:', n.nombre, 'UpdatedBy:', n.updatedBy, 'CreatedBy:', n.createdBy, 'User final:', user);
                         
                         return {
                             title: isNew ? 'Nueva nota registrada' : 'Nota actualizada',
-                            description: (n.Nombre || '') + ': ' + (n.Valor || 0) + ' puntos',
+                            description: (n.nombre || '') + ': ' + (n.valor || 0) + ' puntos',
                             actionBy: user,
                             date: updatedAt,
                             type: 'nota'
@@ -124,22 +124,22 @@
                     console.log('DEBUG - Estudiantes Response:', res);
                     console.log('DEBUG - Estudiantes res.data:', res.data);
                     console.log('DEBUG - Estudiantes res.data keys:', Object.keys(res.data || {}));
-                    // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
-                    var items = res.data && res.data.Items ? res.data.Items : [];
+                    // La API retorna res.data.items (minúscula, no Items)
+                    var items = res.data && res.data.items ? res.data.items : [];
                     console.log('DEBUG - Estudiantes Items count:', items.length);
                     console.log('DEBUG - Estudiantes Items:', items);
                     
                     return items.map(function(e) {
-                        var createdAt = new Date(e.CreatedAt || new Date());
-                        var updatedAt = e.UpdatedAt ? new Date(e.UpdatedAt) : createdAt;
+                        var createdAt = new Date(e.createdAt || new Date());
+                        var updatedAt = e.updatedAt ? new Date(e.updatedAt) : createdAt;
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
-                        var user = e.UpdatedBy || e.CreatedBy || 'Sistema';
+                        var user = e.updatedBy || e.createdBy || 'Sistema';
                         
-                        console.log('DEBUG - Estudiante ID:', e.Id, 'Nombre:', e.Nombre, 'UpdatedBy:', e.UpdatedBy, 'CreatedBy:', e.CreatedBy, 'User final:', user);
+                        console.log('DEBUG - Estudiante ID:', e.id, 'Nombre:', e.nombre, 'UpdatedBy:', e.updatedBy, 'CreatedBy:', e.createdBy, 'User final:', user);
                         
                         return {
                             title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
-                            description: (e.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            description: (e.nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
                             actionBy: user,
                             date: updatedAt,
                             type: 'estudiante'
@@ -157,22 +157,22 @@
                     console.log('DEBUG - Profesores Response:', res);
                     console.log('DEBUG - Profesores res.data:', res.data);
                     console.log('DEBUG - Profesores res.data keys:', Object.keys(res.data || {}));
-                    // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
-                    var items = res.data && res.data.Items ? res.data.Items : [];
+                    // La API retorna res.data.items (minúscula, no Items)
+                    var items = res.data && res.data.items ? res.data.items : [];
                     console.log('DEBUG - Profesores Items count:', items.length);
                     console.log('DEBUG - Profesores Items:', items);
                     
                     return items.map(function(p) {
-                        var createdAt = new Date(p.CreatedAt || new Date());
-                        var updatedAt = p.UpdatedAt ? new Date(p.UpdatedAt) : createdAt;
+                        var createdAt = new Date(p.createdAt || new Date());
+                        var updatedAt = p.updatedAt ? new Date(p.updatedAt) : createdAt;
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
-                        var user = p.UpdatedBy || p.CreatedBy || 'Sistema';
+                        var user = p.updatedBy || p.createdBy || 'Sistema';
                         
-                        console.log('DEBUG - Profesor ID:', p.Id, 'Nombre:', p.Nombre, 'UpdatedBy:', p.UpdatedBy, 'CreatedBy:', p.CreatedBy, 'User final:', user);
+                        console.log('DEBUG - Profesor ID:', p.id, 'Nombre:', p.nombre, 'UpdatedBy:', p.updatedBy, 'CreatedBy:', p.createdBy, 'User final:', user);
                         
                         return {
                             title: isNew ? 'Profesor creado' : 'Profesor actualizado',
-                            description: (p.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            description: (p.nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
                             actionBy: user,
                             date: updatedAt,
                             type: 'profesor'
@@ -228,13 +228,13 @@
             var params = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'CreatedAt', sortDesc: true };
             apiService.get('Notas', params)
                 .then(function(res) {
-                    var items = res.data && res.data.Items ? res.data.Items : [];
+                    var items = res.data && res.data.items ? res.data.items : [];
                     vm.latestNotas = items.map(function(n) {
                         return {
-                            id: n.Id,
-                            nombre: n.Nombre,
-                            valor: n.Valor,
-                            createdAt: n.CreatedAt
+                            id: n.id,
+                            nombre: n.nombre,
+                            valor: n.valor,
+                            createdAt: n.createdAt
                         };
                     });
                 })
