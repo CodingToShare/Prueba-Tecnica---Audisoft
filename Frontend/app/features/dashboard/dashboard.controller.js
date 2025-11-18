@@ -83,7 +83,7 @@
             vm.recentActivity = [];
             
             // Load latest notas (created or updated)
-            var notasParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
+            var notasParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var notasPromise = apiService.get('Notas', notasParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -92,10 +92,12 @@
                         var createdAt = new Date(n.createdAt || n.CreatedAt);
                         var updatedAt = new Date(n.updatedAt || n.UpdatedAt);
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000; // Less than 5 seconds difference = created
+                        var actionBy = isNew ? (n.createdBy || n.CreatedBy || 'Sistema') : (n.updatedBy || n.UpdatedBy || 'Sistema');
                         
                         return {
                             title: isNew ? 'Nueva nota registrada' : 'Nota actualizada',
                             description: (n.nombre || n.Nombre || '') + ': ' + (n.valor || n.Valor || 0) + ' puntos',
+                            actionBy: actionBy,
                             date: updatedAt,
                             type: 'nota'
                         };
@@ -104,7 +106,7 @@
                 .catch(function() { return []; });
 
             // Load latest estudiantes (created or updated)
-            var estudiantesParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
+            var estudiantesParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var estudiantesPromise = apiService.get('estudiantes', estudiantesParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -113,10 +115,12 @@
                         var createdAt = new Date(e.createdAt || e.CreatedAt);
                         var updatedAt = new Date(e.updatedAt || e.UpdatedAt);
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
+                        var actionBy = isNew ? (e.createdBy || e.CreatedBy || 'Sistema') : (e.updatedBy || e.UpdatedBy || 'Sistema');
                         
                         return {
                             title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
                             description: (e.nombre || e.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            actionBy: actionBy,
                             date: updatedAt,
                             type: 'estudiante'
                         };
@@ -125,7 +129,7 @@
                 .catch(function() { return []; });
 
             // Load latest profesores (created or updated)
-            var profesoresParams = { page: 1, pageSize: 5, maxPageSize: 5, sortField: 'UpdatedAt', sortDesc: true };
+            var profesoresParams = { page: 1, pageSize: 10, maxPageSize: 10, sortField: 'UpdatedAt', sortDesc: true };
             var profesoresPromise = apiService.get('profesores', profesoresParams)
                 .then(function(res) {
                     var items = (res.data && (res.data.items || res.data.Items)) || [];
@@ -134,10 +138,12 @@
                         var createdAt = new Date(p.createdAt || p.CreatedAt);
                         var updatedAt = new Date(p.updatedAt || p.UpdatedAt);
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
+                        var actionBy = isNew ? (p.createdBy || p.CreatedBy || 'Sistema') : (p.updatedBy || p.UpdatedBy || 'Sistema');
                         
                         return {
                             title: isNew ? 'Profesor creado' : 'Profesor actualizado',
                             description: (p.nombre || p.Nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            actionBy: actionBy,
                             date: updatedAt,
                             type: 'profesor'
                         };

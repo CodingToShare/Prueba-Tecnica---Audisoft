@@ -111,6 +111,7 @@ CREATE TABLE Roles (
     UpdatedAt DATETIME2 NULL,
     UpdatedBy NVARCHAR(100) NULL,
     DeletedAt DATETIME2 NULL,
+    DeletedBy NVARCHAR(100) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0
 );
 
@@ -136,6 +137,7 @@ CREATE TABLE Usuarios (
     UpdatedAt DATETIME2 NULL,
     UpdatedBy NVARCHAR(100) NULL,
     DeletedAt DATETIME2 NULL,
+    DeletedBy NVARCHAR(100) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0,
     
     -- Claves foráneas
@@ -173,6 +175,7 @@ CREATE TABLE UsuarioRoles (
     UpdatedAt DATETIME2 NULL,
     UpdatedBy NVARCHAR(100) NULL,
     DeletedAt DATETIME2 NULL,
+    DeletedBy NVARCHAR(100) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0,
     
     -- Claves foráneas
