@@ -61,7 +61,7 @@ public class EstudianteService
 
     public async Task<PagedResult<EstudianteDto>> GetPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Estudiante>();
+        var query = _repository.Query().AsNoTracking();
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
         query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
         return await query.ApplyPagingAsync<Estudiante, EstudianteDto>(queryParams, e => _mapper.Map<EstudianteDto>(e));
@@ -72,9 +72,9 @@ public class EstudianteService
     /// </summary>
     public async Task<PagedResult<EstudianteDto>> GetDeletedPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Estudiante>();
-        // Mostrar solo eliminados
-        query = query.Where(e => e.IsDeleted);
+        var query = _repository.Query().AsNoTracking();
+        // Mostrar solo eliminados - el filtro global se puede deshabilitar con IgnoreQueryFilters()
+        query = query.IgnoreQueryFilters().Where(e => e.IsDeleted);
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
         query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
         return await query.ApplyPagingAsync<Estudiante, EstudianteDto>(queryParams, e => _mapper.Map<EstudianteDto>(e));

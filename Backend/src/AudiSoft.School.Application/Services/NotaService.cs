@@ -66,7 +66,7 @@ public class NotaService
     /// </summary>
     public async Task<PagedResult<NotaDto>> GetPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        var query = _repository.Query().AsNoTracking();
         // Include related entities for projection
         query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
 
@@ -79,7 +79,7 @@ public class NotaService
 
     public async Task<PagedResult<NotaDto>> GetByProfesorPagedAsync(int idProfesor, QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        var query = _repository.Query().AsNoTracking();
         query = query.Where(n => n.IdProfesor == idProfesor);
         query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
@@ -89,7 +89,7 @@ public class NotaService
 
     public async Task<PagedResult<NotaDto>> GetByEstudiantePagedAsync(int idEstudiante, QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Nota>();
+        var query = _repository.Query().AsNoTracking();
         query = query.Where(n => n.IdEstudiante == idEstudiante);
         query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
@@ -102,9 +102,9 @@ public class NotaService
     /// </summary>
     public async Task<PagedResult<NotaDto>> GetDeletedPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Nota>();
-        // Mostrar solo eliminadas
-        query = query.Where(n => n.IsDeleted);
+        var query = _repository.Query().AsNoTracking();
+        // Mostrar solo eliminadas - deshabilitar filtro global
+        query = query.IgnoreQueryFilters().Where(n => n.IsDeleted);
         query = query.Include(n => n.Profesor).Include(n => n.Estudiante);
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
         query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);

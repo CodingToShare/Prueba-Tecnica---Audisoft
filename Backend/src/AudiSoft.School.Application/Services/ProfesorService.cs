@@ -57,7 +57,7 @@ public class ProfesorService
 
     public async Task<PagedResult<ProfesorDto>> GetPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Profesor>();
+        var query = _repository.Query().AsNoTracking();
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
         query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
         return await query.ApplyPagingAsync<Profesor, ProfesorDto>(queryParams, p => _mapper.Map<ProfesorDto>(p));
@@ -68,9 +68,9 @@ public class ProfesorService
     /// </summary>
     public async Task<PagedResult<ProfesorDto>> GetDeletedPagedAsync(QueryParams queryParams)
     {
-        var query = _repository.Query().AsNoTracking().Cast<Profesor>();
-        // Mostrar solo eliminados
-        query = query.Where(p => p.IsDeleted);
+        var query = _repository.Query().AsNoTracking();
+        // Mostrar solo eliminados - deshabilitar filtro global
+        query = query.IgnoreQueryFilters().Where(p => p.IsDeleted);
         query = query.ApplyFilter(queryParams.Filter, queryParams.FilterField, queryParams.FilterValue);
         query = query.ApplySorting(queryParams.SortField, queryParams.SortDesc);
         return await query.ApplyPagingAsync<Profesor, ProfesorDto>(queryParams, p => _mapper.Map<ProfesorDto>(p));

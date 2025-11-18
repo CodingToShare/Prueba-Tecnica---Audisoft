@@ -89,9 +89,12 @@
             var notasPromise = apiService.get('Notas', params)
                 .then(function(res) {
                     console.log('DEBUG - Notas Response:', res);
+                    console.log('DEBUG - Notas res.data:', res.data);
+                    console.log('DEBUG - Notas res.data keys:', Object.keys(res.data || {}));
                     // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
                     var items = res.data && res.data.Items ? res.data.Items : [];
                     console.log('DEBUG - Notas Items count:', items.length);
+                    console.log('DEBUG - Notas Items:', items);
                     
                     return items.map(function(n) {
                         var createdAt = new Date(n.CreatedAt || new Date());
@@ -119,9 +122,12 @@
             var estudiantesPromise = apiService.get('estudiantes', params)
                 .then(function(res) {
                     console.log('DEBUG - Estudiantes Response:', res);
+                    console.log('DEBUG - Estudiantes res.data:', res.data);
+                    console.log('DEBUG - Estudiantes res.data keys:', Object.keys(res.data || {}));
                     // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
                     var items = res.data && res.data.Items ? res.data.Items : [];
                     console.log('DEBUG - Estudiantes Items count:', items.length);
+                    console.log('DEBUG - Estudiantes Items:', items);
                     
                     return items.map(function(e) {
                         var createdAt = new Date(e.CreatedAt || new Date());
@@ -149,9 +155,12 @@
             var profesoresPromise = apiService.get('profesores', params)
                 .then(function(res) {
                     console.log('DEBUG - Profesores Response:', res);
+                    console.log('DEBUG - Profesores res.data:', res.data);
+                    console.log('DEBUG - Profesores res.data keys:', Object.keys(res.data || {}));
                     // res.data es el objeto PagedResult<T> completo con Items, TotalCount, etc.
                     var items = res.data && res.data.Items ? res.data.Items : [];
                     console.log('DEBUG - Profesores Items count:', items.length);
+                    console.log('DEBUG - Profesores Items:', items);
                     
                     return items.map(function(p) {
                         var createdAt = new Date(p.CreatedAt || new Date());
