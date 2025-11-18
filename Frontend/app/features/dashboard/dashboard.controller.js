@@ -147,7 +147,7 @@
                         var nombrePartes = (e.nombre || '').split(' - ');
                         var nombre = nombrePartes[0] || e.nombre || '';
                         var grado = nombrePartes.length > 1 ? nombrePartes[nombrePartes.length - 1] : '';
-                        var descripcion = grado ? nombre + ' (Grado ' + grado + ')' : nombre;
+                        var descripcion = nombre;
                         
                         return {
                             title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
@@ -155,7 +155,8 @@
                             actionBy: user,
                             date: updatedAt,
                             type: 'estudiante',
-                            action: isNew ? 'creado' : 'actualizado'
+                            action: isNew ? 'creado' : 'actualizado',
+                            grado: grado
                         };
                     });
                 })
@@ -176,15 +177,15 @@
                         var nombrePartes = (e.nombre || '').split(' - ');
                         var nombre = nombrePartes[0] || e.nombre || '';
                         var grado = nombrePartes.length > 1 ? nombrePartes[nombrePartes.length - 1] : '';
-                        var descripcion = grado ? nombre + ' (Grado ' + grado + ')' : nombre;
                         
                         return {
                             title: 'Estudiante eliminado',
-                            description: descripcion + ' (eliminado)',
+                            description: nombre + ' (eliminado)',
                             actionBy: user,
                             date: deletedAt,
                             type: 'estudiante',
-                            action: 'eliminado'
+                            action: 'eliminado',
+                            grado: grado
                         };
                     });
                 })
