@@ -227,13 +227,14 @@
                            required
                            minlength="3"
                            maxlength="200"
-                           pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$">
-                    <small class="form-text text-muted">Máx. 200 caracteres.</small>
-                    <div ng-if="notaForm.nombre.$touched && notaForm.nombre.$invalid" class="invalid-feedback d-block">
-                        <div ng-if="notaForm.nombre.$error.required">El nombre es obligatorio</div>
-                        <div ng-if="notaForm.nombre.$error.minlength">Debe tener al menos 3 caracteres</div>
-                        <div ng-if="notaForm.nombre.$error.maxlength">Debe tener como máximo 200 caracteres</div>
-                        <div ng-if="notaForm.nombre.$error.pattern">Solo letras, números, espacios y guiones</div>
+                           pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$"
+                           ng-class="{'is-invalid': notaForm.nombre.$touched && notaForm.nombre.$invalid, 'is-valid': notaForm.nombre.$touched && notaForm.nombre.$valid}">
+                    <small class="form-text text-muted d-block" ng-if="!notaForm.nombre.$touched || notaForm.nombre.$valid">Máx. 200 caracteres.</small>
+                    <div class="invalid-feedback" ng-if="notaForm.nombre.$touched && notaForm.nombre.$invalid" style="display: block;">
+                        <div ng-if="notaForm.nombre.$error.required"><i class="bi bi-exclamation-circle me-1"></i>El nombre es obligatorio</div>
+                        <div ng-if="notaForm.nombre.$error.minlength"><i class="bi bi-exclamation-circle me-1"></i>Debe tener al menos 3 caracteres</div>
+                        <div ng-if="notaForm.nombre.$error.maxlength"><i class="bi bi-exclamation-circle me-1"></i>Debe tener como máximo 200 caracteres</div>
+                        <div ng-if="notaForm.nombre.$error.pattern"><i class="bi bi-exclamation-circle me-1"></i>Solo letras, números, espacios y guiones</div>
                     </div>
                 </div>
 
@@ -246,12 +247,13 @@
                            required
                            min="0"
                            max="100"
-                           step="0.01">
-                    <small class="form-text text-muted">Entre 0 y 100 con máximo 2 decimales.</small>
-                    <div ng-if="notaForm.valor.$touched && notaForm.valor.$invalid" class="invalid-feedback d-block">
-                        <div ng-if="notaForm.valor.$error.required">El valor es obligatorio</div>
-                        <div ng-if="notaForm.valor.$error.min">El valor mínimo es 0</div>
-                        <div ng-if="notaForm.valor.$error.max">El valor máximo es 100</div>
+                           step="0.01"
+                           ng-class="{'is-invalid': notaForm.valor.$touched && notaForm.valor.$invalid, 'is-valid': notaForm.valor.$touched && notaForm.valor.$valid}">
+                    <small class="form-text text-muted d-block" ng-if="!notaForm.valor.$touched || notaForm.valor.$valid">Entre 0 y 100 con máximo 2 decimales.</small>
+                    <div class="invalid-feedback" ng-if="notaForm.valor.$touched && notaForm.valor.$invalid" style="display: block;">
+                        <div ng-if="notaForm.valor.$error.required"><i class="bi bi-exclamation-circle me-1"></i>El valor es obligatorio</div>
+                        <div ng-if="notaForm.valor.$error.min"><i class="bi bi-exclamation-circle me-1"></i>El valor mínimo es 0</div>
+                        <div ng-if="notaForm.valor.$error.max"><i class="bi bi-exclamation-circle me-1"></i>El valor máximo es 100</div>
                     </div>
                 </div>
 
@@ -261,11 +263,12 @@
                     <select class="form-select" id="idProfesor" name="idProfesor"
                             ng-model="vm.currentNota.idProfesor"
                             ng-options="prof.id as prof.nombre for prof in vm.profesores"
-                            required>
+                            required
+                            ng-class="{'is-invalid': notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid, 'is-valid': notaForm.idProfesor.$touched && notaForm.idProfesor.$valid}">
                         <option value="">-- Seleccionar profesor --</option>
                     </select>
-                    <div ng-if="notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid" class="invalid-feedback d-block">
-                        <div ng-if="notaForm.idProfesor.$error.required">Debes seleccionar un profesor</div>
+                    <div class="invalid-feedback" ng-if="notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid" style="display: block;">
+                        <div ng-if="notaForm.idProfesor.$error.required"><i class="bi bi-exclamation-circle me-1"></i>Debes seleccionar un profesor</div>
                     </div>
                 </div>
 
@@ -275,11 +278,12 @@
                     <select class="form-select" id="idEstudiante" name="idEstudiante"
                             ng-model="vm.currentNota.idEstudiante"
                             ng-options="est.id as est.nombre for est in vm.estudiantes"
-                            required>
+                            required
+                            ng-class="{'is-invalid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid, 'is-valid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$valid}">
                         <option value="">-- Seleccionar estudiante --</option>
                     </select>
-                    <div ng-if="notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid" class="invalid-feedback d-block">
-                        <div ng-if="notaForm.idEstudiante.$error.required">Debes seleccionar un estudiante</div>
+                    <div class="invalid-feedback" ng-if="notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid" style="display: block;">
+                        <div ng-if="notaForm.idEstudiante.$error.required"><i class="bi bi-exclamation-circle me-1"></i>Debes seleccionar un estudiante</div>
                     </div>
                 </div>
 
@@ -429,7 +433,39 @@
     background-color: #e9ecef;
 }
 
-.modal {
+/* Form validation styles */
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath fill='%23dc3545' d='M8 4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3A.5.5 0 0 0 8 4Z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-label.text-danger::after {
+    content: ' *';
+    color: #dc3545;
+}
+
+</style>
     position: fixed;
     top: 0;
     left: 0;

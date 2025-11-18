@@ -273,10 +273,19 @@
         function saveNota() {
             // Access the form from $scope
             var form = $scope.notaForm;
-            if (form && form.$invalid) {
+            
+            // Mark all fields as touched to show validation errors
+            if (form) {
                 form.$setSubmitted();
-                vm.error = { message: 'Revisa los errores del formulario' };
-                return;
+                
+                // If form is invalid, show error and return
+                if (form.$invalid) {
+                    vm.error = { 
+                        message: 'Por favor completa todos los campos correctamente' 
+                    };
+                    $log.warn('NotasController: Form is invalid', form.$error);
+                    return;
+                }
             }
 
             vm.isLoading = true;
