@@ -143,9 +143,15 @@
                         var isNew = (updatedAt.getTime() - createdAt.getTime()) < 5000;
                         var user = e.updatedBy || e.createdBy || 'Sistema';
                         
+                        // Extraer grado del nombre (número después del último "-")
+                        var nombrePartes = (e.nombre || '').split(' - ');
+                        var nombre = nombrePartes[0] || e.nombre || '';
+                        var grado = nombrePartes.length > 1 ? nombrePartes[nombrePartes.length - 1] : '';
+                        var descripcion = grado ? nombre + ' (Grado ' + grado + ')' : nombre;
+                        
                         return {
                             title: isNew ? 'Estudiante creado' : 'Estudiante actualizado',
-                            description: (e.nombre || '') + (isNew ? ' agregado al sistema' : ' modificado'),
+                            description: descripcion + (isNew ? ' agregado al sistema' : ' modificado'),
                             actionBy: user,
                             date: updatedAt,
                             type: 'estudiante',
@@ -166,9 +172,15 @@
                         var deletedAt = e.deletedAt ? new Date(e.deletedAt) : new Date();
                         var user = e.deletedBy || 'Sistema';
                         
+                        // Extraer grado del nombre (número después del último "-")
+                        var nombrePartes = (e.nombre || '').split(' - ');
+                        var nombre = nombrePartes[0] || e.nombre || '';
+                        var grado = nombrePartes.length > 1 ? nombrePartes[nombrePartes.length - 1] : '';
+                        var descripcion = grado ? nombre + ' (Grado ' + grado + ')' : nombre;
+                        
                         return {
                             title: 'Estudiante eliminado',
-                            description: (e.nombre || '') + ' (eliminado)',
+                            description: descripcion + ' (eliminado)',
                             actionBy: user,
                             date: deletedAt,
                             type: 'estudiante',
