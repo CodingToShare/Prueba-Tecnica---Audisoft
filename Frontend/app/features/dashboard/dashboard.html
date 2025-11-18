@@ -180,14 +180,15 @@
                              style="border-left: 3px solid #0d6efd; padding-left: 15px;">
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span ng-if="activity.title.includes('eliminado')">
-                                        <i class="bi bi-trash text-danger" style="font-size: 1.1rem;"></i>
+                                    <!-- Icon based on action type -->
+                                    <span ng-if="activity.action === 'eliminada' || activity.action === 'eliminado'" class="text-danger">
+                                        <i class="bi bi-trash-fill" style="font-size: 1.1rem;"></i>
                                     </span>
-                                    <span ng-if="activity.title.includes('creado')" class="text-success">
+                                    <span ng-if="activity.action === 'creada' || activity.action === 'creado'" class="text-success">
                                         <i class="bi bi-plus-circle-fill" style="font-size: 1.1rem;"></i>
                                     </span>
-                                    <span ng-if="activity.title.includes('actualizado')">
-                                        <i class="bi bi-pencil-fill text-warning" style="font-size: 1.1rem;"></i>
+                                    <span ng-if="activity.action === 'actualizada' || activity.action === 'actualizado'" class="text-warning">
+                                        <i class="bi bi-pencil-fill" style="font-size: 1.1rem;"></i>
                                     </span>
                                     <strong class="text-dark">{{activity.title}}</strong>
                                 </div>
