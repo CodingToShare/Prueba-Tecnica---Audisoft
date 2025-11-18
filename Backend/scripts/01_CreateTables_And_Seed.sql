@@ -222,16 +222,16 @@ GO
 
 -- Insertar Estudiantes de ejemplo
 INSERT INTO Estudiantes (Nombre, CreatedBy) VALUES
-('Juan Pérez González', 'SYSTEM'),
-('Sofia Martín López', 'SYSTEM'),
-('Diego Hernández Castro', 'SYSTEM'),
-('Valentina Ruiz Jiménez', 'SYSTEM'),
-('Sebastián Torres Morales', 'SYSTEM'),
-('Camila Vargas Silva', 'SYSTEM'),
-('Mateo Rojas Herrera', 'SYSTEM'),
-('Isabella Cruz Mendoza', 'SYSTEM'),
-('Nicolás Reyes Vega', 'SYSTEM'),
-('Antonella Flores Ramos', 'SYSTEM');
+('Juan Pérez González - 9', 'SYSTEM'),
+('Sofia Martín López - 8', 'SYSTEM'),
+('Diego Hernández Castro - 7', 'SYSTEM'),
+('Valentina Ruiz Jiménez - 10', 'SYSTEM'),
+('Sebastián Torres Morales - 9', 'SYSTEM'),
+('Camila Vargas Silva - 8', 'SYSTEM'),
+('Mateo Rojas Herrera - 7', 'SYSTEM'),
+('Isabella Cruz Mendoza - 9', 'SYSTEM'),
+('Nicolás Reyes Vega - 8', 'SYSTEM'),
+('Antonella Flores Ramos - 10', 'SYSTEM');
 
 PRINT 'Estudiantes de ejemplo insertados.';
 GO

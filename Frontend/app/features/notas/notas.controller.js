@@ -148,7 +148,11 @@
                 orderDirection: 'asc'
             })
                 .then(function(result) {
-                    vm.profesores = result.data || result.items || result;
+                    // Handle both array and PagedResult formats
+                    var items = (result.data && Array.isArray(result.data)) ? result.data : 
+                               (result.items && Array.isArray(result.items)) ? result.items :
+                               (Array.isArray(result)) ? result : [];
+                    vm.profesores = items;
                     $log.debug('NotasController: Loaded ' + vm.profesores.length + ' profesores');
                 })
                 .catch(function(error) {
@@ -164,8 +168,22 @@
                 orderDirection: 'asc'
             })
             .then(function(result) {
-                var items = result.data || result.items || result;
+                // result.data is the array, or result.items if it's a PagedResult
+                var items = (result.data && Array.isArray(result.data)) ? result.data : 
+                           (result.items && Array.isArray(result.items)) ? result.items :
+                           (Array.isArray(result)) ? result : [];
+                
+                if (items.length === 0) {
+                    $log.warn('NotasController: No estudiantes loaded, result:', result);
+                    vm.estudiantes = [];
+                    return;
+                }
+                
                 vm.estudiantes = items.map(function(est) {
+                    if (!est || typeof est !== 'object') {
+                        $log.warn('NotasController: Invalid estudiante object:', est);
+                        return null;
+                    }
                     var gradoMatch = est.nombre && est.nombre.match(/-\s*(\d+)°?/);
                     var grado = (gradoMatch && gradoMatch[1]) ? (gradoMatch[1] + '°') : '';
                     var nombreSinGrado = est.nombre ? est.nombre.replace(/-\s*\d+°?/, '').trim() : '';
@@ -175,7 +193,8 @@
                         nombreSinGrado: nombreSinGrado,
                         grado: grado
                     };
-                });
+                }).filter(function(est) { return est !== null; }); // Remove null entries
+                
                 $log.debug('NotasController: Loaded ' + vm.estudiantes.length + ' estudiantes');
             })
             .catch(function(error) {
