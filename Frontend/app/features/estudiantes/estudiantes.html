@@ -200,6 +200,84 @@
                             </select>
                             <small class="form-text text-muted">Selecciona el grado del estudiante</small>
                         </div>
+
+                        <!-- Audit Fields (Read-only) -->
+                        <div ng-if="vm.isEditMode" class="alert alert-light border">
+                            <h6 class="mb-3">
+                                <i class="bi bi-clock-history me-2"></i>
+                                Información de Auditoría
+                            </h6>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small mb-1">Creado:</label>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.createdAt">
+                                                {{ vm.currentEstudiante.createdAt | date:'short' }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.createdAt">N/A</span>
+                                        </small>
+                                    </div>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-person-circle me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.createdBy" class="badge bg-info">
+                                                {{ vm.currentEstudiante.createdBy }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.createdBy">N/A</span>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small mb-1">Actualizado:</label>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.updatedAt">
+                                                {{ vm.currentEstudiante.updatedAt | date:'short' }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.updatedAt">N/A</span>
+                                        </small>
+                                    </div>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-person-circle me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.updatedBy" class="badge bg-warning">
+                                                {{ vm.currentEstudiante.updatedBy }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.updatedBy">N/A</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div ng-if="vm.currentEstudiante.isDeleted" class="row">
+                                <div class="col-md-12">
+                                    <label class="form-label text-muted small mb-1">Eliminado:</label>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.deletedAt">
+                                                {{ vm.currentEstudiante.deletedAt | date:'short' }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.deletedAt">N/A</span>
+                                        </small>
+                                    </div>
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="bi bi-person-circle me-1"></i>
+                                            <span ng-if="vm.currentEstudiante.deletedBy" class="badge bg-danger">
+                                                {{ vm.currentEstudiante.deletedBy }}
+                                            </span>
+                                            <span ng-if="!vm.currentEstudiante.deletedBy">N/A</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
