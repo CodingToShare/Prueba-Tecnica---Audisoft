@@ -63,9 +63,29 @@ public class NotaDto
     public int IdProfesor { get; set; }
 
     /// <summary>
+    /// Nombre del profesor que asignó la nota.
+    /// </summary>
+    public string? NombreProfesor { get; set; }
+
+    /// <summary>
     /// Identificador del estudiante que recibe la nota.
     /// </summary>
     public int IdEstudiante { get; set; }
+
+    /// <summary>
+    /// Nombre del estudiante que recibe la nota.
+    /// </summary>
+    public string? NombreEstudiante { get; set; }
+
+    /// <summary>
+    /// Grado del estudiante.
+    /// </summary>
+    public string? Grado { get; set; }
+
+    /// <summary>
+    /// Materia de la nota.
+    /// </summary>
+    public string? Materia { get; set; }
 
     /// <summary>
     /// Fecha de creación del registro.

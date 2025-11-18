@@ -20,7 +20,12 @@ public class MappingProfile : Profile
         CreateMap<CreateProfesorDto, Profesor>();
 
         // Nota mappings
-        CreateMap<Nota, NotaDto>().ReverseMap();
+        CreateMap<Nota, NotaDto>()
+            .ForMember(dest => dest.NombreProfesor, opt => opt.MapFrom(src => src.Profesor != null ? src.Profesor.Nombre : null))
+            .ForMember(dest => dest.NombreEstudiante, opt => opt.MapFrom(src => src.Estudiante != null ? ExtractNombreSinGrado(src.Estudiante.Nombre) : null))
+            .ForMember(dest => dest.Grado, opt => opt.MapFrom(src => src.Estudiante != null ? ExtractGrado(src.Estudiante.Nombre) : null))
+            .ForMember(dest => dest.Materia, opt => opt.MapFrom(src => src.Nombre))
+            .ReverseMap();
         CreateMap<CreateNotaDto, Nota>();
 
         // Usuario mappings
@@ -36,5 +41,29 @@ public class MappingProfile : Profile
         CreateMap<Rol, RolDto>()
             .ForMember(dest => dest.UsuarioCount, opt => opt.MapFrom(src => src.UsuarioRoles.Count(ur => !ur.IsDeleted)));
         CreateMap<CreateRolDto, Rol>();
+    }
+
+    /// <summary>
+    /// Extrae el grado del nombre del estudiante.
+    /// Formato esperado: "Nombre - Grado°"
+    /// </summary>
+    private string? ExtractGrado(string nombre)
+    {
+        if (string.IsNullOrEmpty(nombre)) return null;
+        
+        var match = System.Text.RegularExpressions.Regex.Match(nombre, @"-\s*(\d+°?)");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+
+    /// <summary>
+    /// Extrae el nombre sin el grado.
+    /// Formato esperado: "Nombre - Grado°"
+    /// </summary>
+    private string ExtractNombreSinGrado(string nombre)
+    {
+        if (string.IsNullOrEmpty(nombre)) return nombre;
+        
+        var result = System.Text.RegularExpressions.Regex.Replace(nombre, @"\s*-\s*\d+°?$", "").Trim();
+        return result;
     }
 }

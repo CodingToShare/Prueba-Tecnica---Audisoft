@@ -342,6 +342,7 @@
                                     <tr>
                                         <th>ID Nota</th>
                                         <th>Estudiante</th>
+                                        <th>Grado</th>
                                         <th>Materia</th>
                                         <th>Valor</th>
                                         <th>Fecha</th>
@@ -351,7 +352,8 @@
                                     <tr ng-repeat="nota in vm.notasAsociadas">
                                         <td><code>{{ nota.id }}</code></td>
                                         <td>{{ nota.nombreEstudiante || 'N/A' }}</td>
-                                        <td>{{ nota.materia }}</td>
+                                        <td><span class="badge bg-info">{{ nota.grado || 'N/A' }}</span></td>
+                                        <td>{{ nota.materia || 'N/A' }}</td>
                                         <td>
                                             <span class="badge" ng-class="{'bg-success': nota.valor >= 70, 'bg-warning': nota.valor >= 60 && nota.valor < 70, 'bg-danger': nota.valor < 60}">
                                                 {{ nota.valor }}
