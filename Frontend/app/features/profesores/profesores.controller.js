@@ -9,8 +9,8 @@
         .module('audiSoftSchoolApp')
         .controller('ProfesoresController', ProfesoresController);
 
-    ProfesoresController.$inject = ['$scope', '$location', 'authService', 'profesoresService', 'configService', '$log'];
-    function ProfesoresController($scope, $location, authService, profesoresService, configService, $log) {
+    ProfesoresController.$inject = ['$scope', '$location', 'authService', 'profesoresService', 'configService', '$log', 'notasService'];
+    function ProfesoresController($scope, $location, authService, profesoresService, configService, $log, notasService) {
         var vm = this;
 
         // UI State
@@ -22,6 +22,10 @@
         vm.showDeleteConfirm = false;
         vm.isDeleting = false;
         vm.profesorToDelete = null;
+
+        // Associated notes for delete confirmation
+        vm.notasAsociadas = [];
+        vm.loadingNotasAsociadas = false;
 
         // Data
         vm.profesores = [];
@@ -278,7 +282,22 @@
             }
 
             vm.profesorToDelete = profesor;
-            vm.showDeleteConfirm = true;
+            vm.loadingNotasAsociadas = true;
+            vm.notasAsociadas = [];
+
+            // Buscar notas asociadas a este profesor
+            notasService.getNotasByProfesor(profesor.id)
+                .then(function(response) {
+                    vm.notasAsociadas = response && response.data ? response.data : [];
+                })
+                .catch(function(error) {
+                    $log.warn('Error cargando notas asociadas:', error);
+                    vm.notasAsociadas = [];
+                })
+                .finally(function() {
+                    vm.loadingNotasAsociadas = false;
+                    vm.showDeleteConfirm = true;
+                });
         }
 
         function closeDeleteConfirm() {

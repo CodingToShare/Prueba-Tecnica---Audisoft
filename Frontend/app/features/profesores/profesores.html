@@ -289,7 +289,7 @@
 
     <!-- Delete Confirmation Modal -->
     <div class="modal" id="deleteConfirmModal" tabindex="-1" ng-show="vm.showDeleteConfirm" class="modal-backdrop">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-danger">
                 <!-- Header -->
                 <div class="modal-header bg-danger text-white">
@@ -297,7 +297,7 @@
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         Confirmar Eliminación
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeDeleteConfirm()" aria-label="Cerrar confirmación"></button>
+                    <button type="button" class="btn-close btn-close-white" ng-click="vm.closeDeleteConfirm()" aria-label="Cerrar confirmación" ng-disabled="vm.isDeleting"></button>
                 </div>
 
                 <!-- Body -->
@@ -315,9 +315,58 @@
                             <code>{{ vm.profesorToDelete.id }}</code>
                         </div>
                     </div>
+
+                    <!-- Associated Notes Section -->
+                    <div class="mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            Notas Asociadas
+                            <span ng-if="!vm.loadingNotasAsociadas" class="badge bg-secondary">{{ vm.notasAsociadas.length }}</span>
+                            <span ng-if="vm.loadingNotasAsociadas" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                        </h6>
+                        
+                        <div ng-if="vm.loadingNotasAsociadas" class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+
+                        <div ng-if="!vm.loadingNotasAsociadas && vm.notasAsociadas.length === 0" class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay notas asociadas a este profesor.
+                        </div>
+
+                        <div ng-if="!vm.loadingNotasAsociadas && vm.notasAsociadas.length > 0" class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID Nota</th>
+                                        <th>Estudiante</th>
+                                        <th>Materia</th>
+                                        <th>Valor</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="nota in vm.notasAsociadas">
+                                        <td><code>{{ nota.id }}</code></td>
+                                        <td>{{ nota.nombreEstudiante || 'N/A' }}</td>
+                                        <td>{{ nota.materia }}</td>
+                                        <td>
+                                            <span class="badge" ng-class="{'bg-success': nota.valor >= 70, 'bg-warning': nota.valor >= 60 && nota.valor < 70, 'bg-danger': nota.valor < 60}">
+                                                {{ nota.valor }}
+                                            </span>
+                                        </td>
+                                        <td><small>{{ nota.createdAt | date:'short' }}</small></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="alert alert-warning mt-3 mb-0" role="alert">
                         <i class="bi bi-info-circle me-2"></i>
-                        <small>Esta acción no se puede deshacer.</small>
+                        <small>Esta acción no se puede deshacer. Las notas asociadas también serán eliminadas.</small>
                     </div>
                 </div>
 
