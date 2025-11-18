@@ -51,6 +51,7 @@
                 '              <span ng-switch-when="badge" class="badge" ng-class="col.badgeClass || \'bg-secondary\'">{{ getValue(row, col) }}</span>' +
                 '              <small ng-switch-when="small" class="text-muted">{{ getValue(row, col) }}</small>' +
                 '              <code ng-switch-when="code">{{ getValue(row, col) }}</code>' +
+                '              <span ng-switch-when="estudiante"><span>{{ getValue(row, col).nombre }}</span><span ng-if="getValue(row, col).grado" class="badge bg-info ms-1">{{ getValue(row, col).grado }}</span></span>' +
                 '              <span ng-switch-default>{{ getValue(row, col) }}</span>' +
                 '            </span>' +
                 '          </td>' +

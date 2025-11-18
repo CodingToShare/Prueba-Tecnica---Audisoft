@@ -84,13 +84,13 @@
         vm.toggleSortOrder = toggleSortOrder;
         vm.setSort = setSort;
 
-        // Table columns configuration for reusable table component
+        // Table columns configuration for reusable table component (Estudiante + Grado en misma celda)
         vm.tableColumns = [
             { field: 'id', label: 'ID', width: '60px', sortable: true, type: 'code' },
             { field: 'nombre', label: 'Nombre', sortable: true },
             { field: 'valor', label: 'Valor', sortable: true, type: 'badge', badgeClass: 'bg-success' },
             { field: 'profesor', label: 'Profesor', sortable: false, visible: vm.canViewAll ? undefined : false, get: function(row){ return getProfesorNombre(row.idProfesor); }, type: 'small' },
-            { field: 'estudiante', label: 'Estudiante', sortable: false, visible: vm.canViewAll ? undefined : false, get: function(row){ return getEstudianteNombre(row.idEstudiante); }, type: 'small' },
+            { field: 'estudiante', label: 'Estudiante', sortable: false, visible: vm.canViewAll ? undefined : false, get: function(row){ return { nombre: getEstudianteNombre(row.idEstudiante), grado: getEstudianteGrado(row.idEstudiante) }; }, type: 'estudiante' },
             { field: 'createdAt', label: 'Fecha Creación', sortable: true, get: function(row){ return $scope.$eval("row.createdAt | date:'short'", { row: row }); }, type: 'small' }
         ];
 
@@ -152,29 +152,32 @@
                     vm.profesores = [];
                 });
 
-            // Load estudiantes
+            // Load estudiantes (parse nombre to extract grado like in EstudiantesController)
             estudiantesService.getEstudiantes({
                 page: 1,
                 pageSize: 1000,
                 orderBy: 'nombre',
                 orderDirection: 'asc'
             })
-                .then(function(result) {
-                    var items = result.data || result.items || result;
-                    // Extract estudiante info
-                    vm.estudiantes = items.map(function(est) {
-                        return {
-                            id: est.id,
-                            nombre: est.nombreSinGrado || est.nombre,
-                            grado: est.grado
-                        };
-                    });
-                    $log.debug('NotasController: Loaded ' + vm.estudiantes.length + ' estudiantes');
-                })
-                .catch(function(error) {
-                    $log.error('NotasController: Error loading estudiantes', error);
-                    vm.estudiantes = [];
+            .then(function(result) {
+                var items = result.data || result.items || result;
+                vm.estudiantes = items.map(function(est) {
+                    var gradoMatch = est.nombre && est.nombre.match(/-\s*(\d+)°?/);
+                    var grado = (gradoMatch && gradoMatch[1]) ? (gradoMatch[1] + '°') : '';
+                    var nombreSinGrado = est.nombre ? est.nombre.replace(/-\s*\d+°?/, '').trim() : '';
+                    return {
+                        id: est.id,
+                        nombre: nombreSinGrado,
+                        nombreSinGrado: nombreSinGrado,
+                        grado: grado
+                    };
                 });
+                $log.debug('NotasController: Loaded ' + vm.estudiantes.length + ' estudiantes');
+            })
+            .catch(function(error) {
+                $log.error('NotasController: Error loading estudiantes', error);
+                vm.estudiantes = [];
+            });
         }
 
         function getProfesorNombre(idProfesor) {
@@ -184,7 +187,12 @@
 
         function getEstudianteNombre(idEstudiante) {
             var match = (vm.estudiantes || []).find(function(e){ return e.id === idEstudiante; });
-            return match ? match.nombre : 'N/A';
+            return match ? (match.nombreSinGrado || match.nombre) : 'N/A';
+        }
+
+        function getEstudianteGrado(idEstudiante) {
+            var match = (vm.estudiantes || []).find(function(e){ return e.id === idEstudiante; });
+            return match ? match.grado : '';
         }
 
         /**
