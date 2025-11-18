@@ -9,7 +9,8 @@
         </div>
         <div class="col-md-4 text-end">
             <button class="btn btn-primary" ng-click="vm.openCreateModal()" ng-if="vm.canCreate" 
-                    ng-disabled="vm.isLoading">
+                    ng-disabled="vm.isLoading"
+                    aria-label="Crear nueva nota">
                 <i class="bi bi-plus-circle me-2"></i>
                 Nueva Nota
             </button>
@@ -37,7 +38,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-circle me-2"></i>
                 <strong>Error:</strong> {{ vm.error.message }}
-                <button type="button" class="btn-close" ng-click="vm.error = null"></button>
+                <button type="button" class="btn-close" ng-click="vm.error = null" aria-label="Cerrar mensaje de error"></button>
             </div>
         </div>
     </div>
@@ -47,7 +48,7 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ vm.success.message }}
-                <button type="button" class="btn-close" ng-click="vm.success = null"></button>
+                <button type="button" class="btn-close" ng-click="vm.success = null" aria-label="Cerrar mensaje de éxito"></button>
             </div>
         </div>
     </div>
@@ -94,7 +95,7 @@
                 <!-- Profesor Filter -->
                 <div class="col-md-6">
                     <label class="form-label">Profesor</label>
-                    <select class="form-select" ng-model="vm.searchFilters.idProfesor">
+                    <select class="form-select" ng-model="vm.searchFilters.idProfesor" aria-label="Filtrar por profesor">
                         <option value="">-- Todos los profesores --</option>
                         <option ng-repeat="prof in vm.profesores" value="{{ prof.id }}">
                             {{ prof.nombre }}
@@ -105,7 +106,7 @@
                 <!-- Estudiante Filter -->
                 <div class="col-md-6">
                     <label class="form-label">Estudiante</label>
-                    <select class="form-select" ng-model="vm.searchFilters.idEstudiante">
+                    <select class="form-select" ng-model="vm.searchFilters.idEstudiante" aria-label="Filtrar por estudiante">
                         <option value="">-- Todos los estudiantes --</option>
                         <option ng-repeat="est in vm.estudiantes" value="{{ est.id }}">
                             {{ est.nombre }} <span ng-if="est.grado" class="text-muted">(Grado {{ est.grado.replace('°','') }})</span>
@@ -121,7 +122,8 @@
                     <label class="form-label">Ordenar por</label>
                     <select class="form-select" ng-model="vm.orderBy" 
                             ng-change="vm.loadNotas()"
-                            ng-options="field.value as field.label for field in vm.availableSortFields">
+                            ng-options="field.value as field.label for field in vm.availableSortFields"
+                            aria-label="Ordenar por campo">
                     </select>
                 </div>
 
@@ -130,7 +132,8 @@
                     <label class="form-label">Dirección</label>
                     <button class="btn w-100" 
                             ng-class="{'btn-outline-primary': vm.orderDirection === 'asc', 'btn-primary': vm.orderDirection === 'desc'}"
-                            ng-click="vm.toggleSortOrder()">
+                            ng-click="vm.toggleSortOrder()"
+                            aria-label="Cambiar dirección de ordenamiento">
                         <i class="bi" ng-class="{'bi-sort-up': vm.orderDirection === 'asc', 'bi-sort-down': vm.orderDirection === 'desc'}"></i>
                         {{ vm.orderDirection === 'asc' ? 'Ascendente' : 'Descendente' }}
                     </button>
@@ -139,7 +142,7 @@
                 <!-- Action Buttons -->
                 <div class="col-md-4">
                     <label class="form-label">&nbsp;</label>
-                    <button class="btn btn-sm btn-primary me-2 w-100" ng-click="vm.applyFilters()">
+                    <button class="btn btn-sm btn-primary me-2 w-100" ng-click="vm.applyFilters()" aria-label="Buscar notas">
                         <i class="bi bi-search me-1"></i>
                         Buscar
                     </button>
@@ -149,7 +152,7 @@
             <!-- Clear Filters -->
             <div class="row mt-3">
                 <div class="col-12">
-                    <button class="btn btn-sm btn-secondary" ng-click="vm.clearFilters()">
+                    <button class="btn btn-sm btn-secondary" ng-click="vm.clearFilters()" aria-label="Limpiar filtros de búsqueda">
                         <i class="bi bi-arrow-counterclockwise me-1"></i>
                         Limpiar Filtros
                     </button>
@@ -188,14 +191,16 @@
                         ng-click="vm.openEditModal($parent.$parent.currentRow)"
                         ng-if="vm.canEdit"
                         data-bs-toggle="tooltip"
-                        data-bs-title="Editar nota">
+                        data-bs-title="Editar nota"
+                        aria-label="Editar nota">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-outline-danger" 
                         ng-click="vm.openDeleteConfirm($parent.$parent.currentRow)"
                         ng-if="vm.canDelete"
                         data-bs-toggle="tooltip"
-                        data-bs-title="Eliminar nota">
+                        data-bs-title="Eliminar nota"
+                        aria-label="Eliminar nota">
                     <i class="bi bi-trash-fill"></i>
                 </button>
             </actions>
@@ -215,7 +220,7 @@
             <form ng-submit="vm.saveNota()" name="notaForm" novalidate>
                 <div ng-if="vm.isEditMode" class="mb-3">
                     <label class="form-label">ID</label>
-                    <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly>
+                    <input type="text" class="form-control" ng-model="vm.currentNota.id" readonly aria-label="ID de la nota (solo lectura)">
                 </div>
 
                 <!-- Nombre -->
@@ -230,7 +235,7 @@
                            pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-0-9]+$"
                            ng-class="{'is-invalid': notaForm.nombre.$touched && notaForm.nombre.$invalid, 'is-valid': notaForm.nombre.$touched && notaForm.nombre.$valid}">
                     <small class="form-text text-muted d-block" ng-if="!notaForm.nombre.$touched || notaForm.nombre.$valid">Máx. 200 caracteres.</small>
-                    <div class="invalid-feedback" ng-if="notaForm.nombre.$touched && notaForm.nombre.$invalid" style="display: block;">
+                    <div class="invalid-feedback d-block" ng-if="notaForm.nombre.$touched && notaForm.nombre.$invalid">
                         <div ng-if="notaForm.nombre.$error.required"><i class="bi bi-exclamation-circle me-1"></i>El nombre es obligatorio</div>
                         <div ng-if="notaForm.nombre.$error.minlength"><i class="bi bi-exclamation-circle me-1"></i>Debe tener al menos 3 caracteres</div>
                         <div ng-if="notaForm.nombre.$error.maxlength"><i class="bi bi-exclamation-circle me-1"></i>Debe tener como máximo 200 caracteres</div>
@@ -250,7 +255,7 @@
                            step="0.01"
                            ng-class="{'is-invalid': notaForm.valor.$touched && notaForm.valor.$invalid, 'is-valid': notaForm.valor.$touched && notaForm.valor.$valid}">
                     <small class="form-text text-muted d-block" ng-if="!notaForm.valor.$touched || notaForm.valor.$valid">Entre 0 y 100 con máximo 2 decimales.</small>
-                    <div class="invalid-feedback" ng-if="notaForm.valor.$touched && notaForm.valor.$invalid" style="display: block;">
+                    <div class="invalid-feedback d-block" ng-if="notaForm.valor.$touched && notaForm.valor.$invalid">
                         <div ng-if="notaForm.valor.$error.required"><i class="bi bi-exclamation-circle me-1"></i>El valor es obligatorio</div>
                         <div ng-if="notaForm.valor.$error.min"><i class="bi bi-exclamation-circle me-1"></i>El valor mínimo es 0</div>
                         <div ng-if="notaForm.valor.$error.max"><i class="bi bi-exclamation-circle me-1"></i>El valor máximo es 100</div>
@@ -264,10 +269,11 @@
                             ng-model="vm.currentNota.idProfesor"
                             ng-options="prof.id as prof.nombre for prof in vm.profesores"
                             required
+                            aria-label="Seleccionar profesor para la nota"
                             ng-class="{'is-invalid': notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid, 'is-valid': notaForm.idProfesor.$touched && notaForm.idProfesor.$valid}">
                         <option value="">-- Seleccionar profesor --</option>
                     </select>
-                    <div class="invalid-feedback" ng-if="notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid" style="display: block;">
+                    <div class="invalid-feedback d-block" ng-if="notaForm.idProfesor.$touched && notaForm.idProfesor.$invalid">
                         <div ng-if="notaForm.idProfesor.$error.required"><i class="bi bi-exclamation-circle me-1"></i>Debes seleccionar un profesor</div>
                     </div>
                 </div>
@@ -279,10 +285,11 @@
                             ng-model="vm.currentNota.idEstudiante"
                             ng-options="est.id as (est.nombre + (est.grado ? ' (Grado ' + est.grado.replace('°','') + ')' : '')) for est in vm.estudiantes"
                             required
+                            aria-label="Seleccionar estudiante para la nota"
                             ng-class="{'is-invalid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid, 'is-valid': notaForm.idEstudiante.$touched && notaForm.idEstudiante.$valid}">
                         <option value="">-- Seleccionar estudiante --</option>
                     </select>
-                    <div class="invalid-feedback" ng-if="notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid" style="display: block;">
+                    <div class="invalid-feedback d-block" ng-if="notaForm.idEstudiante.$touched && notaForm.idEstudiante.$invalid">
                         <div ng-if="notaForm.idEstudiante.$error.required"><i class="bi bi-exclamation-circle me-1"></i>Debes seleccionar un estudiante</div>
                     </div>
                 </div>

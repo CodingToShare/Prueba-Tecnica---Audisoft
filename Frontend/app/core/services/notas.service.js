@@ -504,10 +504,12 @@
         function buildFilterQuery(filters) {
             var filterParts = [];
 
+            // Nombre uses ':' for contains search (case-insensitive)
             if (filters.nombre) {
-                filterParts.push('Nombre=' + encodeURIComponent(filters.nombre));
+                filterParts.push('Nombre:' + filters.nombre);
             }
 
+            // Id filters use '=' for exact match
             if (filters.idProfesor) {
                 filterParts.push('IdProfesor=' + filters.idProfesor);
             }
@@ -516,12 +518,13 @@
                 filterParts.push('IdEstudiante=' + filters.idEstudiante);
             }
 
+            // Valor range filters use comparison operators
             if (filters.minValor !== undefined && filters.minValor !== '') {
-                filterParts.push('MinValor=' + parseFloat(filters.minValor));
+                filterParts.push('Valor>=' + parseFloat(filters.minValor));
             }
 
             if (filters.maxValor !== undefined && filters.maxValor !== '') {
-                filterParts.push('MaxValor=' + parseFloat(filters.maxValor));
+                filterParts.push('Valor<=' + parseFloat(filters.maxValor));
             }
 
             var query = filterParts.join(';');
