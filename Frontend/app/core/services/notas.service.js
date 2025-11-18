@@ -274,21 +274,67 @@
         function createNota(data) {
             $log.debug('NotasService: Creating nota', data);
             
-            if (!data || !data.nombre || data.valor === undefined || !data.idProfesor || !data.idEstudiante) {
+            // Validate required fields
+            if (!data) {
                 var error = {
                     message: 'Datos de nota incompletos',
                     status: 400
                 };
-                $log.error('NotasService: Invalid nota data', data);
+                $log.error('NotasService: Invalid nota data - data is null/undefined');
                 return $q.reject(error);
             }
 
+            // Validate nombre
+            if (!data.nombre || !data.nombre.toString().trim()) {
+                var errorNombre = {
+                    message: 'El nombre de la nota es obligatorio',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - nombre is missing or empty');
+                return $q.reject(errorNombre);
+            }
+
+            // Validate valor
+            var valor = parseFloat(data.valor);
+            if (isNaN(valor) || valor < 0 || valor > 100) {
+                var errorValor = {
+                    message: 'El valor debe estar entre 0 y 100',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - valor is invalid:', data.valor);
+                return $q.reject(errorValor);
+            }
+
+            // Validate idProfesor
+            var idProfesor = parseInt(data.idProfesor, 10);
+            if (isNaN(idProfesor) || idProfesor <= 0) {
+                var errorProfesor = {
+                    message: 'Debes seleccionar un profesor válido',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - idProfesor is invalid:', data.idProfesor);
+                return $q.reject(errorProfesor);
+            }
+
+            // Validate idEstudiante
+            var idEstudiante = parseInt(data.idEstudiante, 10);
+            if (isNaN(idEstudiante) || idEstudiante <= 0) {
+                var errorEstudiante = {
+                    message: 'Debes seleccionar un estudiante válido',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - idEstudiante is invalid:', data.idEstudiante);
+                return $q.reject(errorEstudiante);
+            }
+
             var payload = {
-                nombre: data.nombre.trim(),
-                valor: parseFloat(data.valor),
-                idProfesor: parseInt(data.idProfesor, 10),
-                idEstudiante: parseInt(data.idEstudiante, 10)
+                nombre: data.nombre.toString().trim(),
+                valor: valor,
+                idProfesor: idProfesor,
+                idEstudiante: idEstudiante
             };
+
+            $log.debug('NotasService: Creating nota with payload', payload);
 
             var url = 'Notas';
 
@@ -320,21 +366,67 @@
         function updateNota(id, data) {
             $log.debug('NotasService: Updating nota', id, data);
             
-            if (!data || !data.nombre || data.valor === undefined || !data.idProfesor || !data.idEstudiante) {
+            // Validate required fields
+            if (!data) {
                 var error = {
                     message: 'Datos de nota incompletos',
                     status: 400
                 };
-                $log.error('NotasService: Invalid nota data', data);
+                $log.error('NotasService: Invalid nota data - data is null/undefined');
                 return $q.reject(error);
             }
 
+            // Validate nombre
+            if (!data.nombre || !data.nombre.toString().trim()) {
+                var errorNombre = {
+                    message: 'El nombre de la nota es obligatorio',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - nombre is missing or empty');
+                return $q.reject(errorNombre);
+            }
+
+            // Validate valor
+            var valor = parseFloat(data.valor);
+            if (isNaN(valor) || valor < 0 || valor > 100) {
+                var errorValor = {
+                    message: 'El valor debe estar entre 0 y 100',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - valor is invalid:', data.valor);
+                return $q.reject(errorValor);
+            }
+
+            // Validate idProfesor
+            var idProfesor = parseInt(data.idProfesor, 10);
+            if (isNaN(idProfesor) || idProfesor <= 0) {
+                var errorProfesor = {
+                    message: 'Debes seleccionar un profesor válido',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - idProfesor is invalid:', data.idProfesor);
+                return $q.reject(errorProfesor);
+            }
+
+            // Validate idEstudiante
+            var idEstudiante = parseInt(data.idEstudiante, 10);
+            if (isNaN(idEstudiante) || idEstudiante <= 0) {
+                var errorEstudiante = {
+                    message: 'Debes seleccionar un estudiante válido',
+                    status: 400
+                };
+                $log.error('NotasService: Invalid nota data - idEstudiante is invalid:', data.idEstudiante);
+                return $q.reject(errorEstudiante);
+            }
+
             var payload = {
-                nombre: data.nombre.trim(),
-                valor: parseFloat(data.valor),
-                idProfesor: parseInt(data.idProfesor, 10),
-                idEstudiante: parseInt(data.idEstudiante, 10)
+                nombre: data.nombre.toString().trim(),
+                valor: valor,
+                idProfesor: idProfesor,
+                idEstudiante: idEstudiante
             };
+
+            $log.debug('NotasService: Updating nota with payload', payload);
 
             var url = 'Notas/' + id;
 

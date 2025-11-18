@@ -235,8 +235,8 @@
             vm.currentNota = {
                 nombre: '',
                 valor: '',
-                idProfesor: '',
-                idEstudiante: ''
+                idProfesor: null,
+                idEstudiante: null
             };
             vm.showModal = true;
             vm.error = null;
