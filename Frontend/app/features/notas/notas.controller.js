@@ -71,9 +71,11 @@
         vm.loadNotas = loadNotas;
         vm.openCreateModal = openCreateModal;
         vm.openEditModal = openEditModal;
+        vm.openEditModalById = openEditModalById;
         vm.saveNota = saveNota;
         vm.deleteNota = deleteNota;
         vm.openDeleteConfirm = openDeleteConfirm;
+        vm.openDeleteConfirmById = openDeleteConfirmById;
         vm.closeDeleteConfirm = closeDeleteConfirm;
         vm.confirmDelete = confirmDelete;
         vm.closeModal = closeModal;
@@ -278,6 +280,19 @@
         }
 
         /**
+         * Open edit modal by ID (retrieves full nota from list)
+         */
+        function openEditModalById(notaId) {
+            var fullNota = (vm.notas || []).find(function(n) { return n.id === notaId; });
+            if (fullNota) {
+                openEditModal(fullNota);
+            } else {
+                $log.warn('NotasController: Nota not found for ID', notaId);
+                vm.error = { message: 'Nota no encontrada' };
+            }
+        }
+
+        /**
          * Save nota (create or update)
          */
         function saveNota() {
@@ -363,6 +378,22 @@
             
             $log.debug('NotasController: Delete confirm - notaToDelete:', vm.notaToDelete);
             vm.showDeleteConfirm = true;
+        }
+
+        /**
+         * Open delete confirmation modal by ID (retrieves full nota from list)
+         */
+        function openDeleteConfirmById(notaId) {
+            // Find the complete nota from vm.notas by ID
+            var fullNota = (vm.notas || []).find(function(n) { return n.id === notaId; });
+            
+            if (fullNota) {
+                // Call the regular openDeleteConfirm with the full nota object
+                openDeleteConfirm(fullNota);
+            } else {
+                $log.warn('NotasController: Nota not found for ID', notaId);
+                vm.error = { message: 'Nota no encontrada' };
+            }
         }
 
         /**

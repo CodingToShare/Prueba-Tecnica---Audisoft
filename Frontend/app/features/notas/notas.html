@@ -188,7 +188,7 @@
             empty-message="No se encontraron notas">
             <actions>
                 <button class="btn btn-outline-primary" 
-                        ng-click="vm.openEditModal($parent.$parent.currentRow)"
+                        ng-click="vm.openEditModalById($parent.$parent.currentRow.id)"
                         ng-if="vm.canEdit"
                         data-bs-toggle="tooltip"
                         data-bs-title="Editar nota"
@@ -196,7 +196,7 @@
                     <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-outline-danger" 
-                        ng-click="vm.openDeleteConfirm($parent.$parent.currentRow)"
+                        ng-click="vm.openDeleteConfirmById($parent.$parent.currentRow.id)"
                         ng-if="vm.canDelete"
                         data-bs-toggle="tooltip"
                         data-bs-title="Eliminar nota"
