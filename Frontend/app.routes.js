@@ -15,6 +15,18 @@
     function routeConfig($routeProvider) {
         
         $routeProvider
+            // ===== ROOT ROUTE =====
+            // Redirect to login if not authenticated, else to dashboard
+            .when('/', {
+                templateUrl: 'app/features/login/login.html',
+                controller: 'LoginController',
+                controllerAs: 'login',
+                access: {
+                    requiresLogin: false,
+                    allowedRoles: []
+                }
+            })
+            
             // ===== PUBLIC ROUTES =====
             .when('/login', {
                 templateUrl: 'app/features/login/login.html',

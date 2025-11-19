@@ -132,6 +132,15 @@
             // Load reference data
             loadReferenceData();
             loadNotas();
+            
+            // Watch for page size changes
+            $scope.$watch(function() { return vm.pageSize; }, function(newVal, oldVal) {
+                if (newVal !== oldVal && newVal) {
+                    $log.debug('NotasController: Page size changed from ' + oldVal + ' to ' + newVal);
+                    vm.currentPage = 1;
+                    loadNotas();
+                }
+            });
         }
 
         /**
